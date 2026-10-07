@@ -1,10 +1,10 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {ChevronRight,TerminalSquare,CornerDownLeft} from 'lucide-react';
 import type {GameProps} from './types';
 export function TerminalView({state,onCommand,queued,onQueued,compact=false}:GameProps&{queued:string;onQueued:()=>void;compact?:boolean}){
  const [input,setInput]=useState('');const [index,setIndex]=useState(-1);const scroll=useRef<HTMLDivElement>(null);const field=useRef<HTMLInputElement>(null);const m=state.machines[state.machine];
- useEffect(()=>{if(queued){setInput(queued);onQueued();field.current?.focus();}},[queued,onQueued]);
+ useLayoutEffect(()=>{if(queued){setInput(queued);onQueued();field.current?.focus();}},[queued,onQueued]);
  useEffect(()=>{if(scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;},[state.history.length,state.history.at(-1)?.command]);
  const send=()=>{if(!input.trim())return;onCommand(input);setInput('');setIndex(-1);};
  return <div className={'terminal-body '+(compact?'compact':'')}>

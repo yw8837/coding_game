@@ -170,7 +170,7 @@ export function missionSteps(s:GameState):{label:string;done:boolean;app:string;
   {label:'저장소를 내 PC로 복제',done:!!r,app:'terminal',hint:'CatHub의 복제 주소를 git clone 뒤에 입력하세요. 복제 후 cd menu-site로 이동해요.'},
   {label:'Node.js · npm 준비',done:s.machines.local.tools.includes('npm'),app:'terminal',hint:'npm을 찾지 못한다면 sudo apt update 후 sudo apt install nodejs npm을 실행하세요.'},
   {label:'의존성 설치 · 사이트 실행',done:!!r&&s.machines.local.dependencies.includes(r.root)&&isProjectServerRunning(s),app:'terminal',hint:'프로젝트 폴더에서 npm install, npm run dev를 순서대로 실행해 보세요.'},
-  {label:'모바일 레이아웃 수정 · 검사',done:tested,app:'editor',hint:'style.css의 고정 너비와 좁은 화면의 열 수를 살펴보세요. COOCLE의 CSS 문서에 예제가 있어요.'},
+  {label:'HTML · CSS 두 곳 수정 · 검사',done:tested,app:'editor',hint:'index.html의 h1 제목에 모노 카페를 넣고, style.css의 width: 960px을 width: 100%로 바꿔 보세요.'},
   {label:'커밋 · CatHub로 push',done:!!r&&r.remote.hash===sourceHash(files)&&r.remote.id!=='c0000',app:'terminal',hint:'git add . → git commit -m "Fix mobile menu" → git push. 세 단계는 서로 다른 상태를 저장해요.'},
   {label:'PR 검토 · 병합 · 배포',done:s.completed.includes(0),app:'browser',hint:'CatHub의 Pull requests에서 PR 검토를 요청하고, 통과하면 병합 후 배포하세요.'},
  ];
