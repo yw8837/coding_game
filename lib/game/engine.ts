@@ -1,4 +1,5 @@
 import {HOME, PROJECT, REPO_URL, INITIAL_FILES, MISSIONS} from './content.ts';
+import {createGameplay,COSMETICS,DESIGN_CHOICES,gameMessages,canClaimColor,type Gameplay,type DesignId} from './gameplay.ts';
 
 export type Files = Record<string,string>;
 export type MachineId = 'local'|'server';
@@ -6,6 +7,7 @@ export type Check = {name:string;passed:boolean;detail?:string};
 export type Snapshot = {id:string;message:string;files:Files;mission:number;hash:string};
 export type Machine = {cwd:string;tools:string[];updated:boolean;files:Files;dirs:string[];dependencies:string[];pythonDeps:string[];processes:{frontend:boolean;backend:boolean};frontendRoot:string|null;backendRoot:string|null;backendSource:string|null;cloned:boolean};
 export type GameState = {
+ gameplay:Gameplay;
  version:1;mission:number;accepted:boolean;credits:number;xp:number;completed:number[];badges:string[];
  machine:MachineId;machines:Record<MachineId,Machine>;serverReady:boolean;
  discovered:{search:boolean;repo:boolean;preview:boolean};
@@ -14,11 +16,11 @@ export type GameState = {
  orders:{id:number;item:string;quantity:number}[];localOrders:{id:number;item:string;quantity:number}[];apiEvidence:{menu:boolean;order:boolean};
  notice:string;logs:string[];history:{command:string;output:string;error:boolean;machine:MachineId;cwd:string}[];
 };
-export type Action = {type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[]}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'};
+export type Action = {type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
 export type CommandResult={state:GameState;output:string;error:boolean};
 
 function machine():Machine{return {cwd:HOME,tools:['git'],updated:false,files:{[HOME+'/welcome.txt']:'CODE:SHIFT 작업실에 오신 것을 환영합니다.\nhelp로 지원 명령을 확인하세요.\n'},dirs:['/','/home',HOME],dependencies:[],pythonDeps:[],processes:{frontend:false,backend:false},frontendRoot:null,backendRoot:null,backendSource:null,cloned:false};}
-export function createGame():GameState{return {version:1,mission:0,accepted:false,credits:120,xp:0,completed:[],badges:[],machine:'local',machines:{local:machine(),server:{...machine(),tools:[]}},serverReady:false,discovered:{search:false,repo:false,preview:false},repo:null,tests:null,testRequest:0,orders:[],localOrders:[],apiEvidence:{menu:false,order:false},notice:'',logs:['[system] 워크스테이션이 시작되었습니다.'],history:[]};}
+export function createGame():GameState{return {gameplay:createGameplay(),version:1,mission:0,accepted:false,credits:120,xp:0,completed:[],badges:[],machine:'local',machines:{local:machine(),server:{...machine(),tools:[]}},serverReady:false,discovered:{search:false,repo:false,preview:false},repo:null,tests:null,testRequest:0,orders:[],localOrders:[],apiEvidence:{menu:false,order:false},notice:'',logs:['[system] 워크스테이션이 시작되었습니다.'],history:[]};}
 export function clone<T>(data:T):T{return JSON.parse(JSON.stringify(data));}
 export function sourceHash(files:Files):string {const str=Object.keys(files).sort().map(k=>k+'\0'+files[k]).join('\0');let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16);}
 export function resolvePath(cwd:string,path:string):string {let p=path||HOME;if(p==='~'||p.startsWith('~/'))p=HOME+p.slice(1);if(!p.startsWith('/'))p=cwd+'/'+p;const out:string[]=[];for(const part of p.split('/')){if(!part||part==='.')continue;if(part==='..')out.pop();else out.push(part);}return '/'+out.join('/');}
@@ -60,10 +62,29 @@ export function act(state:GameState,action:Action):GameState{
  const s=clone(state);s.notice='';
  if(action.type==='accept'){s.accepted=true;return s;}
  if(action.type==='clear-notice')return s;
+ if(action.type==='read-message'){if(gameMessages(s).some(m=>m.id===action.id)&&!s.gameplay.readMessages.includes(action.id))s.gameplay.readMessages.push(action.id);return s;}
+ if(action.type==='choose-design'){const choice=DESIGN_CHOICES.find(c=>c.id===action.id);if(choice&&s.gameplay.designChoice!==choice.id){s.gameplay.designChoice=choice.id;s.gameplay.designEvidence=null;}return s;}
+ if(action.type==='buy-cosmetic'||action.type==='equip-cosmetic'){
+  const item=COSMETICS.find(c=>c.id===action.id);if(!item)return s;
+  const owned=s.gameplay.ownedCosmetics.includes(item.id);
+  if(action.type==='equip-cosmetic'){if(owned){s.gameplay.equippedCosmetic=item.id;s.notice=item.name+' 테마를 적용했어요.';}return s;}
+  if(owned)return s;
+  if(s.credits<item.price){s.notice='크레딧이 부족해요. 의뢰나 보너스 과제를 완성해 보세요.';return s;}
+  s.credits-=item.price;s.gameplay.ownedCosmetics.push(item.id);s.gameplay.equippedCosmetic=item.id;s.notice=item.name+' 테마를 구입하고 적용했어요.';return s;
+ }
+ if(action.type==='claim-bonus'){
+  if(s.gameplay.claimedBonuses.includes(action.id))return s;
+  const explorer=action.id==='explorer'&&Object.values(s.gameplay.exploration).every(Boolean);
+  const color=action.id==='color'&&canClaimColor(s,sourceHash(projectFiles(s)));
+  if(!explorer&&!color){s.notice='과제 조건을 먼저 완료해 주세요.';return s;}
+  const reward=explorer?40:60,xp=explorer?20:30,badge=explorer?'터미널 탐험가':'컬러 실험가';
+  s.gameplay.claimedBonuses.push(action.id);s.credits+=reward;s.xp+=xp;if(!s.badges.includes(badge))s.badges.push(badge);
+  s.notice=badge+' 달성! '+reward+' cr와 '+xp+' XP를 받았어요.';return s;
+ }
  if(action.type==='discover'){s.discovered[action.what]=true;return s;}
  if(action.type==='edit'){if(!s.repo)return s;if(action.content.length>60000){s.notice='파일은 60,000자까지 편집할 수 있어요.';return s;}if(!Object.hasOwn(projectFiles(s),action.path))return s;s.machines.local.files[s.repo.root+'/'+action.path]=action.content;return s;}
  if(action.type==='request-tests'){s.testRequest++;return s;}
- if(action.type==='test-result'){if(action.hash!==sourceHash(projectFiles(s)))return s;s.tests={hash:action.hash,mission:s.mission,checks:action.checks};s.notice=action.checks.every(c=>c.passed)?'검사를 통과했어요. 변경을 커밋하고 CatHub로 보내세요.':'아직 해결할 항목이 있어요. 검사 결과를 확인해 보세요.';return s;}
+ if(action.type==='test-result'){if(action.hash!==sourceHash(projectFiles(s)))return s;s.tests={hash:action.hash,mission:s.mission,checks:action.checks};if(action.designChoice&&action.designChoice===s.gameplay.designChoice)s.gameplay.designEvidence={hash:action.hash,choice:action.designChoice,passed:action.designPassed===true};s.notice=action.checks.every(c=>c.passed)?(action.designChoice===s.gameplay.designChoice&&action.designChoice?(action.designPassed?'화면과 색상 모두 통과! 보너스 창에서 보상을 받아 보세요.':'의뢰 검사는 통과했어요. 선택한 버튼 색은 아직 달라요.'):s.completed.includes(0)?'화면 검사를 통과했어요.':'검사를 통과했어요. 변경을 커밋하고 CatHub로 보내세요.'):'아직 해결할 항목이 있어요. 검사 결과를 확인해 보세요.';return s;}
  if(action.type==='install-server'){if(s.mission<2){s.notice='세 번째 의뢰에서 서버가 지급됩니다.';return s;}s.serverReady=true;log(s,'[mono-server] Ubuntu 24.04 설치 완료 · 가상 서버');return s;}
  if(action.type==='next-mission'){if(!s.completed.includes(s.mission)||s.mission>=MISSIONS.length-1)return s;s.mission++;s.accepted=true;s.tests=null;s.apiEvidence={menu:false,order:false};if(s.repo)s.repo.pr=null;return s;}
  const r=s.repo;if(!r)return s;
@@ -74,7 +95,7 @@ export function act(state:GameState,action:Action):GameState{
  }
  if(action.type==='merge-pr'){if(r.pr?.status!=='approved'){s.notice='먼저 최신 변경의 PR 검토를 통과하세요.';return s;}if(r.pr.commit.id!==r.remote.id){s.notice='PR 뒤에 새 push가 있어요. 다시 검토해 주세요.';return s;}r.merged=clone(r.pr.commit);r.pr.status='merged';return s;}
  if(action.type==='deploy'){
-  if(s.completed.includes(s.mission)){s.notice='이미 완료한 의뢰예요. 다음 의뢰를 확인해 보세요.';return s;}
+  if(s.completed.includes(s.mission)){s.notice='이미 완료한 의뢰예요. 보너스 과제도 도전해 보세요.';return s;}
   if(r.pr?.status!=='merged'||r.merged.id!==r.pr.commit.id){s.notice='검토를 통과한 PR을 먼저 병합해 주세요.';return s;}
   if(s.mission===2){const m=s.machines.server;if(!m.processes.backend||m.backendSource!==r.merged.files['server.py']||!s.apiEvidence.menu||!s.apiEvidence.order){s.notice='검토한 버전의 서버를 실행하고 API의 메뉴 조회·주문 요청을 확인하세요.';return s;}}
   r.deployed=clone(r.merged);s.completed.push(s.mission);s.credits+=MISSIONS[s.mission].reward;s.xp+=MISSIONS[s.mission].xp;s.badges.push(MISSIONS[s.mission].badge);s.notice='의뢰 완료! 보상과 배지가 지급되었습니다.';log(s,`[release] v1.${s.mission}.0 · ${r.deployed.id} 배포 완료`);return s;
@@ -145,6 +166,11 @@ export function runCommand(state:GameState,input:string):CommandResult{
  else if(cmd==='pkill'){if(a[0]==='node'){m.processes.frontend=false;output='node process stopped. Port 5173 released.';}else if(a[0]==='python3'){m.processes.backend=false;m.backendSource=null;if(s.machine==='server'){s.orders=[];s.apiEvidence={menu:false,order:false};}else s.localOrders=[];output='python3 process stopped. Port 8000 released.';}else fail('지원 명령: pkill node / pkill python3');}
  else if(cmd==='curl'){const url=a.find(x=>x.startsWith('http'));if(!url)fail('사용법: curl http://mono-server:8000/api/menu');else{const result=apiRequest(s,'GET',url,'');s=result.state;output=`HTTP ${result.status||'CONNECTION ERROR'}\n`+JSON.stringify(result.data,null,2);error=result.status===0||result.status>=400;}}
  else fail(`${cmd}: command not found\n이 첫 버전에서 지원하는 명령은 help로 확인하세요.`);
+ if(!error&&origin==='local'&&s.repo){
+  if(cmd==='pwd'&&cwd===s.repo.root)s.gameplay.exploration.pwd=true;
+  if(cmd==='ls'&&resolvePath(cwd,a.find(x=>!x.startsWith('-'))||'.')===s.repo.root)s.gameplay.exploration.ls=true;
+  if(cmd==='cat'&&a[0]&&resolvePath(cwd,a[0])===s.repo.root+'/README.md')s.gameplay.exploration.readme=true;
+ }
  if(input.trim())s.history.push({command:input,output,error,machine:origin,cwd});s.history=s.history.slice(-100);return {state:s,output,error};
 }
 
