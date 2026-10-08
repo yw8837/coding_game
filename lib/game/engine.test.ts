@@ -84,12 +84,14 @@ test('git add reflects restored files and stages tracked deletion after rename',
  assert.equal(s.repo!.commits.at(-1)!.files['old.js'],original);
 });
 
-test('a valid earlier release may satisfy the next contract without meaningless edits',()=>{
+test('the second chapter introduces a repair without altering the earlier deployed snapshot',()=>{
  let s=setup();s=act(s,{type:'edit',path:'app.js',content:'function calculateTotal(price, quantity) { return price * quantity; }'});
  s=act(s,{type:'test-result',hash:sourceHash(projectFiles(s)),checks:[{name:'mobile',passed:true},{name:'visible',passed:true},{name:'desktop',passed:true}]});
  s=commands(['git add .','git commit -m early','git push'],s);s=act(s,{type:'open-pr'});s=act(s,{type:'merge-pr'});s=act(s,{type:'deploy'});s=act(s,{type:'next-mission'});
  s=act(s,{type:'test-result',hash:sourceHash(projectFiles(s)),checks:[1,2,3,4].map(n=>({name:String(n),passed:true}))});s=act(s,{type:'open-pr'});
- assert.equal(s.repo!.pr?.status,'approved');
+ assert.equal(s.repo!.pr?.status,'changes-requested');
+ assert.match(projectFiles(s)['app.js'],/price \+ quantity/);
+ assert.match(s.repo!.deployed.files['app.js'],/price \* quantity/);
 });
 
 test('local API orders stay on the local machine and restart clears only that machine',()=>{

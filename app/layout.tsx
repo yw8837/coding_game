@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./repair.css";
+import "./desktop.css";
 
 export const metadata: Metadata = {
-  title: "CODE:SHIFT — 입문 데모",
-  description: "그롬, COOCLE, CatHub와 가상 터미널. 첫 코드부터 첫 배포까지 직접 완주하는 개발자 시뮬레이터.",
+  title: "CODE:SHIFT — 동네 해결사",
+  description: "코드를 몰라도 괜찮아요. 보고, 고르고, 시험하며 모노 카페의 세 가지 사건을 해결하는 게임.",
   other: {
     "codex-preview": "development",
   },

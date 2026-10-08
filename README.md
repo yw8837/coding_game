@@ -1,26 +1,52 @@
-# CODE:SHIFT — 입문 데모 0.3
+# CODE:SHIFT — 모노 카페 이야기 0.4
 
-One guided beginner mission: find the Mono Cafe project, prepare it in the simulated terminal, edit an HTML title and a CSS width, inspect the result, then submit and deploy through CatHub. The main mission ends with the first-deployment badge. Optional exploration and CSS color challenges, character messages and purchasable workstation themes add a small game loop around it.
+게임 제목은 아직 작업명입니다. 코딩을 처음 접하는 플레이어가 카페의 온라인 오픈을 돕는 짧은 3장 게임입니다.
 
-Open the client message from the desktop to begin. Every app closes with X or Escape; the dock reopens it. The guide and mission panel have their own close buttons. Use the top guide for the next action. “명령어 넣기” fills the terminal; press Enter to execute. In the editor, “① HTML 제목” and “② CSS 너비” open the two places to change. Everything the player installs or runs is simulated game state.
+타이틀 → 시작/이어하기 → 바탕화면의 메시지 → 첫 의뢰 → 세 수리 → OPEN 간판 → 엔딩으로 이어집니다. 선택지로 실제 가상 프로젝트 파일을 바꾸고 손님 테스트로 확인합니다. 개발 도구를 켜면 같은 파일을 에디터와 터미널에서 직접 다룰 수 있습니다.
 
-## Source and checks
+## 실행
 
-- `lib/game/engine.ts`: machine, command, Git, API and reward state.
-- `lib/game/gameplay.ts`: optional quest, character message and cosmetic catalog definitions.
-- `lib/game/demo.ts`: current-state beginner guide.
-- `lib/game/preview.ts`: script-free HTML/CSS rendering and actual layout checks.
-- `lib/game/save.ts`: validated local persistence with a dedicated demo save key.
-- `components/game`: connected desktop applications and the demo ending.
-- `docs/spec.md`: current requested scope.
-- `docs/gameplay-verification.md`: current update verification.
-- `docs/intro-demo-verification.md`: prior full beginner playthrough.
+Node 22.13 이상과 package.json에 고정된 pnpm을 사용합니다. 개발 파일은 NTFS/APFS 등 일반 개발용 파일시스템에 두세요. 이 작업에서는 exFAT의 pnpm 링크 제약 때문에 C:\codex-workspaces\codeshift-game에서 실행했습니다.
 
 ```sh
-npm run dev
-node --experimental-strip-types --test lib/game/engine.test.ts lib/game/save.test.ts lib/game/demo.test.ts lib/game/gameplay.test.ts
+pnpm install --frozen-lockfile
+pnpm dev
+node --test lib/game/*.test.ts
 node node_modules/typescript/bin/tsc --noEmit
-npm run build
+pnpm build
 ```
 
-The earlier multi-contract engine remains in source; only the introductory mission is presented in this demo. No local LLM or full beginner-to-intermediate campaign is claimed. Hosting pushes the exact source and packages its production build. Player saves are not bundled.
+사이트 배포는 기존 .openai/hosting.json의 프로젝트를 사용합니다. source와 Workers용 build를 일치시켜 Sites로 배포합니다. 저장 데이터나 테스트 프로필은 빌드에 포함하지 않습니다.
+
+## 플레이
+
+- 바탕화면은 아이콘을 한 번 클릭하면 열립니다. 작업 표시줄로 앱을 바꾸고 X/Esc로 닫습니다.
+- 현재 목표와 세부 단계가 앱 밖에 남습니다. 작은 화면에서는 목표 리본을 누르면 작업으로 돌아갑니다.
+- 설정과 타이틀에서 한국어/English/日本語를 선택합니다. 언어·효과음·개발 도구 표시 설정을 저장합니다.
+- 틀려도 자금·생명을 잃지 않습니다. 힌트에 페널티가 없습니다.
+- 에디터의 Tab/Ctrl+Space 자동완성, 괄호 자동 닫기, 들여쓰기, 실행 취소/다시 실행을 지원합니다. 터미널은 Tab과 명령 기록, 미제출 입력 복원을 지원합니다.
+- localStorage에 자동 저장합니다. 기존 0.3 저장과 호환되며 엔딩 뒤에도 보너스와 꾸미기를 할 수 있습니다.
+
+## 코드
+
+- lib/game/engine.ts: 명령, 파일, Git, API, 보상.
+- lib/game/assisted.ts: 입문자 선택을 실제 파일·가상 명령에 연결.
+- lib/game/quest.ts, story.ts: 현재 목표와 이야기.
+- lib/game/preview.ts: 스크립트 없는 iframe과 실제 화면 측정.
+- lib/game/save.ts: 스키마 검증과 이전 저장 호환.
+- lib/game/translations.ts, guides.ts, i18n.tsx: 표시 문구만 번역. 파일 내용·명령·식별자·입력값은 보존.
+- components/game: 타이틀, 바탕화면, 메시지, 수리, 개발 도구, 엔딩.
+- GAME-DESIGN.md: 목표, 의뢰, 보상, 엔딩, 참고 흐름.
+- REVIEW.md: 구조·품질 검토와 확인한 범위.
+
+## 검증
+
+26개 단위 검사와 TypeScript 검사를 통과했습니다. 영어로 바탕화면부터 엔딩까지 실제 브라우저 조작으로 확인했습니다. 오답, 수량 변경, API 실패/수정, 1,720 cr/560 XP와 최종 배지 저장을 확인했습니다. 소수점 화면 배율에서도 정상 버튼이 테스트를 통과하도록 측정 허용 오차를 적용했습니다.
+
+추가로 390×844 일본어 화면에서 세 의뢰와 엔딩, 언어·엔딩의 새로고침 복원을 확인했습니다. 실제 키 입력으로 Tab 명령·파일 자동완성, 코드 완성, 실행 취소/다시 실행, 괄호 쌍 삭제, 여러 줄 들여쓰기, 명령 기록과 초안 복원을 확인했습니다.
+
+스크린샷과 테스트 실행 기록은 개발용 output/playwright 및 output에 있으며 배포에서는 제외합니다.
+
+## 범위
+
+브라우저용 완결 캠페인입니다. JavaScript의 제한된 산술 표현식과 제공된 Python 설정을 해석하며 일반 개발 환경이나 실제 운영체제가 아닙니다. 외부 AI/LLM을 호출하지 않습니다. 플레이어 저장은 현재 브라우저에만 있으며, Steam/모바일 스토어 패키징이나 게임패드 지원은 포함하지 않습니다.

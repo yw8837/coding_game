@@ -16,7 +16,7 @@ export type GameState = {
  orders:{id:number;item:string;quantity:number}[];localOrders:{id:number;item:string;quantity:number}[];apiEvidence:{menu:boolean;order:boolean};
  notice:string;logs:string[];history:{command:string;output:string;error:boolean;machine:MachineId;cwd:string}[];
 };
-export type Action = {type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
+export type Action = {type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
 export type CommandResult={state:GameState;output:string;error:boolean};
 
 function machine():Machine{return {cwd:HOME,tools:['git'],updated:false,files:{[HOME+'/welcome.txt']:'CODE:SHIFT 작업실에 오신 것을 환영합니다.\nhelp로 지원 명령을 확인하세요.\n'},dirs:['/','/home',HOME],dependencies:[],pythonDeps:[],processes:{frontend:false,backend:false},frontendRoot:null,backendRoot:null,backendSource:null,cloned:false};}
@@ -60,6 +60,7 @@ export function parseBackend(code:string):{route:string;save:boolean}{
 
 export function act(state:GameState,action:Action):GameState{
  const s=clone(state);s.notice='';
+ if(action.type==='celebrate-opening'){if(MISSIONS.every((_,i)=>s.completed.includes(i))&&!s.gameplay.openingCelebrated){s.gameplay.openingCelebrated=true;if(!s.badges.includes('동네 해결사'))s.badges.push('동네 해결사');s.notice='모노 카페, 정식 오픈! 동네 해결사 배지를 받았어요.';}return s;}
  if(action.type==='accept'){s.accepted=true;return s;}
  if(action.type==='clear-notice')return s;
  if(action.type==='read-message'){if(gameMessages(s).some(m=>m.id===action.id)&&!s.gameplay.readMessages.includes(action.id))s.gameplay.readMessages.push(action.id);return s;}
@@ -86,7 +87,7 @@ export function act(state:GameState,action:Action):GameState{
  if(action.type==='request-tests'){s.testRequest++;return s;}
  if(action.type==='test-result'){if(action.hash!==sourceHash(projectFiles(s)))return s;s.tests={hash:action.hash,mission:s.mission,checks:action.checks};if(action.designChoice&&action.designChoice===s.gameplay.designChoice)s.gameplay.designEvidence={hash:action.hash,choice:action.designChoice,passed:action.designPassed===true};s.notice=action.checks.every(c=>c.passed)?(action.designChoice===s.gameplay.designChoice&&action.designChoice?(action.designPassed?'화면과 색상 모두 통과! 보너스 창에서 보상을 받아 보세요.':'의뢰 검사는 통과했어요. 선택한 버튼 색은 아직 달라요.'):s.completed.includes(0)?'화면 검사를 통과했어요.':'검사를 통과했어요. 변경을 커밋하고 CatHub로 보내세요.'):'아직 해결할 항목이 있어요. 검사 결과를 확인해 보세요.';return s;}
  if(action.type==='install-server'){if(s.mission<2){s.notice='세 번째 의뢰에서 서버가 지급됩니다.';return s;}s.serverReady=true;log(s,'[mono-server] Ubuntu 24.04 설치 완료 · 가상 서버');return s;}
- if(action.type==='next-mission'){if(!s.completed.includes(s.mission)||s.mission>=MISSIONS.length-1)return s;s.mission++;s.accepted=true;s.tests=null;s.apiEvidence={menu:false,order:false};if(s.repo)s.repo.pr=null;return s;}
+ if(action.type==='next-mission'){if(!s.completed.includes(s.mission)||s.mission>=MISSIONS.length-1)return s;s.mission++;s.accepted=true;if(s.mission===1&&s.repo)s.machines.local.files[s.repo.root+'/app.js']='// 새 계산대의 오류를 찾아 주세요.\nfunction calculateTotal(price, quantity) {\n  return price + quantity;\n}\n';s.tests=null;s.apiEvidence={menu:false,order:false};if(s.repo)s.repo.pr=null;return s;}
  const r=s.repo;if(!r)return s;
  if(action.type==='open-pr'){
   if(r.remote.id==='c0000'){s.notice='새 커밋을 먼저 CatHub에 push해 주세요.';return s;}

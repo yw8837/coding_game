@@ -1,7 +1,8 @@
 import {projectFiles,sourceHash,isProjectServerRunning,type GameState} from './engine.ts';
 
-export type DemoGuideStep={title:string;body:string;label:string;command?:string;target:'accept'|'search'|'repo'|'terminal'|'editor'|'check'|'review'|'finish'};
+export type DemoGuideStep={title:string;body:string;label:string;command?:string;target:'repair'|'accept'|'search'|'repo'|'terminal'|'editor'|'check'|'review'|'finish'};
 export function demoGuide(s:GameState):DemoGuideStep {
+ if(s.mission>0)return {title:s.completed.includes(s.mission)?'의뢰를 해결했어요!':'수리 화면에서 다음 문제를 해결해요',body:s.mission===1?'잔 수에 따라 금액이 어떻게 달라지는지 시험해 보세요.':'메뉴 주소를 연결하고 주문을 보관해 주세요.',label:'수리 화면으로',target:'repair'};
  const m=s.machines.local,r=s.repo,files=projectFiles(s);
  const command=(title:string,body:string,line:string):DemoGuideStep=>({title,body,label:'명령어 넣기',command:line,target:'terminal'});
  if(s.completed.includes(0))return {title:'첫 사이트를 공개했어요!',body:'HTML 제목과 CSS 너비를 바꾸고, 변경 기록을 남겨 배포까지 마쳤어요.',label:'내 결과 보기',target:'finish'};
@@ -17,7 +18,7 @@ export function demoGuide(s:GameState):DemoGuideStep {
  if(!tested){
   const title=files['index.html']?.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1]??'';
   if(!title.includes('모노 카페'))return {title:'① HTML의 큰 제목 바꾸기',body:'index.html에서 <h1>과 </h1> 사이를 “모노 카페에 오신 걸 환영해요.”로 바꿔 보세요.',label:'제목 고치러 가기',target:'editor'};
-  return {title:'② CSS 너비를 고치고 검사하기',body:'에디터의 “② CSS 너비”를 열고 width: 960px을 width: 100%로 바꾸세요. 저장은 자동이에요.',label:'검사 실행',target:'check'};
+  return {title:'② CSS 너비를 고치고 검사하기',body:'에디터의 style.css에서 width: 960px을 width: 100%로 바꾸세요. 저장은 자동이에요.',label:'검사 실행',target:'check'};
  }
  const head=r.commits.at(-1)!;
  if(head.hash!==hash){const staged={...head.files};for(const [key,value]of Object.entries(r.staged)){if(value===null)delete staged[key];else staged[key]=value;}
