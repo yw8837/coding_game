@@ -1,7 +1,7 @@
 'use client';
 import {localizeUI} from '@/lib/game/i18n';
 import {useEffect,useState} from 'react';
-import {MessageCircle,Compass,Palette,Check,Gift,Coins,Flame,Rocket,TerminalSquare,Mail,Play,Trophy} from 'lucide-react';
+import {MessageCircle,Compass,Palette,Check,Gift,Coins,Flame,Rocket,TerminalSquare,Mail,Play,Trophy,Globe,Code2} from 'lucide-react';
 import {MISSIONS} from '@/lib/game/content';
 import {CafeScene} from './CafeScene';
 import {CHAPTERS,CAMPAIGN_GOAL} from '@/lib/game/story';
@@ -14,12 +14,12 @@ export function DesktopHome({resume,...props}:GameProps&{resume:AppId|null}){
  return localizeUI(<div className={'os-desktop '+(first?'first-shift':'')}>
   <nav className="desktop-icons" aria-label="바탕화면 바로가기">
    <button onClick={()=>onOpen('messages')} className={first?'new-mail':''}><span><MessageCircle size={29}/>{first&&<i>1</i>}</span><strong>메시지</strong></button>
-   {!first&&<button onClick={()=>onOpen('repair')}><span><Mail size={29}/></span><strong>수리 의뢰</strong></button>}
+   <button onClick={()=>onOpen('browser')}><span><Globe size={29}/></span><strong>그롬</strong></button><button onClick={()=>onOpen('editor')}><span><Code2 size={29}/></span><strong>에디터</strong></button><button onClick={()=>onOpen('terminal')}><span><TerminalSquare size={29}/></span><strong>터미널</strong></button>
    {state.completed.length>0&&<><button onClick={()=>onOpen('achievements')}><span><Trophy size={29}/></span><strong>해결사 수첩</strong></button>
    <button onClick={()=>onOpen('workbench')}><span><Palette size={29}/></span><strong>작업실 꾸미기</strong></button></>}
   </nav>
   <section className="desktop-wallpaper"><div className="wallpaper-caption"><span>CODE:SHIFT / 모노 카페 이야기</span><h1>{first?'지우에게 메시지가 왔어요.':state.gameplay.openingCelebrated?'우리 동네에 불이 켜졌다.':'작은 카페의 큰 시작.'}</h1>{!first&&<p>{CAMPAIGN_GOAL}</p>}</div>{first&&<div className="desktop-start"><p>동네 카페의 간판이 엉뚱하게 바뀌었대요.<br/>아래 버튼을 눌러 무슨 일인지 들어 봐요.</p><button className="primary-button" onClick={()=>onOpen('messages')}><MessageCircle size={22}/>지우의 부탁 읽기</button></div>}<CafeScene completed={state.completed} opened={state.gameplay.openingCelebrated}/><p className="desktop-caption">{state.completed.length} / 3 준비 완료 · {first?'메시지 아이콘을 눌러 이야기를 시작하세요.':'해결한 일이 바탕화면 속 카페에 남아요.'}</p></section>
-  {!first&&<button className="desktop-notification" onClick={()=>onOpen(finished?'achievements':'repair')}>
+  {!first&&<button className="desktop-notification" onClick={()=>finished?onOpen('achievements'):props.onFollow()}>
    <span className="avatar amber">지</span><span><small>지우 · {first?'새 메시지 1개':finished?'오픈 초대장':'진행 중인 의뢰'}</small><strong>{first?'우리 카페를 도와줄 수 있나요?':finished?(state.gameplay.openingCelebrated?'커피 한잔하러 오세요!':'이제 OPEN 간판을 켜 주세요!'):CHAPTERS[state.mission].title}</strong><span>{first?'눌러서 메시지 읽기':finished?'오픈 기념 보기':'눌러서 이야기 이어 하기'} →</span></span>
   </button>}
   {resume&&<button className="desktop-resume" onClick={()=>onOpen(resume)}><Play size={15}/>닫은 창 다시 열기</button>}
@@ -32,9 +32,9 @@ export function MessagesView(props:GameProps){
  const [selected,setSelected]=useState(()=>!state.completed.length?'welcome':messages.find(m=>m.id===('chapter-'+(state.mission===1?'two':'three')))?.id??messages.find(m=>!state.gameplay.readMessages.includes(m.id))?.id??messages.at(-1)!.id);
  const message=messages.find(m=>m.id===selected)??messages.at(-1)!;
  useEffect(()=>{onAction({type:'read-message',id:message.id});},[message.id,onAction]);
- const perform=()=>{if(message.action==='accept'){props.onAssist('prepare');onOpen('repair');}else if(message.action==='preview')onNavigate('http://localhost:5173');else onOpen(message.action);};
- const label=message.action==='accept'?(state.accepted?'수리 의뢰로 돌아가기':'간판 고르러 가기'):message.action==='repair'?'수리 의뢰로 돌아가기':message.action==='workbench'?'보너스 과제 보기':message.action==='preview'?'그롬에서 화면 확인':'내 성취 보기';
- return localizeUI(<div className="messages-app"><aside className="message-list"><header><MessageCircle size={19}/><strong>SHIFT MESSENGER</strong></header>{messages.map(m=><button key={m.id} className={m.id===message.id?'selected':''} onClick={()=>setSelected(m.id)}><span className={'avatar '+(m.sender==='지우'?'amber':'mint')}>{m.initial}</span><span><b>{m.sender} {!state.gameplay.readMessages.includes(m.id)&&<i aria-label="읽지 않은 메시지"/>}</b><small>{m.subject}</small></span></button>)}<p>게임 캐릭터와 나누는 메시지</p></aside><section className="message-conversation"><header><span className={'avatar '+(message.sender==='지우'?'amber':'mint')}>{message.initial}</span><div><h2>{message.sender}</h2><p>{message.role}</p></div></header><div className="message-body"><span className="message-day">모노 카페와 나눈 이야기</span><article className="npc-bubble"><h3>{message.subject}</h3><p>{message.body}</p></article>{message.id==='welcome'&&state.accepted&&<div className="player-bubble">좋아요. 제가 간판을 골라 볼게요!</div>}{message.id==='thanks'&&<div className="message-receipt"><Gift size={24}/><div><strong>의뢰 보상 지급 완료</strong><span>350 cr · 120 XP · 첫 배포 배지</span></div></div>}<button className="primary-button" onClick={perform}>{label}</button></div></section></div>);
+ const perform=()=>{if(message.action==='accept'){onAction({type:'accept'});onNavigate('https://cathub.dev/mono/menu-site');}else if(message.action==='preview')onNavigate('http://localhost:5173');else if(message.action==='repair')props.onFollow();else onOpen(message.action);};
+ const label=message.action==='accept'?(state.accepted?'프로젝트 열기':'의뢰 수락'):message.action==='repair'?'작업 시작하기':message.action==='workbench'?'보너스 과제 보기':message.action==='preview'?'그롬에서 화면 확인':'내 성취 보기';
+ return localizeUI(<div className="messages-app"><aside className="message-list"><header><MessageCircle size={19}/><strong>SHIFT MESSENGER</strong></header>{messages.map(m=><button key={m.id} className={m.id===message.id?'selected':''} onClick={()=>setSelected(m.id)}><span className={'avatar '+(m.sender==='지우'?'amber':'mint')}>{m.initial}</span><span><b>{m.sender} {!state.gameplay.readMessages.includes(m.id)&&<i aria-label="읽지 않은 메시지"/>}</b><small>{m.subject}</small></span></button>)}<p>게임 캐릭터와 나누는 메시지</p></aside><section className="message-conversation"><header><span className={'avatar '+(message.sender==='지우'?'amber':'mint')}>{message.initial}</span><div><h2>{message.sender}</h2><p>{message.role}</p></div></header><div className="message-body"><span className="message-day">모노 카페와 나눈 이야기</span><article className="npc-bubble"><h3>{message.subject}</h3><p>{message.body}</p></article>{message.id==='welcome'&&state.accepted&&<div className="player-bubble">좋아요. 파일을 열어서 확인해 볼게요!</div>}{message.id==='thanks'&&<div className="message-receipt"><Gift size={24}/><div><strong>의뢰 보상 지급 완료</strong><span>350 cr · 120 XP · 첫 배포 배지</span></div></div>}<button className="primary-button" onClick={perform}>{label}</button></div></section></div>);
 }
 
 export function WorkbenchView(props:GameProps){

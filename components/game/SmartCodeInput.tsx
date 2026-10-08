@@ -2,7 +2,7 @@
 import {localizeUI} from '@/lib/game/i18n';
 import {forwardRef,useEffect,useImperativeHandle,useRef,useState,type UIEvent} from 'react';
 import {codeCompletions,indentSelection,type Completion} from '@/lib/game/input-tools';
-export type SmartCodeHandle={undo:()=>void;redo:()=>void;complete:()=>void};
+export type SmartCodeHandle={undo:()=>void;redo:()=>void;complete:()=>void;select:(start:number,end:number)=>void;replace:(text:string)=>void};
 type Edit={text:string;start:number;end:number};
 export const SmartCodeInput=forwardRef<SmartCodeHandle,{file:string;value:string;onChange:(value:string)=>void;onTest:()=>void;onScroll:(event:UIEvent<HTMLTextAreaElement>)=>void}>(function SmartCodeInput({file,value,onChange,onTest,onScroll},ref){
  const field=useRef<HTMLTextAreaElement>(null),histories=useRef<Record<string,{undo:Edit[];redo:Edit[]}>>({}),composing=useRef(false);
@@ -15,7 +15,7 @@ export const SmartCodeInput=forwardRef<SmartCodeHandle,{file:string;value:string
  const redo=()=>{const h=stack(),next=h.redo.pop();if(next){h.undo.push(selection());restore(next);}};
  const complete=()=>{setOptions(codeCompletions(file,value,field.current?.selectionStart??0));setActive(0);field.current?.focus();};
  const accept=(c:Completion)=>edit({text:value.slice(0,c.start)+c.text+value.slice(c.end),start:c.start+c.text.length,end:c.start+c.text.length});
- useImperativeHandle(ref,()=>({undo,redo,complete}));
+ useImperativeHandle(ref,()=>({undo,redo,complete,replace:text=>edit({text,start:0,end:0}),select:(start,end)=>{setOptions([]);const el=field.current;if(!el)return;el.focus();el.setSelectionRange(start,end);el.scrollTop=Math.max(0,(value.slice(0,start).split("\n").length-3)*24);el.dispatchEvent(new Event("scroll",{bubbles:true}));}}));
  useEffect(()=>setOptions([]),[file]);
  return localizeUI(<><textarea ref={field} value={value} aria-label={`${file} 코드 편집`} spellCheck={false} autoCapitalize="off" autoComplete="off" onCompositionStart={()=>{composing.current=true;setOptions([]);}} onCompositionEnd={()=>{composing.current=false;}} onClick={()=>setOptions([])} onScroll={onScroll} onChange={e=>{const text=e.target.value;if(text.length>60000)return;const h=stack();h.undo.push({text:value,start:Math.max(0,e.target.selectionStart-1),end:Math.max(0,e.target.selectionStart-1)});h.undo=h.undo.slice(-80);h.redo=[];onChange(text);setActive(0);setOptions(!composing.current&&(text.slice(0,e.target.selectionStart).match(/[\w.-]+$/)?.[0].length??0)>=2?codeCompletions(file,text,e.target.selectionStart):[]);}} onKeyDown={e=>{
   if(composing.current||e.nativeEvent.isComposing||e.keyCode===229)return;

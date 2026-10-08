@@ -1,3 +1,4 @@
+import {workflowRows} from './workflow-translations.ts';
 import {beginnerRows} from './beginner-translations.ts';
 export type Language='ko'|'en'|'ja';
 // Each row is Korean ¦ English ¦ Japanese. Source/code and commands are never translated.
@@ -664,13 +665,15 @@ CatHub 검토 열기¦Open CatHub review¦CatHubの確認画面を開く
 마우스로 선택 · Tab / Enter로 조작¦Click to select · Tab / Enter to navigate¦クリックで選択 · Tab / Enterで操作
 price는 한 잔 가격, quantity는 잔 수에 붙인 이름이에요. 이런 이름표가 변수예요. 두 수를 곱하는 규칙을 정하면 어떤 메뉴와 잔 수에도 쓸 수 있어요.¦price names the cost per cup, and quantity names the cup count. These labels are variables. Multiplying the two works for any drink and quantity.¦priceは1杯の価格、quantityは杯数の名前。この名札が変数です。二つを掛けるルールはどのメニューにも使えます。
 `;
-export const catalog:Record<string,[string,string]>=Object.fromEntries((rows+additional+beginnerRows).trim().split('\n').filter(Boolean).map(row=>{const [ko,en,ja]=row.split('¦');if(!ko||en===undefined||ja===undefined)throw new Error('Invalid translation: '+row);return [ko,[en,ja]];}));
+export const catalog:Record<string,[string,string]>=Object.fromEntries((rows+additional+beginnerRows+workflowRows).trim().split('\n').filter(Boolean).map(row=>{const [ko,en,ja]=row.split('¦');if(!ko||en===undefined||ja===undefined)throw new Error('Invalid translation: '+row);return [ko,[en,ja]];}));
 export function translate(input:string,language:Language):string{
  if(language==='ko')return input;
  const index=language==='en'?0:1,key=input.trim().replace(/\s+/g,' ');
  const found=catalog[key]??catalog[input.trim()];
  if(found)return input.replace(input.trim(),found[index]);
  const patterns:[RegExp,(m:RegExpMatchArray)=>[string,string]][]=[
+  [/^실제 결과: ([\d,]+)원$/,m=>[`Actual result: ${m[1]} KRW`,`実際の結果：${m[1]}ウォン`]],
+  [/^현재 보관된 주문: (\d+)건$/,m=>[`Stored orders: ${m[1]}`,`保存された注文：${m[1]}件`]],
   [/^모노 카페\. (\d+)\/3 오픈 준비 완료\. (.+)$/,m=>[`Mono Cafe. ${m[1]}/3 ready. ${translate(m[2],'en')}`,`モノカフェ。${m[1]}/3準備完了。${translate(m[2],'ja')}`]],
   [/^화면 360px \/ 콘텐츠 (\d+)px · 메뉴 (\d+)개$/,m=>[`Screen 360px / content ${m[1]}px · ${m[2]} items`,`画面360px / 内容${m[1]}px・メニュー${m[2]}個`]],
   [/^([\d,]+)원$/,m=>[`${m[1]} KRW`,`${m[1]}ウォン`]],

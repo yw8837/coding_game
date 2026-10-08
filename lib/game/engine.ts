@@ -17,7 +17,7 @@ export type GameState = {
  orders:{id:number;item:string;quantity:number}[];localOrders:{id:number;item:string;quantity:number}[];apiEvidence:{menu:boolean;order:boolean};
  notice:string;logs:string[];history:{command:string;output:string;error:boolean;machine:MachineId;cwd:string}[];
 };
-export type Action = {type:'serve-customer';customer:number;quantity:number}|{type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
+export type Action = {type:'inspect-preview';mobile:boolean;quantity:number}|{type:'serve-customer';customer:number;quantity:number}|{type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
 export type CommandResult={state:GameState;output:string;error:boolean};
 
 function machine():Machine{return {cwd:HOME,tools:['git'],updated:false,files:{[HOME+'/welcome.txt']:'CODE:SHIFT 작업실에 오신 것을 환영합니다.\nhelp로 지원 명령을 확인하세요.\n'},dirs:['/','/home',HOME],dependencies:[],pythonDeps:[],processes:{frontend:false,backend:false},frontendRoot:null,backendRoot:null,backendSource:null,cloned:false};}
@@ -69,6 +69,7 @@ export function act(state:GameState,action:Action):GameState{
   try{if(calculateTotal(projectFiles(s)['app.js'],order.price,order.quantity)!==order.price*order.quantity){s.notice='계산 규칙을 먼저 고쳐 주세요.';return s;}}catch{s.notice='계산 규칙을 먼저 고쳐 주세요.';return s;}
   s.gameplay.servedCustomers++;s.notice=s.gameplay.servedCustomers===3?'세 손님 모두 받았어요!':'고마워요! 다음 손님이 왔어요.';return s;
  }
+ if(action.type==='inspect-preview'){if(isProjectServerRunning(s)&&((s.mission===0&&action.mobile)||(s.mission===1&&action.quantity===3))&&!s.gameplay.inspected.includes(s.mission))s.gameplay.inspected.push(s.mission);return s;}
  if(action.type==='accept'){s.accepted=true;return s;}
  if(action.type==='clear-notice')return s;
  if(action.type==='read-message'){if(gameMessages(s).some(m=>m.id===action.id)&&!s.gameplay.readMessages.includes(action.id))s.gameplay.readMessages.push(action.id);return s;}
