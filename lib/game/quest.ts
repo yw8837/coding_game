@@ -10,11 +10,12 @@ export function questProgress(s:GameState){
   {label:'휴대폰에 메뉴판 크기 맞추기',done:!!(tested||/\.menu-grid\s*\{[^}]*width:\s*100%/.test(fs['style.css']??'')),kind:'repair'},
  ]:s.mission===1?[
   {label:'몇 잔이든 맞는 계산 방법 고르기',done:calculation,kind:'repair'},
+  {label:'세 손님 주문 맞추기',done:s.gameplay.servedCustomers===3,kind:'repair'},
  ]:[
   {label:'손님 앱과 메뉴판 주소 연결하기',done:route,kind:'repair'},
   {label:'주문서를 카운터에 보관하기',done:keep,kind:'repair'},
  ];
- tasks.push({label:'손님 테스트 통과하기',done:!!tested,kind:'trial'},{label:'지우에게 결과 전달하기',done,kind:'publish'});
+ tasks.push({label:'손님에게 써 보게 하기',done:!!tested,kind:'trial'},{label:'지우에게 다 고쳤다고 알려 주기',done,kind:'publish'});
  const steps=tasks.map(t=>({...t,done:done||t.done})),current=steps.find(t=>!t.done);
  return {steps,current,count:steps.filter(t=>t.done).length,complete:done};
 }

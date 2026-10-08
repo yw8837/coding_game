@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./repair.css";
 import "./desktop.css";
+import "./lesson.css";
 
 export const metadata: Metadata = {
   title: "CODE:SHIFT — 동네 해결사",

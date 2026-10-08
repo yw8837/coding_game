@@ -1,3 +1,4 @@
+import {beginnerRows} from './beginner-translations.ts';
 export type Language='ko'|'en'|'ja';
 // Each row is Korean ¦ English ¦ Japanese. Source/code and commands are never translated.
 const rows=String.raw`
@@ -663,7 +664,7 @@ CatHub 검토 열기¦Open CatHub review¦CatHubの確認画面を開く
 마우스로 선택 · Tab / Enter로 조작¦Click to select · Tab / Enter to navigate¦クリックで選択 · Tab / Enterで操作
 price는 한 잔 가격, quantity는 잔 수에 붙인 이름이에요. 이런 이름표가 변수예요. 두 수를 곱하는 규칙을 정하면 어떤 메뉴와 잔 수에도 쓸 수 있어요.¦price names the cost per cup, and quantity names the cup count. These labels are variables. Multiplying the two works for any drink and quantity.¦priceは1杯の価格、quantityは杯数の名前。この名札が変数です。二つを掛けるルールはどのメニューにも使えます。
 `;
-export const catalog:Record<string,[string,string]>=Object.fromEntries((rows+additional).trim().split('\n').filter(Boolean).map(row=>{const [ko,en,ja]=row.split('¦');if(!ko||en===undefined||ja===undefined)throw new Error('Invalid translation: '+row);return [ko,[en,ja]];}));
+export const catalog:Record<string,[string,string]>=Object.fromEntries((rows+additional+beginnerRows).trim().split('\n').filter(Boolean).map(row=>{const [ko,en,ja]=row.split('¦');if(!ko||en===undefined||ja===undefined)throw new Error('Invalid translation: '+row);return [ko,[en,ja]];}));
 export function translate(input:string,language:Language):string{
  if(language==='ko')return input;
  const index=language==='en'?0:1,key=input.trim().replace(/\s+/g,' ');
