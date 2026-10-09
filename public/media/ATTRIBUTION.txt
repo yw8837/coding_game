@@ -1,0 +1,5 @@
+"Realizer" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+https://creativecommons.org/licenses/by/4.0/
+Source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024
+Changes: excerpt trimmed, tempo adjusted from 125 to 128 BPM (+2.4%, pitch preserved), and mixed for the CODE:SHIFT trailer.

@@ -21,7 +21,7 @@ export function coachStage(s:GameState):CoachStage {
 }
 export const COACH_COPY:Record<CoachStage,[string,string,string]>={
  prepare:['카페 화면을 켜 보자','Open the cafe screen','カフェの画面を開こう'],
- inspect:['어디가 이상할까?','What looks wrong?','どこがおかしいかな？'],
+ inspect:['손님처럼 카페 써 보기','Try the cafe as a customer','お客さんとしてカフェを使おう'],
  sign:['카페에 간판 달기','Put up the cafe sign','カフェの看板をつけよう'],
  size:['휴대폰에 메뉴판 맞추기','Fit the menu on a phone','スマホにメニューを収めよう'],
  rule:['세 잔 값을 계산해 보자','Work out the price of three cups','3杯の値段を計算しよう'],

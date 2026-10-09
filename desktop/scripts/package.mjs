@@ -32,7 +32,7 @@ if (steamBuild) {
 const outputs = await packager({
   dir: desktop, name: qaBuild ? 'CODE-SHIFT-QA' : 'CODE-SHIFT', executableName: 'CODE-SHIFT',
   platform: 'win32', arch: 'x64', electronVersion: manifest.devDependencies.electron,
-  appVersion: manifest.version, buildVersion: '0.11.0.0', appCopyright: 'CODE:SHIFT',
+  appVersion: manifest.version, buildVersion: '0.11.1.0', appCopyright: 'CODE:SHIFT',
   out: path.join(desktop, 'release'), overwrite: true, prune: true,
   asar: {unpack: '**/*.{node,dll}'},
   afterCopy: [async ({buildPath}) => {

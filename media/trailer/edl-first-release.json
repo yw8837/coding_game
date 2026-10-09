@@ -1,0 +1,459 @@
+{
+  "fps": 30,
+  "bpm": 128,
+  "frames": 900,
+  "source": "../../output/trailer-rebuild/raw.webm",
+  "capture": "UI-driven Korean gameplay; localized editorial typography; chapter jumps; speed changes; editorial SFX",
+  "shots": [
+    {
+      "id": "wrong",
+      "fromFrame": 0,
+      "frames": 84,
+      "start": 14.926,
+      "end": 17.036,
+      "layout": "split",
+      "crop": [
+        373,
+        260,
+        340,
+        435
+      ],
+      "copy": {
+        "ko": "카페 계산대가 / 고장 났다.",
+        "en": "THE CAFE TILL / IS BROKEN.",
+        "ja": "カフェのレジが / 壊れた。"
+      },
+      "color": "red",
+      "detail": {
+        "ko": "한 잔 4,500원 × 3잔",
+        "en": "₩4,500 each × 3 coffees",
+        "ja": "1杯4,500ウォン × 3杯"
+      }
+    },
+    {
+      "id": "desktop",
+      "fromFrame": 84,
+      "frames": 29,
+      "start": 4.217,
+      "end": 6.014,
+      "layout": "wide",
+      "crop": [
+        0,
+        0,
+        1600,
+        900
+      ],
+      "copy": {
+        "ko": "첫 출근. 첫 의뢰.",
+        "en": "FIRST DAY. FIRST JOB.",
+        "ja": "初出勤。最初の依頼。"
+      },
+      "color": "blue",
+      "detail": {
+        "ko": "내 컴퓨터. 내 작업실.",
+        "en": "Your computer. Your workspace.",
+        "ja": "自分のPC。自分の作業場。"
+      },
+      "source": "wallpaper/raw.webm"
+    },
+    {
+      "id": "code",
+      "fromFrame": 113,
+      "frames": 56,
+      "start": 6.793,
+      "end": 9.137,
+      "layout": "code",
+      "crop": [
+        180,
+        206,
+        610,
+        155
+      ],
+      "copy": {
+        "ko": "한 글자 / 바꾸면.",
+        "en": "CHANGE / ONE CHARACTER.",
+        "ja": "1文字を / 変えると。"
+      },
+      "color": "blue",
+      "detail": {
+        "ko": "+ → *  ·  직접 고치는 실제 코드",
+        "en": "+ → *  ·  Real code. Your edit.",
+        "ja": "+ → *  ·  自分で直す本物のコード"
+      },
+      "source": "code-insert/raw.webm"
+    },
+    {
+      "id": "fixed",
+      "fromFrame": 169,
+      "frames": 56,
+      "start": 19.348,
+      "end": 20.864,
+      "layout": "split",
+      "crop": [
+        374,
+        415,
+        340,
+        281
+      ],
+      "copy": {
+        "ko": "세 잔, / 13,500원.",
+        "en": "THREE COFFEES. / ₩13,500.",
+        "ja": "3杯で / 13,500ウォン。"
+      },
+      "color": "green",
+      "detail": {
+        "ko": "이제 계산이 맞는다.",
+        "en": "Now the numbers add up.",
+        "ja": "今度は計算が合っている。"
+      }
+    },
+    {
+      "id": "latte",
+      "fromFrame": 225,
+      "frames": 28,
+      "start": 21.098,
+      "end": 23.082,
+      "layout": "split",
+      "crop": [
+        373,
+        260,
+        340,
+        435
+      ],
+      "copy": {
+        "ko": "라테도 / 정확하게.",
+        "en": "LATTES? / CHECK.",
+        "ja": "ラテも / ぴったり。"
+      },
+      "color": "green",
+      "detail": {
+        "ko": "다른 주문도 직접 확인",
+        "en": "Try it on a different order",
+        "ja": "別の注文でも確かめる"
+      }
+    },
+    {
+      "id": "order",
+      "fromFrame": 253,
+      "frames": 28,
+      "start": 29.332,
+      "end": 31.598,
+      "layout": "wide",
+      "crop": [
+        310,
+        409,
+        467,
+        130
+      ],
+      "copy": {
+        "ko": "주문 들어왔습니다!",
+        "en": "ORDER IN!",
+        "ja": "注文が入りました！"
+      },
+      "color": "green",
+      "detail": {
+        "ko": "내가 연결한 주문함으로.",
+        "en": "Into the inbox you connected.",
+        "ja": "自分がつないだ注文箱へ。"
+      }
+    },
+    {
+      "id": "reward",
+      "fromFrame": 281,
+      "frames": 57,
+      "start": 31.739,
+      "end": 33.848,
+      "layout": "split",
+      "crop": [
+        560,
+        142,
+        480,
+        615
+      ],
+      "copy": {
+        "ko": "의뢰 완료. / +750 cr",
+        "en": "JOB COMPLETE. / +750 cr",
+        "ja": "依頼完了。 / +750 cr"
+      },
+      "color": "gold",
+      "detail": {
+        "ko": "이번 주문함 의뢰의 보상",
+        "en": "Reward for the order-inbox job",
+        "ja": "注文箱の依頼で獲得した報酬"
+      }
+    },
+    {
+      "id": "open",
+      "fromFrame": 338,
+      "frames": 56,
+      "start": 34.302,
+      "end": 36.973,
+      "layout": "hero",
+      "crop": [
+        415,
+        351,
+        794,
+        446
+      ],
+      "copy": {
+        "ko": "내 코드로, OPEN.",
+        "en": "YOUR CODE. GRAND OPENING.",
+        "ja": "自分のコードで、OPEN。"
+      },
+      "color": "green",
+      "detail": {
+        "ko": "세 의뢰를 해결한 카페의 첫날",
+        "en": "Three jobs done. The cafe opens.",
+        "ja": "3つの依頼を終えて、カフェ開店。"
+      }
+    },
+    {
+      "id": "monitor",
+      "fromFrame": 394,
+      "frames": 28,
+      "start": 38.207,
+      "end": 39.926,
+      "layout": "wide",
+      "crop": [
+        245,
+        260,
+        1330,
+        510
+      ],
+      "copy": {
+        "ko": "벌었으면,",
+        "en": "EARN IT.",
+        "ja": "稼いだら、"
+      },
+      "color": "gold",
+      "detail": {
+        "ko": "보조 모니터 · 600 cr",
+        "en": "Second monitor · 600 cr",
+        "ja": "サブモニター · 600 cr"
+      },
+      "portraitCrop": [
+        240,
+        330,
+        620,
+        430
+      ]
+    },
+    {
+      "id": "theme",
+      "fromFrame": 422,
+      "frames": 28,
+      "start": 9.358,
+      "end": 10.967,
+      "layout": "wide",
+      "crop": [
+        1194,
+        372,
+        370,
+        383
+      ],
+      "copy": {
+        "ko": "써야지.",
+        "en": "SPEND IT.",
+        "ja": "使おう。"
+      },
+      "color": "gold",
+      "detail": {
+        "ko": "오피스텔 배경 · 180 cr",
+        "en": "Officetel wallpaper · 180 cr",
+        "ja": "ワンルームの壁紙 · 180 cr"
+      },
+      "source": "wallpaper/raw.webm"
+    },
+    {
+      "id": "workspace",
+      "fromFrame": 450,
+      "frames": 56,
+      "start": 11.483,
+      "end": 13.905,
+      "layout": "wide",
+      "crop": [
+        0,
+        0,
+        1600,
+        900
+      ],
+      "copy": {
+        "ko": "내 취향으로, 레벨 업.",
+        "en": "MAKE IT YOURS.",
+        "ja": "自分好みに、レベルアップ。"
+      },
+      "color": "gold",
+      "detail": {
+        "ko": "장비를 사고 작업실을 꾸미자.",
+        "en": "Buy tools. Personalize your desktop.",
+        "ja": "道具を買って、作業場を飾ろう。"
+      },
+      "source": "wallpaper/raw.webm"
+    },
+    {
+      "id": "map",
+      "fromFrame": 506,
+      "frames": 57,
+      "start": 45.395,
+      "end": 47.411,
+      "layout": "hero",
+      "crop": [
+        330,
+        328,
+        1120,
+        540
+      ],
+      "copy": {
+        "ko": "이번엔, 동네 전체.",
+        "en": "NEXT UP: THE NEIGHBORHOOD.",
+        "ja": "次は、街全体へ。"
+      },
+      "color": "blue",
+      "detail": {
+        "ko": "카페에서 시작해, 더 큰 의뢰로.",
+        "en": "From one cafe to bigger jobs.",
+        "ja": "カフェから始めて、もっと大きな依頼へ。"
+      },
+      "portraitCrop": [
+        490,
+        328,
+        650,
+        540
+      ]
+    },
+    {
+      "id": "reply",
+      "fromFrame": 563,
+      "frames": 56,
+      "start": 50.051,
+      "end": 52.317,
+      "layout": "wide",
+      "crop": [
+        260,
+        462,
+        1270,
+        330
+      ],
+      "copy": {
+        "ko": "고쳐주면, 답장이 온다.",
+        "en": "FIX IT. HEAR BACK.",
+        "ja": "直したら、返事が届く。"
+      },
+      "color": "green",
+      "detail": {
+        "ko": "코드 너머에는 사람이 있다.",
+        "en": "There is someone behind every job.",
+        "ja": "コードの向こうに、人がいる。"
+      },
+      "portraitCrop": [
+        240,
+        480,
+        650,
+        258
+      ]
+    },
+    {
+      "id": "places",
+      "fromFrame": 619,
+      "frames": 56,
+      "start": 5.792,
+      "end": 7.886,
+      "layout": "split",
+      "crop": [
+        856,
+        280,
+        360,
+        474
+      ],
+      "copy": {
+        "ko": "이젠, 내 서비스. / 동네ON",
+        "en": "NOW, YOUR OWN APP. / NEIGHBORHOOD ON",
+        "ja": "今度は自分のアプリ。 / 街をつなぐ"
+      },
+      "color": "blue",
+      "detail": {
+        "ko": "장소를 모으고.",
+        "en": "Bring local places together.",
+        "ja": "街のスポットを集める。"
+      },
+      "source": "insert/raw.webm"
+    },
+    {
+      "id": "inquiry",
+      "fromFrame": 675,
+      "frames": 56,
+      "start": 7.963,
+      "end": 10.292,
+      "layout": "split",
+      "crop": [
+        856,
+        280,
+        360,
+        474
+      ],
+      "copy": {
+        "ko": "문의도 / 받게 만들고.",
+        "en": "MAKE IT / TAKE REQUESTS.",
+        "ja": "問い合わせも / 受け付ける。"
+      },
+      "color": "blue",
+      "detail": {
+        "ko": "직접 이름 붙인 동네 생활 웹앱",
+        "en": "A local-life web app you name yourself",
+        "ja": "自分で名付けた街の生活Webアプリ"
+      },
+      "source": "insert/raw.webm"
+    },
+    {
+      "id": "release",
+      "fromFrame": 731,
+      "frames": 57,
+      "start": 57.817,
+      "end": 60.739,
+      "layout": "wide",
+      "crop": [
+        334,
+        132,
+        1150,
+        650
+      ],
+      "copy": {
+        "ko": "버전 1.0. 출시 완료.",
+        "en": "VERSION 1.0. SHIPPED.",
+        "ja": "バージョン1.0。リリース完了。"
+      },
+      "color": "green",
+      "detail": {
+        "ko": "게임 속 내 웹앱의 첫 출시",
+        "en": "Your first web-app release in the game",
+        "ja": "ゲームの中で、自分のWebアプリを初リリース"
+      },
+      "portraitCrop": [
+        1016,
+        140,
+        380,
+        638
+      ]
+    },
+    {
+      "id": "end",
+      "fromFrame": 788,
+      "frames": 112,
+      "start": 0,
+      "end": 0,
+      "layout": "end",
+      "crop": null,
+      "copy": {
+        "ko": "만들었다. / 내 첫 출시.",
+        "en": "YOU MADE IT. / YOUR FIRST RELEASE.",
+        "ja": "できた。 / はじめてのリリース。"
+      },
+      "color": "blue",
+      "detail": {
+        "ko": "코딩을 몰라도, 첫 의뢰부터.",
+        "en": "New to code? Start with your first job.",
+        "ja": "コードを知らなくても、最初の依頼から。"
+      }
+    }
+  ]
+}

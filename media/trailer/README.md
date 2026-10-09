@@ -1,5 +1,10 @@
 # Actual gameplay trailer
 
+The current 30-second **My First Release** edit uses `rebuild-edit.py` and
+`edl-first-release.json`. See [the current production notes](README-first-release.md).
+The older workflows below are retained for historical reproduction; their generated
+working files were moved to `output/archive/trailers-before-rebuild-20261009/`.
+
 `CODE:SHIFT` is a working title. This renderer edits footage of the actual browser game. It uses Python standard library, the installed FFmpeg/FFprobe, and local Windows fonts. It downloads no media, fonts, voices, models, packages or music.
 
 ## Run

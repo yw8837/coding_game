@@ -103,10 +103,10 @@ export function act(state:GameState,action:Action):GameState{
  if(action.type==='buy-cosmetic'||action.type==='equip-cosmetic'){
   const item=COSMETICS.find(c=>c.id===action.id);if(!item)return s;
   const owned=s.gameplay.ownedCosmetics.includes(item.id);
-  if(action.type==='equip-cosmetic'){if(owned){s.gameplay.equippedCosmetic=item.id;s.notice=item.name+' 테마를 적용했어요.';}return s;}
+  if(action.type==='equip-cosmetic'){if(owned){s.gameplay.equippedCosmetic=item.id;s.notice=item.name+' 배경을 적용했어요.';}return s;}
   if(owned)return s;
   if(s.credits<item.price){s.notice='크레딧이 부족해요. 의뢰나 보너스 과제를 완성해 보세요.';return s;}
-  s.credits-=item.price;s.gameplay.ownedCosmetics.push(item.id);s.gameplay.equippedCosmetic=item.id;s.notice=item.name+' 테마를 구입하고 적용했어요.';return s;
+  s.credits-=item.price;s.gameplay.ownedCosmetics.push(item.id);s.gameplay.equippedCosmetic=item.id;s.notice=item.name+' 배경을 구입하고 적용했어요.';return s;
  }
  if(action.type==='claim-bonus'){
   if(s.gameplay.claimedBonuses.includes(action.id))return s;

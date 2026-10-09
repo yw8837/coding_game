@@ -28,11 +28,11 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  await page.locator('.pc-shortcuts').getByRole('button',{name:'메시지',exact:true}).click();await page.getByRole('button',{name:'의뢰 수락',exact:true}).click();
  await until(async()=>(await read()).accepted,true);
  const active=()=>page.locator('.pc-window[data-active="true"]');
- const follow=()=>page.locator('.quest-next button').click();
+ const follow=async()=>{const button=page.locator('#mission-sidebar .quest-next button');if(await button.isVisible())await button.click();};
  await follow();
  for(const name of ['프로젝트 복사','준비물 받기','미리보기 켜기'])await active().getByRole('button',{name,exact:true}).click();
  await follow();await active().getByRole('button',{name:'360px',exact:true}).click();await active().getByRole('button',{name:'문제 확인 · 파일 고치기',exact:true}).click();
- for(const answer of ['모노 카페','100%']){await follow();await active().getByRole('button',{name:'고칠 글자 찾기',exact:true}).click();await page.keyboard.insertText(answer);}
+ for(const [file,answer] of [['index.html','모노 카페'],['style.css','100%']]){await follow();await active().locator('.file-explorer button').filter({has:page.getByText(file,{exact:true})}).click();await active().getByRole('button',{name:'고칠 글자 찾기',exact:true}).click();await page.keyboard.insertText(answer);}
  await active().getByRole('button',{name:'검사 실행',exact:true}).click();
  await until(async()=>!!(await read()).tests?.checks.every(c=>c.passed),true);report.nativeIframeLayoutChecks=true;
  for(let i=0;i<3;i++){await follow();await active().locator('.terminal-form input').press('Enter');}
@@ -44,7 +44,7 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
   if(state.gameplay.openingCelebrated)break;
   const reward=page.getByRole('button',{name:'이야기 계속하기',exact:true});
   if(await reward.isVisible()){await reward.click();await reward.waitFor({state:'hidden'});continue;}
-  const title=await page.locator('.quest-next>strong').innerText();await follow();const w=active();
+  const title=await page.locator('#mission-sidebar .quest-next>strong, #mission-sidebar .quest-current strong').innerText();await follow();const w=active();
   if(title.includes('메시지')||title.includes('의뢰 읽고')){const button=w.getByRole('button',{name:'작업 시작하기',exact:true});if(await button.isVisible())await button.click();}
   else if(title.includes('계산대에서')){for(let i=0;i<3;i++)await w.getByRole('button',{name:'수량 늘리기'}).click();await w.getByRole('button',{name:'문제 확인 · 파일 고치기',exact:true}).click();}
   else if(title.includes('app.js에서')||title.includes('server.py에서')){await w.getByRole('button',{name:'고칠 글자 찾기',exact:true}).click();await page.keyboard.insertText(title.includes('app.js')?'*':title.includes('주소')?'/api/menu':'True');}

@@ -5,6 +5,7 @@ import {useLanguage,t} from '@/lib/game/i18n';
 import {gameMessages} from '@/lib/game/gameplay';
 import {openWindow,focusedWindow,type WindowState,type Bounds} from '@/lib/game/windows';
 import {calendarMonth,calendarWeeks,recentEditorFiles,DESKTOP_LOCALES} from '@/lib/game/desktop-calendar';
+import {unreadWelcome,visibleQuestApps} from '@/lib/game/quest-guidance';
 import {CharacterPortrait} from './StoryArt';
 import {BrowserIcon} from './BrowserIcon';
 import {DesktopWindow} from './DesktopWindow';
@@ -52,6 +53,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
  const recentWork=props.state.history.slice(-3).reverse();
  const weekdays=Array.from({length:7},(_,day)=>new Date(2023,0,1+day,12));
  const unread=gameMessages(props.state).filter(m=>!props.state.gameplay.readMessages.includes(m.id)).length;
+ const welcomeUnread=unreadWelcome(props.state);
  useEffect(()=>{const el=stage.current;if(!el)return;const measure=()=>{manager.setBounds({width:el.clientWidth,height:el.clientHeight});manager.setCompact(window.innerWidth<760);};measure();const ro=new ResizeObserver(measure);ro.observe(el);return()=>ro.disconnect();},[manager.setBounds,manager.setCompact]);
  useEffect(()=>{let timer:ReturnType<typeof setTimeout>;const tick=()=>{clearTimeout(timer);const current=new Date();setNow(current);setMonth(value=>value??calendarMonth(current));timer=setTimeout(tick,60000-Date.now()%60000);};const visible=()=>{if(document.visibilityState==='visible')tick();};tick();window.addEventListener('focus',tick);document.addEventListener('visibilitychange',visible);return()=>{clearTimeout(timer);window.removeEventListener('focus',tick);document.removeEventListener('visibilitychange',visible);};},[]);
  useEffect(()=>{if(start)search.current?.focus();if(calendar)calendarToday.current?.focus();},[start,calendar]);
@@ -61,20 +63,21 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
  const available=DESKTOP_APPS.filter(a=>(a.id!=='career'||props.state.gameplay.openingCelebrated)&&(advanced||!['server','api'].includes(a.id)||props.state.mission===2));
  const label=(a:typeof DESKTOP_APPS[number])=>a[lang];
  const activeApps=manager.windows.filter(w=>!w.closed);
+ const visibleApps=visibleQuestApps(manager.windows,manager.bounds,manager.compact);
  const toggleTask=(id:AppId)=>{const w=manager.windows.find(w=>w.id===id);if(w&&manager.app===id)manager.change({...w,minimized:true});else open(id);};
  return <>
   <div className="pc-topbar"><span className="pc-session"><Monitor size={14}/> CODE:SHIFT <span>/</span> {tr('내 작업실','My workspace','マイデスク')}</span><div><span className="pc-save" role="status"><Check size={13}/>{saved?tr('저장됨','Saved','保存済み'):tr('저장 실패 · 설정에서 백업','Save failed · Back up in Settings','保存失敗 · 設定でバックアップ')}</span><button className="pc-wallet" data-testid="open-wallet" onClick={()=>props.onOpen('workbench')} title={tr('크레딧 사용 · 작업실 상점','Spend credits · Workspace shop','クレジットを使う · 作業場ショップ')}><b>{props.state.credits.toLocaleString()} cr</b></button><button onClick={onSidebar} aria-expanded={sidebarOpen} aria-label={tr('퀘스트 열기 또는 접기','Toggle quest','クエストを開閉')}><Flag size={15}/>{tr('의뢰','Quest','依頼')}</button></div></div>
   <div className="pc-main">
-   <div className="pc-workarea"><div className="pc-compact-quest"><QuestRibbon {...props}/></div><div className="pc-stage" ref={stage}>
+   <div className="pc-workarea"><div className="pc-compact-quest"><QuestRibbon {...props} visibleApps={visibleApps}/></div><div className="pc-stage" ref={stage}>
     <Wallpaper/>
     <nav className="pc-shortcuts" aria-label={tr('바탕화면 바로가기','Desktop shortcuts','デスクトップのショートカット')}>
-     {available.filter(a=>['computer','messages','browser','editor','terminal','notes','challenges','career'].includes(a.id)).map(a=><button key={a.id} aria-label={label(a)} className={'pc-shortcut '+(a.id==='messages'&&!props.state.accepted?'first-message':'')} onClick={()=>open(a.id)}><span className={'pc-app-icon '+a.color}><a.icon size={28}/>{a.id==='messages'&&unread>0&&<i>{unread}</i>}</span><span>{label(a)}</span></button>)}
+     {available.filter(a=>['computer','messages','browser','editor','terminal','notes','challenges','career'].includes(a.id)).map(a=><button key={a.id} aria-label={label(a)} className={'pc-shortcut '+(a.id==='messages'&&welcomeUnread?'first-message':'')} onClick={()=>open(a.id)}><span className={'pc-app-icon '+a.color}><a.icon size={28}/>{a.id==='messages'&&unread>0&&<i>{unread}</i>}</span><span>{label(a)}</span></button>)}
     </nav>
     <div className="pc-desktop-caption"><span>{props.state.gameplay.career.upgrades.includes('studio-sign')?tr('나의 독립 작업실','Independent studio','自分の作業場'):'SHIFT OS'}</span><small>{tr('개인용 컴퓨터','Personal computer','パーソナルコンピューター')}</small></div>
-    {manager.app==='desktop'&&!props.state.accepted&&<button className="pc-mail-toast" onClick={()=>open('messages')}><CharacterPortrait name="지우"/><span><small>{tr('지우 · 새 메시지','Jiwoo · New message','ジウ · 新着メッセージ')}</small><strong>{tr('메뉴판이 이상해요. 한번 봐줄래요?','The menu is broken. Can you take a look?','メニューがおかしいんです。見てもらえますか？')}</strong><em>{tr('눌러서 읽기','Click to read','クリックして読む')} →</em></span></button>}
+    {manager.app==='desktop'&&welcomeUnread&&<button className="pc-mail-toast" onClick={()=>open('messages')}><CharacterPortrait name="지우"/><span><small>{tr('지우 · 새 메시지','Jiwoo · New message','ジウ · 新着メッセージ')}</small><strong>{tr('메뉴판이 이상해요. 한번 봐줄래요?','The menu is broken. Can you take a look?','メニューがおかしいんです。見てもらえますか？')}</strong><em>{tr('눌러서 읽기','Click to read','クリックして読む')} →</em></span></button>}
     {manager.windows.map(w=>{const a=DESKTOP_APPS.find(a=>a.id===w.id);return <DesktopWindow key={w.id} window={w} bounds={manager.bounds} compact={manager.compact} active={manager.app===w.id} title={a?label(a):t('의뢰함')} icon={a?<a.icon size={16}/>:<Monitor size={16}/>} onFocus={()=>manager.focus(w.id)} onChange={manager.change} onClose={()=>manager.close(w.id)}>{renderApp(w.id as AppId)}</DesktopWindow>;})}
    </div></div>
-   {sidebarOpen&&<><button className="pc-quest-backdrop" onClick={onSidebar} aria-label={tr('퀘스트 접기','Close quest','クエストを閉じる')}/><QuestTracker {...props} onClose={onSidebar}/></>}
+   {sidebarOpen&&<><button className="pc-quest-backdrop" onClick={onSidebar} aria-label={tr('퀘스트 접기','Close quest','クエストを閉じる')}/><QuestTracker {...props} visibleApps={visibleApps} onClose={onSidebar}/></>}
   </div>
   {start&&<><button type="button" tabIndex={-1} className="pc-menu-backdrop" onPointerDown={e=>{e.preventDefault();closePanel();}} onClick={()=>closePanel()} aria-label={tr('시작 메뉴 닫기','Close Start menu','スタートメニューを閉じる')}/><section ref={startPanel} id="workspace-start" data-testid="desktop-start" role="dialog" aria-labelledby="workspace-start-title" className="pc-start-menu">
    <header className="pc-start-heading"><span className="pc-start-mark"><TerminalSquare size={20}/></span><h1 id="workspace-start-title">{tr('내 작업실','My workspace','マイデスク')}</h1><span>CODE:SHIFT</span></header>

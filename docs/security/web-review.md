@@ -35,7 +35,7 @@
 3. UI 편집은 복사한 후보 보고서에서 검증한 다음 마지막 유효 보고서에 반영한다. 전체 크기 초과 입력은 화면 값도 되돌리고 이전 저장을 보존한다. 참가자 코드 입력 중 `Q`처럼 일시적으로 형식이 미완성인 값은 계속 편집할 수 있으며 저장된 보고서를 오염시키지 않는다.
 4. 가져오기의 잘못된 파일·중복 ID 충돌·합친 보고서의 크기 초과는 기존 보고서 대체 전에 거부한다.
 
-**검증:** `node --test tools/playtest/data.test.cjs` **7/7 통과**. 실제 `kit.js`를 최소 DOM·Storage 모델에서 실행하여 크기 초과 편집의 rollback, 저장 호출 없음, 기존 값 보존 및 부분 코드 입력 후 정상 복구를 확인했다. 브라우저 E2E는 main 담당자가 별도로 실행한다.
+**검증:** `node --test tools/playtest/data.test.cjs` **7/7 통과**. 실제 `kit.js`를 최소 DOM·Storage 모델에서 실행하여 크기 초과 편집의 rollback, 저장 호출 없음, 기존 값 보존 및 부분 코드 입력 후 정상 복구를 확인했다. main 담당자의 수정 후 플레이테스트 브라우저 E2E도 통과했다: `offlineFileOpen`, `emptyDefaults`, `localReload`, `jsonCSVImportExport`, `malformedImportPreserves`, `mobile390` 모두 true이며 `httpRequests=[]`, `pageErrors=[]`였다. 증거는 `output/playtest-kit-qa/report.json`, `output/0.11-security/playtest-ui.log`에 있다.
 
 **한계·기존 파일:** 이전 버전에서 이미 만든 한도 초과 원본을 자동 변환·분할하거나 삭제하지 않는다. 그러한 원본은 여전히 정상 2MB 가져오기로 읽을 수 없으며 별도 보관·분할이 필요하다. 새 검증은 이후에 재읽기 불가능한 정상 보고서를 만드는 경로를 차단한다. localStorage 자체가 비활성화됐거나 여유 용량이 없으면 계속 메모리 모드와 JSON 백업 안내를 사용한다.
 

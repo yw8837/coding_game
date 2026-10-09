@@ -42,10 +42,12 @@ export default function AboutPage({ language }: { language: AboutLanguage }) {
         </section>
 
         <section className={styles.trailer} aria-label={language==='ko'?'실제 플레이 영상':language==='en'?'Gameplay trailer':'ゲームプレイ映像'}>
-          <video controls playsInline preload="none" poster="/screenshots/desktop.png" aria-label={language==='ko'?'42초 게임 소개 영상':language==='en'?'42-second gameplay trailer':'42秒のゲームプレイ紹介'}>
+          <video controls playsInline preload="none" poster="/media/first-release-poster.jpg" aria-label={language==='ko'?'30초 내 첫 출시 게임 영상':language==='en'?'30-second My First Release gameplay trailer':'30秒のはじめてのリリース紹介映像'}>
             <source src={'/media/codeshift-'+language+'.mp4'} type="video/mp4"/>
           </video>
-          <p>{language==='ko'?'실제 플레이 화면 · 일부 구간 배속':language==='en'?'Actual gameplay · some sections sped up':'実際のゲーム画面 · 一部を早送り'}</p>
+          <p>{language==='ko'?'계산대를 고치는 첫 의뢰부터, 나만의 동네 생활 웹앱 1.0 출시까지.':language==='en'?'From repairing a cafe till to releasing version 1.0 of your own neighborhood web app.':'カフェのレジ修理から、自分の街の生活Webアプリ1.0のリリースまで。'}</p>
+          <p>{language==='ko'?'한국어판 실제 게임 화면 · 자동 조작·속도 편집 · 편집 효과음 포함':language==='en'?'Actual Korean gameplay · automated input and speed edits · editorial sound effects':'実際の韓国語版プレイ · 自動操作・速度編集 · 編集効果音を含む'}</p>
+          <p>Music: “Realizer” — Kevin MacLeod (<a href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024">incompetech.com</a>), <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Trimmed, tempo adjusted and mixed.</p>
         </section>
 
         <dl className={styles.facts}>

@@ -73,9 +73,9 @@ Ghrom에서 화면 확인¦Preview in Ghrom¦Ghromで確認
 수정한 색과 화면 조건을 확인하고 다시 검사해 주세요.¦Check the color and layout, then try again.¦色と画面の条件を見直して、もう一度確認しましょう。
 개발 서버를 켜고, 제목·너비와 함께 검사해요.¦Start the dev server, then check the title and width too.¦開発サーバーを起動し、名前と幅も確認します。
 30 XP · 실험가 배지¦30 XP · Color Explorer badge¦30 XP · カラー実験家バッジ
-게임 크레딧으로 테마를 구입해요. 가진 테마는 언제든 바꿀 수 있어요.¦Spend game credits on themes. Switch owned themes whenever you like.¦ゲーム内のクレジットでテーマを購入。持っているテーマは自由に変更できます。
+게임 크레딧으로 바탕화면 배경을 구입해요. 구입한 배경은 언제든 바꿀 수 있어요.¦Buy desktop wallpapers with game credits. Switch owned wallpapers any time.¦ゲーム内クレジットで壁紙を購入。購入済みの壁紙はいつでも変更できます。
 사용 중¦Equipped¦使用中
-이 테마 적용¦Use this theme¦このテーマを使う
+이 배경 적용¦Apply wallpaper¦この壁紙を適用
 내 배지 모아 보기¦View my badges¦バッジを見る
 이전 페이지¦Back¦前のページ
 다음 페이지¦Forward¦次のページ
@@ -530,12 +530,17 @@ AI_6스터디:¦AI_6 Study:¦AI_6スタディ：
 서로 다른 컴퓨터가 요청과 응답을 주고받았어요. 이것이 API예요.¦Two computers exchanged a request and a response. That's an API.¦別々のコンピューターがリクエストと応答を交換しました。これがAPIです。
 온라인 주문함¦Online orders¦オンライン注文
 주문함 준비¦Orders ready¦注文準備
-미드나잇 민트¦Midnight Mint¦ミッドナイトミント
-첫 작업실의 차분한 초록빛¦The original green desktop¦最初の作業室の落ち着いた緑
-골든 아워¦Golden Hour¦ゴールデンアワー
-야근도 따뜻하게, 노을빛 작업실¦A warm amber desktop¦夕焼け色の作業室
-네온 라일락¦Neon Lilac¦ネオンライラック
-나만의 리듬으로, 보랏빛 작업실¦A soft violet desktop¦紫色の作業室
+우리 동네¦Our Neighborhood¦私たちの街
+기본 블루¦Default Blue¦標準ブルー
+차분한 파란빛의 기본 바탕화면¦A calm blue desktop wallpaper¦落ち着いた青色の標準壁紙
+오피스텔 작업실¦Studio Apartment¦ワンルームの作業場
+나만의 작은 방과 책상이 있는 바탕화면¦Your own small room and desk¦自分だけの小さな部屋と机の壁紙
+크레딧이 부족해요. 의뢰나 보너스 과제를 완성해 보세요.¦Not enough credits. Complete a job or bonus task to earn more.¦クレジットが足りません。依頼やボーナス課題で増やしましょう。
+카페와 골목이 내려다보이는 기본 배경¦The original view of the cafe and neighborhood¦カフェと路地を見渡す標準の壁紙
+햇살 해변¦Sunlit Coast¦陽だまりの海岸
+푸른 바다와 밝은 해안 절벽의 바탕화면¦Blue water and sunlit coastal cliffs¦青い海と明るい海岸の崖の壁紙
+초록 정원¦Morning Garden¦朝の庭
+아침 햇빛이 들어오는 정원의 바탕화면¦A garden filled with morning light¦朝の光が差し込む庭の壁紙
 햇살 앰버¦Sunlit Amber¦サンライトアンバー
 오션 블루¦Ocean Blue¦オーシャンブルー
 우리 카페의 첫 홈페이지를 부탁해요.¦Our cafe needs its first website.¦カフェの最初のホームページをお願いします。
@@ -578,7 +583,7 @@ price는 한 잔 가격, quantity는 잔 수에 붙인 이름이에요. 이런 �
 첫 배포¦First Release¦初リリース
 버그 헌터¦Bug Hunter¦バグハンター
 풀스택 입문¦Full Stack Beginner¦フルスタック入門
-수리 도구가 준비됐어요. 이제 어떤 방법이 좋을지 골라 보세요.¦Tools are ready. Choose how to repair it.¦道具の準備ができました。修理方法を選びましょう。
+수리 도구가 준비됐어요. 카페 화면에서 직접 고쳐 보세요.¦Tools are ready. Edit the cafe screen yourself.¦道具の準備ができました。カフェの画面を自分で直してみましょう。
 손님 테스트를 모두 통과하면 전달할 수 있어요.¦Pass all customer checks before delivering.¦すべてのテストに合格すると届けられます。
 의뢰 완료! 보상과 배지가 지급되었습니다.¦Request complete! Credits and badge awarded.¦依頼完了！報酬とバッジを獲得しました。
 모노 카페, 정식 오픈! 동네 해결사 배지를 받았어요.¦Mono Cafe is open! Neighborhood Helper badge earned.¦モノカフェオープン！街の助っ人バッジを獲得しました。
@@ -675,6 +680,8 @@ export function translate(input:string,language:Language):string{
  const found=catalog[key]??catalog[input.trim()];
  if(found)return input.replace(input.trim(),found[index]);
  const patterns:[RegExp,(m:RegExpMatchArray)=>[string,string]][]=[
+  [/^(.+) 배경을 적용했어요\.$/,m=>[`${translate(m[1],'en')} wallpaper applied.`,`${translate(m[1],'ja')}の壁紙を適用しました。`]],
+  [/^(.+) 배경을 구입하고 적용했어요\.$/,m=>[`${translate(m[1],'en')} wallpaper purchased and applied.`,`${translate(m[1],'ja')}の壁紙を購入して適用しました。`]],
   [/^실제 결과: ([\d,]+)원$/,m=>[`Actual result: ${m[1]} KRW`,`実際の結果：${m[1]}ウォン`]],
   [/^현재 보관된 주문: (\d+)건$/,m=>[`Stored orders: ${m[1]}`,`保存された注文：${m[1]}件`]],
   [/^모노 카페\. (\d+)\/3 오픈 준비 완료\. (.+)$/,m=>[`Mono Cafe. ${m[1]}/3 ready. ${translate(m[2],'en')}`,`モノカフェ。${m[1]}/3準備完了。${translate(m[2],'ja')}`]],

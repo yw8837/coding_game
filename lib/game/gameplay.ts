@@ -4,9 +4,10 @@ import {createCareer,type CareerProgress} from './career.ts';
 import {createLab,type LabProgress} from './code-lab.ts';
 
 export const COSMETICS=[
- {id:'mint',name:'미드나잇 민트',color:'#72e4bf',price:0,description:'첫 작업실의 차분한 초록빛'},
- {id:'amber',name:'골든 아워',color:'#f4bf78',price:90,description:'야근도 따뜻하게, 노을빛 작업실'},
- {id:'violet',name:'네온 라일락',color:'#c5a5ff',price:90,description:'나만의 리듬으로, 보랏빛 작업실'},
+ {id:'mint',name:'기본 블루',color:'#83b3ef',price:0,description:'차분한 파란빛의 기본 바탕화면',wallpaper:'/game-art/wallpaper-blue.png'},
+ {id:'amber',name:'햇살 해변',color:'#73c6df',price:90,description:'푸른 바다와 밝은 해안 절벽의 바탕화면',wallpaper:'/game-art/wallpaper-coast.png'},
+ {id:'violet',name:'초록 정원',color:'#a0c993',price:90,description:'아침 햇빛이 들어오는 정원의 바탕화면',wallpaper:'/game-art/wallpaper-garden.png'},
+ {id:'loft',name:'오피스텔 작업실',color:'#e0ba85',price:180,description:'나만의 작은 방과 책상이 있는 바탕화면',wallpaper:'/game-art/wallpaper-loft.png'},
 ] as const;
 export const DESIGN_CHOICES=[
  {id:'sunrise',name:'햇살 앰버',color:'#c77b30',rgb:'rgb(199, 123, 48)'},

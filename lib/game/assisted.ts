@@ -20,7 +20,7 @@ export function prepareWorkspace(state:GameState):GameState {
   if(s.machines.local.processes.frontend)s=command(s,'pkill node');
   s=command(s,'npm run dev');
  }
- s.notice='수리 도구가 준비됐어요. 이제 어떤 방법이 좋을지 골라 보세요.';
+ s.notice='수리 도구가 준비됐어요. 카페 화면에서 직접 고쳐 보세요.';
  return s;
 }
 function sendWork(state:GameState):GameState {

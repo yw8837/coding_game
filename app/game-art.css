@@ -19,8 +19,18 @@
 .title-save-light{height:7px;width:7px;border-radius:50%;background:#edc88c;box-shadow:0 0 12px #edb35c99}
 .character-portrait{display:inline-block;flex:0 0 auto;width:43px;height:43px;border-radius:11px;background-image:url('/game-art/portraits.png');background-size:200% 100%;background-position:left center;border:1px solid #c2ccda50;box-shadow:0 3px 8px #0003}
 .character-portrait.minseo{background-position:right center}
-.pc-stage>.pc-wallpaper{background:linear-gradient(90deg,#0b233dc4,#10243887),url('/game-art/neighborhood.png') center/cover}
+.pc-stage>.pc-wallpaper{filter:none;background:linear-gradient(90deg,#122a3b55,transparent 36%),url('/game-art/wallpaper-blue.png') center/cover}
 .pc-stage>.pc-wallpaper .wallpaper-fold{display:none}
+.pc-shell[data-theme=amber] .pc-stage>.pc-wallpaper{filter:none;background:linear-gradient(90deg,#122a3b88,transparent 36%),url('/game-art/wallpaper-coast.png') center/cover}
+.pc-shell[data-theme=violet] .pc-stage>.pc-wallpaper{filter:none;background:linear-gradient(90deg,#122a3b88,transparent 36%),url('/game-art/wallpaper-garden.png') center/cover}
+.pc-shell[data-theme=loft] .pc-stage>.pc-wallpaper{filter:none;background:linear-gradient(90deg,#122a3b66,transparent 36%),url('/game-art/wallpaper-loft.png') center/cover}
+.pc-stage>.pc-wallpaper .wallpaper-light{background:none}
+.wallpaper-preview{position:relative;overflow:hidden;aspect-ratio:16/9;border:1px solid;border-radius:6px;margin-bottom:15px;background:#183141}
+.wallpaper-preview img{display:block;width:100%;height:100%;object-fit:cover}
+.wallpaper-preview>span{position:absolute;bottom:0;left:0;width:100%;height:8px}
+.cosmetic-shop .theme-grid{grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))}
+.cosmetic-shop .theme-grid button:disabled{opacity:1;background:#253b4b;color:#b2c2ce;border-color:#425969}
+@media(max-width:700px){.theme-grid>article .wallpaper-preview{grid-row:1/4;margin-bottom:0}}
 .pc-desktop-caption{color:#f0e6d2;text-shadow:0 2px 6px #071320}
 .message-conversation>header .character-portrait{width:52px;height:52px;border-radius:13px}.pc-mail-toast .character-portrait{width:49px;height:49px}
 .npc-bubble{animation:message-arrive .2s ease-out}.npc-bubble h3{letter-spacing:-.3px}

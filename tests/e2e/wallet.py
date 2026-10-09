@@ -10,7 +10,8 @@ with sync_playwright() as pw:
   p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.locator('.pc-play').click();p.get_by_test_id('open-wallet').click()
   expect(p.get_by_test_id('wallet-tools')).to_be_disabled()
   themes=p.locator('.cosmetic-shop article');themes.nth(1).get_by_role('button').click();assert state(p)['credits']==30;assert state(p)['gameplay']['equippedCosmetic']=='amber';expect(themes.nth(2).get_by_role('button')).to_be_disabled()
-  assert p.locator('.pc-wallpaper').evaluate('(e)=>getComputedStyle(e).filter')!='none'
+  assert 'wallpaper-coast.png' in p.locator('.pc-stage>.pc-wallpaper').evaluate('(e)=>getComputedStyle(e).backgroundImage')
+  assert p.locator('.wallpaper-preview img').evaluate_all('els=>els.every(el=>el.complete&&el.naturalWidth>1000)')
   p.reload(wait_until='networkidle');p.locator('.pc-play').click();assert state(p)['gameplay']['ownedCosmetics']==['mint','amber'];assert state(p)['credits']==30
   # Import real UI-earned progress, never a fabricated wallet balance.
   p.locator('.pc-language').click();p.locator('.save-tools input[type=file]').set_input_files(str(out/'completed-learning-save.json'));p.get_by_role('button',name='이 저장으로 이어하기',exact=True).click();p.locator('.pc-play').click()

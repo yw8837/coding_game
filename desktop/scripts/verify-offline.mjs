@@ -25,7 +25,7 @@ assert.deepEqual(read('renderer/THIRD-PARTY-NOTICES.txt'), await readFile(path.j
 const matching = files.filter(name => /^renderer[/\\]/.test(name) || /^[^/\\]+\.cjs$/.test(name) && !name.endsWith('qa-build.cjs'));
 for (const name of matching) assert.deepEqual(read(name), extractFile(qaArchive, name), `QA mismatch: ${name}`);
 const art = [];
-for (const name of ['studio-evening.png', 'neighborhood.png', 'mono-cafe.png', 'portraits.png']) {
+for (const name of ['studio-evening.png', 'neighborhood.png', 'mono-cafe.png', 'portraits.png', 'wallpaper-blue.png', 'wallpaper-coast.png', 'wallpaper-garden.png', 'wallpaper-loft.png']) {
   const packed = read('renderer/game-art/' + name);
   assert.deepEqual(packed, await readFile(path.join(root, 'public/game-art', name)), `Art mismatch: ${name}`);
   art.push({file: name, bytes: packed.length, sha256: createHash('sha256').update(packed).digest('hex')});

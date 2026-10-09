@@ -16,7 +16,7 @@ with sync_playwright() as pw:
             video.evaluate('(v)=>{v.muted=true;v.load();return v.play()}')
             page.wait_for_function("document.querySelector('video').currentTime>0.3")
             media=video.evaluate('(v)=>({width:v.videoWidth,height:v.videoHeight,duration:v.duration,error:v.error,currentTime:v.currentTime})')
-            assert media['width']==1920 and media['height']==1080 and abs(media['duration']-42)<.1 and media['error'] is None
+            assert media['width']==1920 and media['height']==1080 and abs(media['duration']-30)<.1 and media['error'] is None
             video.evaluate('(v)=>{v.pause();v.currentTime=16}')
             page.wait_for_function("!document.querySelector('video').seeking")
             page.screenshot(path=str(out/f'about-video-{lang}.png'),animations='disabled')
