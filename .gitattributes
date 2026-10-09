@@ -1,0 +1,2 @@
+# Preserve upstream license bytes: the notice manifest verifies their SHA-256.
+desktop/vendor-notices/*.LICENSE -text

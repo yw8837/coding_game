@@ -85,3 +85,16 @@ Rendering is **serial**, with at most four FFmpeg codec threads and one filter/f
 After automated verification, watch the complete video, inspect cut boundaries and CJK glyphs, and listen on headphones and speakers. Check that input, changed code, and result remain readable at mobile size. The script records this review as remaining work. There is no publishing or upload command.
 
 Sources for the local editing method: [FFmpeg filters](https://ffmpeg.org/ffmpeg-filters.html), [Playwright recording](https://playwright.dev/docs/videos), and the game’s [launch plan](../../docs/launch-plan.md). The full user reference triage, including tool existence and licensing limits, is in the launch plan.
+
+## 0.8 RC recording
+
+`capture-release.py` captures a new UI-only route from a fresh title screen through the cafe and all 18 career jobs. It reads the optional answer panel and types the examples into the visible editor; it never injects completion state. Only selected scenes appear in the 42-second edit. The original `capture.py` / `edl.json` pair remains the historical cafe trailer.
+
+```powershell
+python media/trailer/capture-release.py
+python media/trailer/render.py --edl media/trailer/edl-0.8.json --output output/trailer-0.8 --languages ko en ja --vertical-languages ko
+```
+
+The 0.8 clips include the title, empty desktop, request, setup, visible repair and check, delivery, cafe OPEN, new clients, customer reply, upgrades and career conclusion. Captions are localized; recorded UI is Korean. The working-title caption does not imply an available Steam store listing. Output timing and media checks are recorded in `output/trailer-0.8/verification.json`.
+
+The 2026-10-09 review inspected a contact sheet covering all 42 seconds, a full-resolution Japanese sample, and browser playback/seeking for all three landscape exports. Full-file decode and encoded loudness checks passed for all four exports. No human headphone/speaker listening session was performed. Source capture and EDL are retained so timing and wording can be revised without inventing gameplay footage.

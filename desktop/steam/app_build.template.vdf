@@ -1,0 +1,12 @@
+"AppBuild"
+{
+  "AppID" "YOUR_STEAM_APP_ID"
+  "Desc" "CODE:SHIFT Windows candidate - replace with reviewed build version"
+  "BuildOutput" "../build-logs"
+  "ContentRoot" "../release/CODE-SHIFT-win32-x64"
+  "Preview" "1"
+  "Depots"
+  {
+    "YOUR_WINDOWS_DEPOT_ID" "depot_build.template.vdf"
+  }
+}

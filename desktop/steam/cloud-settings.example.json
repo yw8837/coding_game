@@ -1,0 +1,12 @@
+{
+  "note": "Reference for manual Steamworks Auto-Cloud dashboard configuration; not an importable VDF or active Cloud implementation.",
+  "root": "WinAppDataRoaming",
+  "subdirectory": "CODE-SHIFT/saves",
+  "patterns": ["game.json", "game.json.bak"],
+  "recursive": false,
+  "platforms": ["Windows"],
+  "exclude": ["*.tmp"],
+  "suggestedQuotaBytes": 33554432,
+  "suggestedQuotaFiles": 2,
+  "review": "Configure two explicit patterns game.json and game.json.bak so .tmp is never uploaded. Test account switching and sync conflicts before enabling."
+}

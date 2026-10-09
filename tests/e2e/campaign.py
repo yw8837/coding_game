@@ -10,7 +10,7 @@ def follow(p):
 def shot(p,name):p.screenshot(path=str(out/(name+'.png')))
 with sync_playwright() as pw:
  b=pw.chromium.launch(channel='chrome',headless=True)
- page=b.new_page(viewport={'width':1440,'height':900});page.set_default_timeout(10000)
+ page=b.new_page(viewport={'width':1440,'height':900},locale='ko-KR');page.set_default_timeout(10000)
  errors=[];steps=[];page.on('pageerror',lambda e:errors.append(str(e)))
  try:
   page.goto('http://127.0.0.1:5173/',wait_until='networkidle')

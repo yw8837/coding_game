@@ -2,8 +2,10 @@ import {dirtyFiles,projectFiles,sourceHash,type GameState} from './engine.ts';
 import {lessonFacts} from './lesson.ts';
 import {PROJECT,REPO_URL,MISSIONS} from './content.ts';
 import {setupReadiness} from './setup.ts';
+import {careerCurrent,careerFresh,careerNext} from './career.ts';
+import type {Localized} from './career-content.ts';
 
-export type Task={id:string;phase:number;title:string;detail:string;app:'messages'|'browser'|'computer'|'editor'|'terminal'|'server'|'api'|'achievements';command?:string;url?:string;file?:string;find?:string;next?:boolean};
+export type Task={id:string;phase:number;title:string;detail:string;app:'career'|'messages'|'browser'|'computer'|'editor'|'terminal'|'server'|'api'|'achievements';command?:string;url?:string;file?:string;find?:string;next?:boolean;localized?:{title:Localized;detail:Localized}};
 export const PHASES=['의뢰 읽기','작업 준비','문제 고치기','결과 확인','의뢰 전달'];
 const step=(id:string,phase:number,title:string,detail:string,app:Task['app'],extra:Partial<Task>={}):Task=>({id,phase,title,detail,app,...extra});
 const shell=(id:string,phase:number,title:string,detail:string,command:string)=>step(id,phase,title,detail,'terminal',{command});
@@ -20,6 +22,17 @@ function upload(s:GameState,phase:number):Task|null{
  return null;
 }
 export function currentTask(s:GameState):Task{
+ if(s.gameplay.openingCelebrated){
+  const c=s.gameplay.career,job=careerCurrent(s),next=careerNext(s);
+  const career=(id:string,phase:number,title:Localized,detail:Localized):Task=>({id,phase,title:title.ko,detail:detail.ko,app:'career',localized:{title,detail}});
+  const l=(ko:string,en:string,ja:string)=>({ko,en,ja});
+  if(c.ending)return career('career-finished',5,l('내 작업실의 다음 날','The next day at your desk','作業場の次の日'),l('완료한 의뢰와 고객의 답장을 돌아보세요. 남은 연습 의뢰도 할 수 있어요.','Revisit completed jobs and client replies, or try the practice jobs.','完了した依頼や顧客の返信を振り返れます。練習の依頼にも挑戦できます。'));
+  if(c.completed.length===18)return career('career-ending',5,l('작업실의 마지막 편지 열기','Open the last letter','最後の手紙を開く'),l('18개 의뢰를 마쳤어요. 의뢰 센터에서 그동안의 선택으로 달라진 마지막 편지를 읽어 보세요.','All 18 jobs are delivered. Read the final letter shaped by your choices in Contracts.','18件の依頼が完了しました。依頼センターで選択に応じた最後の手紙を読みましょう。'));
+  if(!job||c.completed.includes(job.id))return career('career-next',0,l('새 고객의 의뢰 고르기','Choose your next client','次の顧客の依頼を選ぶ'),next?next.brief:l('의뢰 센터를 열어 보세요.','Open Contracts.','依頼センターを開きましょう。'));
+  if(!c.inspected.includes(job.id))return career('career-inspect',1,l('현재 결과에서 문제 찾기','Inspect the current result','現在の結果を確認する'),l('의뢰 센터에서 현재 결과를 보고 문제 확인을 누르세요. 목표와 어디가 다른지 살펴보세요.','In Contracts, compare the current result with the request, then confirm you inspected it.','依頼センターで現在の結果と依頼内容を比べ、確認ボタンを押しましょう。'));
+  if(!careerFresh(s,job.id))return career('career-edit',2,l('파일을 고치고 결과 검사하기','Edit the files and run checks','ファイルを直して検査する'),l('의뢰 센터에서 파일을 수정한 뒤 검사 실행을 누르세요. 막히면 단계별 힌트를 볼 수 있어요.','Edit the files in Contracts and run checks. Step-by-step hints are available if you get stuck.','依頼センターでファイルを編集して検査しましょう。困ったら段階別のヒントを使えます。'));
+  return career('career-deliver',4,l('고객에게 답하고 전달하기','Reply and deliver','返信して納品する'),l('검사를 통과했어요. 의뢰 센터에서 고객에게 보낼 답장을 고르고 전달하세요.','Checks passed. Choose your reply to the client and deliver in Contracts.','検査に合格しました。依頼センターで返信を選んで納品しましょう。'));
+ }
  const m=s.mission,r=s.repo,server=s.machines.server,fs=projectFiles(s),facts=lessonFacts(s);
  if(s.completed.includes(m))return step('complete',5,m<2?'지우의 다음 메시지 받기':s.gameplay.openingCelebrated?'동네 해결사 엔딩 달성!':'마지막 할 일 · OPEN 간판 켜기',m<2?'의뢰가 전달됐어요. 다음 메시지를 열어 이어서 도와주세요.':s.gameplay.openingCelebrated?'카페가 문을 열었어요. 성취를 확인하거나 연습 의뢰에 도전해 보세요.':'카페의 세 가지 준비가 끝났어요. 초대장을 열고 문을 열어 주세요.',m<2?'messages':'achievements',{next:m<2});
  const message=['welcome','chapter-two','chapter-three'][m];

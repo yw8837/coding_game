@@ -13,3 +13,20 @@ The campaign is UI-only from fresh storage to the ending, then checks window ope
 The authored promotional capture is media/trailer/capture.py. It also advances only through visible controls, with deliberate filmed pauses. Rendering is serial and described alongside its editable EDL.
 
 The final smoke checks actual playback/seek of each localized trailer, canonical metadata, empty desktop after Start and localized terminal help. It needs the rendered public/media files. All scripts target http://127.0.0.1:5173 and create their evidence directory when missing.
+
+## 0.8 career and native checks
+
+Run `campaign.py` first: its real UI-earned cafe save is the fixture for `career.py` and `career-tools.py`. Career completion reads optional example answers on screen and fills the real editors. It is an assisted functional test, not a novice study. The three language routes each deliver 18 jobs and record an ending; tools checks include checkpoint restore, Undo across tabs, JSON completion, paired output, file navigation, and rejected imports.
+
+```powershell
+python tests/e2e/career.py
+python tests/e2e/career-tools.py
+node scripts/build-desktop.mjs
+node tests/e2e/native.cjs
+node desktop/scripts/package.mjs --qa
+node tests/e2e/packaged.cjs
+```
+
+The Node native harnesses use the installed skill Playwright package by default; set `PLAYWRIGHT_PACKAGE` to the absolute directory of a local `playwright-core` package elsewhere. They need the Electron dependency/runtime under desktop. `native.cjs` uses a new marked QA profile and checks cafe/career UI, native IPC, local save/close/reopen, export/import, blocked external fetch and corrupt-primary recovery. Native export selection is mocked to a file within the test profile, while actual writing uses the real export handler. `packaged.cjs` launches only the specially flagged QA package and uses Chromium CDP because Node inspector fuses are disabled. Neither touches the production user profile.
+
+Evidence is written under ignored `output/steam-qa`. A current test receipt must distinguish source runtime, packaged QA smoke and actual production/Steam verification. The QA package must never be distributed as the player release.

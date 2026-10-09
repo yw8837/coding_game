@@ -1,0 +1,13 @@
+"DepotBuildConfig"
+{
+  "DepotID" "YOUR_WINDOWS_DEPOT_ID"
+  "ContentRoot" "../release/CODE-SHIFT-win32-x64"
+  "FileMapping"
+  {
+    "LocalPath" "*"
+    "DepotPath" "."
+    "recursive" "1"
+  }
+  "FileExclusion" "steam_appid.txt"
+  "FileExclusion" "*.pdb"
+}

@@ -13,6 +13,11 @@ export type Completion={label:string;text:string;start:number;end:number};
 export function codeCompletions(file:string,text:string,position:number):Completion[]{
  const prefix=text.slice(0,position).match(/[\w.-]+$/)?.[0]??'';
  if(!prefix)return [];
+ if(file.endsWith('.json')){
+  const before=text.slice(0,position-prefix.length),insideKey=/[\{,]\s*"$/.test(before);
+  const candidates=insideKey?[...new Set([...text.matchAll(/"([\w.-]+)"\s*:/g)].map(match=>match[1]))]:['true','false','null'];
+  return candidates.filter(x=>x.startsWith(prefix)&&x!==prefix).slice(0,12).map(x=>({label:x,text:x,start:position-prefix.length,end:position}));
+ }
  const list=file.endsWith('.css')?['width: 100%;','background: #3678a8;','display: grid;','grid-template-columns: repeat(3, minmax(0, 1fr));','padding: 24px;','margin: 0;','color: #273b31;','border-radius: 12px;']:file.endsWith('.js')?['function','calculateTotal','price','quantity','return','const','let']:file.endsWith('.py')?['MENU_PATH','SAVE_ORDERS','True','False','return','request','jsonify']:file.endsWith('.html')?['h1','class','section','button','article','footer']:[];
  return list.filter(x=>x.startsWith(prefix)&&x!==prefix).map(x=>({label:x,text:x,start:position-prefix.length,end:position}));
 }

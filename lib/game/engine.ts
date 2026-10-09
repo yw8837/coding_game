@@ -2,6 +2,7 @@ import {PRACTICE_CUSTOMERS} from './customers.ts';
 import {HOME, PROJECT, REPO_URL, INITIAL_FILES, MISSIONS} from './content.ts';
 import {createGameplay,COSMETICS,DESIGN_CHOICES,gameMessages,canClaimColor,type Gameplay,type DesignId} from './gameplay.ts';
 import {createPractice,evaluatePractice,practiceJob} from './practice.ts';
+import {applyCareer,type CareerAction} from './career.ts';
 
 export type Files = Record<string,string>;
 export type MachineId = 'local'|'server';
@@ -18,7 +19,7 @@ export type GameState = {
  orders:{id:number;item:string;quantity:number}[];localOrders:{id:number;item:string;quantity:number}[];apiEvidence:{menu:boolean;order:boolean};
  notice:string;logs:string[];history:{command:string;output:string;error:boolean;machine:MachineId;cwd:string}[];
 };
-export type Action = {type:'practice-submit'|'practice-draft';id:string;answer:string}|{type:'inspect-preview';mobile:boolean;quantity:number}|{type:'serve-customer';customer:number;quantity:number}|{type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
+export type Action = CareerAction|{type:'practice-submit'|'practice-draft';id:string;answer:string}|{type:'inspect-preview';mobile:boolean;quantity:number}|{type:'serve-customer';customer:number;quantity:number}|{type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
 export type CommandResult={state:GameState;output:string;error:boolean};
 
 function machine():Machine{return {cwd:HOME,tools:['git'],updated:false,files:{[HOME+'/welcome.txt']:'CODE:SHIFT 작업실에 오신 것을 환영합니다.\nhelp로 지원 명령을 확인하세요.\n'},dirs:['/','/home',HOME],dependencies:[],pythonDeps:[],processes:{frontend:false,backend:false},frontendRoot:null,backendRoot:null,backendSource:null,cloned:false};}
@@ -67,6 +68,7 @@ export function parseBackend(code:string):{route:string;save:boolean}{
 
 export function act(state:GameState,action:Action):GameState{
  const s=clone(state);s.notice='';
+ if(action.type.startsWith('career-')){applyCareer(s,action as CareerAction);return s;}
  if(action.type==='practice-submit'||action.type==='practice-draft'){
   const job=practiceJob(action.id);
   if(!job||typeof action.answer!=='string'||action.answer.length>80)return s;
@@ -136,6 +138,7 @@ export function runCommand(state:GameState,input:string):CommandResult{
  const fail=(text:string)=>{error=true;output=text;};
  let args:string[];try{args=tokenize(input);}catch(e){args=[];fail('shell: '+(e as Error).message);}
  const m=s.machines[s.machine];const [cmd,...a]=args;const root=s.machine==='local'?(s.repo?.root??PROJECT):PROJECT;
+ const protectDelivered=(path:string)=>{if(s.machine==='local'&&s.gameplay.career.completed.some(id=>path==='/home/dev/jobs/'+id||path.startsWith('/home/dev/jobs/'+id+'/')))throw Error('Read-only: this job has already been delivered. Copy it to a different folder to experiment.');};
  const inProject=()=>m.cwd===root||m.cwd.startsWith(root+'/');
  const has=(t:string)=>m.tools.includes(t);
  const requireTool=(t:string)=>{if(!has(t)){fail(`${cmd}: command not found\n도구가 이 컴퓨터에 설치되어 있지 않습니다.`);return false;}return true;};
@@ -150,9 +153,9 @@ export function runCommand(state:GameState,input:string):CommandResult{
  else if(cmd==='ls'){const path=resolvePath(m.cwd,a.find(x=>!x.startsWith('-'))||'.');if(!m.dirs.includes(path)){if(m.files[path]!==undefined)output=path.split('/').at(-1)!;else fail(`ls: cannot access '${path}': No such file or directory`);}else{const prefix=path==='/'?'/':path+'/';output=[...new Set([...m.dirs.filter(d=>d.startsWith(prefix)&&d!==path).map(d=>d.slice(prefix.length).split('/')[0]+'/'),...Object.keys(m.files).filter(p=>p.startsWith(prefix)).map(p=>p.slice(prefix.length).split('/')[0])])].join('  ')||'(빈 폴더)';}}
  else if(cmd==='cd'){const path=resolvePath(m.cwd,a[0]||'~');if(!m.dirs.includes(path))fail(`bash: cd: ${a[0]}: No such file or directory`);else m.cwd=path;}
  else if(cmd==='cat'){if(!a.length)fail('사용법: cat <파일>');else{const content=m.files[resolvePath(m.cwd,a[0])];if(content===undefined)fail(`cat: ${a[0]}: No such file or directory`);else output=content;}}
- else if(cmd==='mkdir'){const paths=a.filter(x=>!x.startsWith('-')).map(name=>({name,path:commandPath(m.cwd,name)}));if(!paths.length)fail('mkdir: missing operand');for(const {name,path:p} of paths){if(m.dirs.includes(p)&&!a.includes('-p')){fail(`mkdir: cannot create directory '${name}': File exists`);break;}const parent=p.slice(0,p.lastIndexOf('/'))||'/';if(!m.dirs.includes(parent)&&!a.includes('-p')){fail(`mkdir: cannot create directory '${name}': No such file or directory`);break;}const parts=p.split('/').filter(Boolean);parts.forEach((_,i)=>{const d='/'+parts.slice(0,i+1).join('/');if(!m.dirs.includes(d))m.dirs.push(d);});}}
- else if(cmd==='touch'){if(!a[0])fail('touch: missing file operand');else{const p=commandPath(m.cwd,a[0]),parent=p.slice(0,p.lastIndexOf('/'));if(!m.dirs.includes(parent))fail(`touch: cannot touch '${a[0]}': No such file or directory`);else m.files[p]??='';}}
- else if(cmd==='cp'||cmd==='mv'){if(a.length!==2)fail(`사용법: ${cmd} <원본 파일> <대상 파일>`);else{const from=commandPath(m.cwd,a[0]);let to=commandPath(m.cwd,a[1]);if(m.dirs.includes(to))to=storedPath(to+'/'+from.split('/').at(-1));if(from===to)fail(`${cmd}: '${a[0]}' and '${a[1]}' are the same file`);else if(m.files[from]===undefined)fail(`${cmd}: cannot stat '${a[0]}': No such file or directory`);else if(!m.dirs.includes(to.slice(0,to.lastIndexOf('/'))))fail(`${cmd}: target directory does not exist`);else{storedFile(to,m.files[from]);m.files[to]=m.files[from];if(cmd==='mv')delete m.files[from];}}}
+ else if(cmd==='mkdir'){const paths=a.filter(x=>!x.startsWith('-')).map(name=>({name,path:commandPath(m.cwd,name)}));if(!paths.length)fail('mkdir: missing operand');for(const {name,path:p} of paths){protectDelivered(p);if(m.dirs.includes(p)&&!a.includes('-p')){fail(`mkdir: cannot create directory '${name}': File exists`);break;}const parent=p.slice(0,p.lastIndexOf('/'))||'/';if(!m.dirs.includes(parent)&&!a.includes('-p')){fail(`mkdir: cannot create directory '${name}': No such file or directory`);break;}const parts=p.split('/').filter(Boolean);parts.forEach((_,i)=>{const d='/'+parts.slice(0,i+1).join('/');if(!m.dirs.includes(d))m.dirs.push(d);});}}
+ else if(cmd==='touch'){if(!a[0])fail('touch: missing file operand');else{const p=commandPath(m.cwd,a[0]),parent=p.slice(0,p.lastIndexOf('/'));protectDelivered(p);if(!m.dirs.includes(parent))fail(`touch: cannot touch '${a[0]}': No such file or directory`);else m.files[p]??='';}}
+ else if(cmd==='cp'||cmd==='mv'){if(a.length!==2)fail(`사용법: ${cmd} <원본 파일> <대상 파일>`);else{const from=commandPath(m.cwd,a[0]);let to=commandPath(m.cwd,a[1]);if(m.dirs.includes(to))to=storedPath(to+'/'+from.split('/').at(-1));protectDelivered(to);if(cmd==='mv')protectDelivered(from);if(from===to)fail(`${cmd}: '${a[0]}' and '${a[1]}' are the same file`);else if(m.files[from]===undefined)fail(`${cmd}: cannot stat '${a[0]}': No such file or directory`);else if(!m.dirs.includes(to.slice(0,to.lastIndexOf('/'))))fail(`${cmd}: target directory does not exist`);else{if(s.machine==='local'&&to.startsWith('/home/dev/jobs/')&&m.files[from].length>20000)throw Error('Job files can contain up to 20,000 characters.');storedFile(to,m.files[from]);m.files[to]=m.files[from];if(cmd==='mv')delete m.files[from];}}}
  else if(cmd==='sudo'||cmd==='apt'){
   const apt=cmd==='sudo'?a[0]==='apt':true;const sub=cmd==='sudo'?a[1]:a[0],names=cmd==='sudo'?a.slice(2):a.slice(1);
   if(!apt)fail('이 실습의 sudo는 apt 명령을 지원합니다.');

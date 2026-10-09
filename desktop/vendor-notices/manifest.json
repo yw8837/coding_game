@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "entries": {
+    "react-remove-scroll-bar@2.3.8": {
+      "file": "react-remove-scroll-bar.LICENSE",
+      "sha256": "a79aae0c0f21990d9d963bb3c5a79cdcea9a46f8523ba55c58d7fe776b6ebc84",
+      "spdx": "MIT",
+      "source": {
+        "repository": "https://github.com/theKashey/react-remove-scroll-bar",
+        "commit": "8ca9ba5ea52de03308fe8ced94f7b159a44d28ff",
+        "gitBlob": "7c08c3990396ecefd90f99ff5d9a34f26f5b5616",
+        "licenseURL": "https://github.com/theKashey/react-remove-scroll-bar/blob/8ca9ba5ea52de03308fe8ced94f7b159a44d28ff/LICENSE",
+        "retrievedOn": "2026-10-09"
+      },
+      "versionEvidence": {
+        "registry": "https://registry.npmjs.org/react-remove-scroll-bar/2.3.8",
+        "declaredLicense": "MIT",
+        "author": "Anton Korzunov <thekashey@gmail.com>",
+        "publishedAt": "2024-12-15T02:08:28.658Z",
+        "tarball": "https://registry.npmjs.org/react-remove-scroll-bar/-/react-remove-scroll-bar-2.3.8.tgz",
+        "integrity": "sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q==",
+        "registryGitHead": "b3b1287aad81def2e2ae707274b74531b61ddbaf",
+        "gitHeadResolution": "Unavailable in the declared upstream repository (GitHub returned 404); no public 2.3.8 tag found.",
+        "comparison": {
+          "version": "2.3.7",
+          "tag": "v2.3.7",
+          "commit": "29e9fcd1eecf7d3b77a767941c4a57fe461fc1e4",
+          "integrity": "sha512-UzA0npskGFA2bUqwWsSRJscuQEt7zyfVtMpCtBl/lk+k/ky6lzYImEks9jwgxTDe/B0tb5hyrYgbQv/JQaHjDw==",
+          "distFiles": 24,
+          "identical": true,
+          "record": "source-comparison.json"
+        }
+      },
+      "qualification": "The 2.3.8 npm tarball omits LICENSE. This is the actual repository license text added by the upstream author in May 2025, not a recovered 2.3.8 release snapshot. The package declares MIT and all 24 distributed code/declaration files are byte-identical to tagged 2.3.7. Copyright and permission text are preserved verbatim; this fallback is bound to 2.3.8 only."
+    }
+  },
+  "audit": {
+    "checkedOn": "2026-10-09",
+    "scope": "Conservative renderer runtime dependency closure plus direct stylesheet imports; actual Vite build still supplies the exact emitted-package manifest.",
+    "runtimeCandidatePackages": 85,
+    "totalNoticePackagesResolved": 86,
+    "missingInstalledNotice": [
+      "react-remove-scroll-bar@2.3.8"
+    ],
+    "unresolvedAfterFallback": []
+  }
+}

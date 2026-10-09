@@ -1,0 +1,6 @@
+node_modules/
+renderer/
+release/
+vendor/
+steam-config.json
+steam_appid.txt

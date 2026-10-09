@@ -1,0 +1,11 @@
+[
+  {"id":"CAFE_FIRST_DEPLOY","condition":"Cafe mission 0 completed"},
+  {"id":"CAFE_BILL_FIXED","condition":"Cafe mission 1 completed"},
+  {"id":"CAFE_ORDERS_ONLINE","condition":"Cafe mission 2 completed"},
+  {"id":"CAFE_OPEN","condition":"All cafe missions and openingCelebrated"},
+  {"id":"PRACTICE_ALL","condition":"All six practice jobs completed"},
+  {"id":"CAREER_ACT_1","condition":"Career act 1 completed"},
+  {"id":"CAREER_ACT_2","condition":"Career act 2 completed"},
+  {"id":"CAREER_ACT_3","condition":"Career act 3 completed"},
+  {"id":"CAREER_ENDING","condition":"Career ending celebrated"}
+]

@@ -37,9 +37,9 @@ with sync_playwright() as pw:
    overflow=p.evaluate('document.documentElement.scrollWidth>innerWidth');assert not overflow
    results.append({'lang':lang,'firstChapter':True,'practice':True,'reload':True,'overflow':overflow});c.close()
   # Malformed local save must not crash. It remains intact until the player starts anew.
-  c=b.new_context(viewport={'width':1024,'height':768});p=c.new_page();p.set_default_timeout(8000)
+  c=b.new_context(viewport={'width':1024,'height':768},locale='ko-KR');p=c.new_page();p.set_default_timeout(8000)
   p.add_init_script("localStorage.setItem('codeshift-intro-demo-v1','{bad-json')")
-  p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.locator('.pc-play').click();assert p.locator('.pc-shortcuts').is_visible();assert p.evaluate("localStorage.getItem('codeshift-intro-demo-v1')")=='{bad-json'
+  p.goto('http://127.0.0.1:5173/',wait_until='networkidle');expect(p.locator('.pc-play')).to_be_disabled();assert p.evaluate("localStorage.getItem('codeshift-intro-demo-v1')")=='{bad-json';p.locator('.save-recovery-alert button').click();p.get_by_role('button',name='진행 기록 초기화',exact=True).click();p.get_by_role('button',name='초기화하고 다시 시작',exact=True).click();expect(p.locator('.pc-shortcuts')).to_be_visible()
   p.locator('.pc-shortcuts').get_by_role('button',name='터미널',exact=True).click();field=active(p).locator('.terminal-form input')
   field.fill('git st');field.press('Tab');assert field.input_value()=='git status';field.press('Enter')
   field.fill('unfinished draft');field.press('ArrowUp');field.press('ArrowDown');assert field.input_value()=='unfinished draft'
@@ -48,7 +48,7 @@ with sync_playwright() as pw:
   w=active(p);handle=w.locator('.pc-resize').bounding_box();p.mouse.move(handle['x']+13,handle['y']+13);p.mouse.down();p.mouse.move(handle['x']-180,handle['y']-120,steps=8);p.mouse.up()
   p.set_viewport_size({'width':760,'height':620});bounds=w.bounding_box();stage=p.locator('.pc-stage').bounding_box();assert bounds['x']>=0 and bounds['x']+bounds['width']<=stage['width']+1
   p.screenshot(path=str(out/'resized-1024.png'),animations='disabled');c.close()
-  results.append({'malformedSave':'recovered without overwrite before action','terminalTabHistory':True,'oversizedPathRejected':True,'resizeBounded':True})
+  results.append({'malformedSave':'preserved until explicit reset','terminalTabHistory':True,'oversizedPathRejected':True,'resizeBounded':True})
   for route,lang in [('/about','ko'),('/about/en','en'),('/about/ja','ja')]:
    c=b.new_context();p=c.new_page();response=p.goto('http://127.0.0.1:5173'+route,wait_until='networkidle');assert response.status==200;assert p.locator('h1').count()==1;assert p.locator('script[type="application/ld+json"]').count()>=1;c.close()
   results.append({'aboutPages':3})

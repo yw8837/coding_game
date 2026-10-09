@@ -1,0 +1,13 @@
+# Verified upstream license fallback
+
+`react-remove-scroll-bar.LICENSE` is an unmodified copy of the repository's real license blob `7c08c3990396ecefd90f99ff5d9a34f26f5b5616`, pinned at commit `8ca9ba5ea52de03308fe8ced94f7b159a44d28ff`. It is not a newly written MIT template. The upstream text explicitly names **2025 Anton Korzunov <thekashey@gmail.com>**; that copyright text is preserved verbatim.
+
+The 2.3.8 npm tarball declares MIT and the same author/repository but omits the LICENSE file. Its registry gitHead is not available in the public repository, and no public 2.3.8 tag was found. The upstream LICENSE was added in May 2025, after the December 2024 npm release. Therefore this file is an upstream repository license supplement, not a recovered license file from the exact release commit.
+
+To substantiate the version link, the official npm 2.3.8 and 2.3.7 tarballs were downloaded with `npm pack --ignore-scripts`, their SHA-512 values checked against npm's reported integrity, and all **24** distributed JavaScript/declaration files compared byte for byte. Every file was identical. Version 2.3.7 has public upstream tag `v2.3.7` at `29e9fcd1eecf7d3b77a767941c4a57fe461fc1e4`. `source-comparison.json` retains the file list and tarball integrity evidence. `manifest.json` records immutable sources, version metadata, qualifications and the exact license SHA-256.
+
+The build fallback applies only to `react-remove-scroll-bar@2.3.8` with its declared MIT identifier. It verifies the file checksum before use and includes the source qualification in the generated notices. Other versions require a new review. Missing or tampered licenses still fail the build; all failures are reported together.
+
+A conservative runtime dependency closure from the game's renderer imports covered 85 candidate packages, including packages later removed by tree shaking. Direct CSS imports bring the complete check to 86 resolved notice packages. Only this package lacked installed license text; all notices resolved after the verified fallback. `manifest.json` records that audit summary. The temporary machine-specific scan was removed. The actual Vite build remains responsible for generating the exact emitted package manifest.
+
+Primary sources: [npm version metadata](https://registry.npmjs.org/react-remove-scroll-bar/2.3.8), [immutable upstream LICENSE](https://github.com/theKashey/react-remove-scroll-bar/blob/8ca9ba5ea52de03308fe8ced94f7b159a44d28ff/LICENSE), [LICENSE addition](https://github.com/theKashey/react-remove-scroll-bar/commit/7301c160fda44cb8cf2b9fdfde61efad35736196), and [v2.3.7 tag](https://github.com/theKashey/react-remove-scroll-bar/tree/v2.3.7). Source collection did not run a game build, Electron or an installer.

@@ -1,14 +1,31 @@
 'use client';
 import {Children,cloneElement,isValidElement,useSyncExternalStore,type ReactNode,type ReactElement} from 'react';
 import {translate,type Language} from './translations';
+import {createLocaleStore,LANGUAGE_PREFERENCE_KEY,type LanguagePlatformInfo,type LanguagePreference} from './locale.ts';
 export type {Language};
-let language:Language='ko';
+export type {LanguagePreference};
 const listeners=new Set<()=>void>();
-export const getLanguage=()=>language;
-export const t=(text:string)=>translate(text,language);
-export function setLanguage(next:Language){language=next;try{localStorage.setItem('codeshift-language',next);}catch{}document.documentElement.lang=next;listeners.forEach(fn=>fn());}
-export function restoreLanguage(){try{const saved=localStorage.getItem('codeshift-language');if(saved==='en'||saved==='ja'||saved==='ko')setLanguage(saved);}catch{}}
-export function useLanguage(){return useSyncExternalStore(fn=>{listeners.add(fn);return()=>{listeners.delete(fn);};},getLanguage,()=> 'ko' as Language);}
+const locale=createLocaleStore({
+ readPreference:()=>typeof localStorage==='undefined'?null:localStorage.getItem(LANGUAGE_PREFERENCE_KEY),
+ writePreference:preference=>{if(typeof localStorage!=='undefined')localStorage.setItem(LANGUAGE_PREFERENCE_KEY,preference);},
+ browserLanguages:()=>typeof navigator==='undefined'?[]:navigator.languages?.length?navigator.languages:navigator.language?[navigator.language]:[],
+ platformInfo:async()=>{
+  if(typeof window==='undefined')return null;
+  const bridge=(window as Window&{desktopBridge?:{getPlatformInfo:()=>Promise<LanguagePlatformInfo>}}).desktopBridge;
+  return bridge?.getPlatformInfo?await bridge.getPlatformInfo():null;
+ },
+ onChange:language=>{if(typeof document!=='undefined')document.documentElement.lang=language;listeners.forEach(fn=>fn());},
+});
+const subscribe=(fn:()=>void)=>{listeners.add(fn);return()=>{listeners.delete(fn);};};
+export const getLanguage=locale.getLanguage;
+export const getLanguagePreference=locale.getPreference;
+export const t=(text:string)=>translate(text,getLanguage());
+export function setLanguagePreference(next:LanguagePreference){void locale.setPreference(next);}
+/** Compatibility: selecting a concrete language always records a manual choice. */
+export function setLanguage(next:Language){setLanguagePreference(next);}
+export const restoreLanguage=locale.restore;
+export function useLanguage(){return useSyncExternalStore(subscribe,getLanguage,()=> 'en' as Language);}
+export function useLanguagePreference(){return useSyncExternalStore(subscribe,getLanguagePreference,()=> 'auto' as LanguagePreference);}
 
 /** Translate display text only. State, commands, code and form values stay untouched.
  * Component boundaries opt in explicitly; no DOM mutation or HTML substitution.

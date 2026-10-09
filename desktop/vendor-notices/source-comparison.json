@@ -1,0 +1,102 @@
+{
+  "comparison": [
+    {
+      "file": "package/dist/es2015/component.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2019/component.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es5/component.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2015/constants.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2019/constants.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es5/constants.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2015/index.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2019/index.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es5/index.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2015/utils.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2019/utils.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es5/utils.js",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2015/component.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2019/component.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es5/component.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2015/constants.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2019/constants.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es5/constants.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2015/index.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2019/index.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es5/index.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2015/utils.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es2019/utils.d.ts",
+      "identical": true
+    },
+    {
+      "file": "package/dist/es5/utils.d.ts",
+      "identical": true
+    }
+  ],
+  "currentIntegrity": "sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q==",
+  "priorIntegrity": "sha512-UzA0npskGFA2bUqwWsSRJscuQEt7zyfVtMpCtBl/lk+k/ky6lzYImEks9jwgxTDe/B0tb5hyrYgbQv/JQaHjDw=="
+}
