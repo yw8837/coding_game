@@ -1,9 +1,9 @@
 {
   "status": "draft-localization-not-registered",
-  "date": "2026-10-09",
+  "date": "2026-10-10",
   "source_catalog": "desktop/achievements.json",
   "source_predicates": "lib/game/achievements.ts",
-  "note": "API names unchanged. Existing career ending may be preserved in legacy saves; this catalog does not add capstone or Code Lab achievements. Actual Steam unlocks are unverified. Native-speaker review and icons remain.",
+  "note": "API names unchanged in 0.13.1 RC. The chosen main route needs four of six jobs in each district; CAREER_ACT_1/2/3 still require every job in that district and are optional completion goals. Existing career endings remain supported in legacy saves. No new personal-project or Code Lab achievement is added. Actual Steam registration/unlocks, native-speaker review and icons remain unverified.",
   "achievements": [
     {
       "api_name": "CAFE_FIRST_DEPLOY",

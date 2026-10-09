@@ -1,6 +1,6 @@
 # Steam 콘텐츠 설문 초안
 
-2026-10-09. 최종 빌드와 실제 Steamworks 질문을 보고 출시자가 답할 준비 자료다. 설문 제출, 등급 확정이나 법적 권리 확인을 완료한 기록이 아니다. 공식 출처: [Content Survey](https://partner.steamgames.com/doc/gettingstarted/contentsurvey).
+2026-10-10, 0.13.1 RC 범위의 제출 전 초안. 최종 빌드와 실제 Steamworks 질문을 보고 출시자가 답할 준비 자료다. 설문 제출, 등급 확정이나 법적 권리 확인을 완료한 기록이 아니다. 선택 12/18 진행, JavaScript 대안 5개와 직접 작성하는 개인 프로젝트도 게임 안의 콘텐츠이며 실제 서비스 배포나 온라인 UGC 공개 기능으로 소개하지 않는다. 공식 출처: [Content Survey](https://partner.steamgames.com/doc/gettingstarted/contentsurvey).
 
 ## 생성형 AI
 

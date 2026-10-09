@@ -4,7 +4,7 @@ from playwright.sync_api import sync_playwright,expect
 import json,os
 
 out=Path(os.environ.get('CODESHIFT_QA_DIR','output/0.13-qa'));out.mkdir(parents=True,exist_ok=True)
-seeds=Path('output/0.12-qa')
+seeds=Path(os.environ.get('CODESHIFT_QA_SEEDS','output/0.12-qa'))
 KEY='codeshift-intro-demo-v1'
 jobs=['bakery-price','library-loans','contacts-clean','clinic-form','market-filter','workshop-slots','delivery-fees','museum-layout','community-api','photo-cache','archive-backup','festival-report']
 solutions={

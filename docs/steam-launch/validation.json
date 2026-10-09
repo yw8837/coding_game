@@ -1,5 +1,6 @@
 {
-  "date": "2026-10-09",
+  "date": "2026-10-10",
+  "game_version_scope": "0.13.1 RC",
   "short_descriptions": {
     "ko": {
       "unicode_characters": 108,
@@ -20,11 +21,35 @@
       "passed": true
     }
   },
+  "markdown_public_copy_matches_json": true,
+  "public_section_count_per_language": 5,
+  "chosen_route": {
+    "available": 18,
+    "required": 12,
+    "per_district_available": 6,
+    "per_district_required": 4
+  },
+  "javascript_alternative_job_count": 5,
+  "javascript_job_ids_match_source": true,
+  "personal_project_kinds": [
+    "directory",
+    "events",
+    "portfolio"
+  ],
   "achievement_count": 9,
   "achievement_ids_exactly_match_desktop_catalog": true,
   "all_achievements_have_ko_en_ja": true,
+  "full_district_achievement_distinct_from_chosen_route": true,
   "official_source_count": 8,
+  "official_sources_last_checked": "2026-10-09; not independently refreshed in this documentation edit",
   "code_lab_in_draft_requires_final_ship_validation": true,
   "no_appid_assigned": true,
-  "publication": "No upload, fee payment, app registration or publishing performed"
+  "price_krw": 11000,
+  "launch_discount": "undecided; recommendation only, not applied",
+  "working_title": "CODE:SHIFT",
+  "current_web_scope": "full game until actual Steam purchase availability",
+  "promo_footage_version": "0.11.1; older than current RC",
+  "human_playtime_fun_learning_native_speaker_low_spec_validation": "not performed or not verified",
+  "publication": "No upload, fee payment, app registration or publishing performed",
+  "limits": "Document consistency/source checks; not Steam approval, human review, or a rerun of browser/native QA"
 }

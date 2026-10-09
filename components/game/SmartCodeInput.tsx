@@ -20,7 +20,7 @@ export const SmartCodeInput=forwardRef<SmartCodeHandle,{file:string;value:string
  return localizeUI(<><textarea ref={field} value={value} aria-label={`${file} 코드 편집`} spellCheck={false} autoCapitalize="off" autoComplete="off" onCompositionStart={()=>{composing.current=true;setOptions([]);}} onCompositionEnd={()=>{composing.current=false;}} onClick={()=>setOptions([])} onScroll={onScroll} onChange={e=>{const text=e.target.value;if(text.length>60000)return;const h=stack();h.undo.push({text:value,start:Math.max(0,e.target.selectionStart-1),end:Math.max(0,e.target.selectionStart-1)});h.undo=h.undo.slice(-80);h.redo=[];onChange(text);setActive(0);setOptions(!composing.current&&(text.slice(0,e.target.selectionStart).match(/[\w.-]+$/)?.[0].length??0)>=2?codeCompletions(file,text,e.target.selectionStart):[]);}} onKeyDown={e=>{
   if(composing.current||e.nativeEvent.isComposing||e.keyCode===229)return;
   const el=e.currentTarget,start=el.selectionStart,end=el.selectionEnd,mod=e.ctrlKey||e.metaKey;
-  if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return;}
+  if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();if(e.shiftKey)redo();else undo();return;}
   if(mod&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return;}
   if(mod&&e.key.toLowerCase()==='s'){e.preventDefault();setOptions([]);return;}
   if(mod&&e.key==='Enter'){e.preventDefault();setOptions([]);onTest();return;}

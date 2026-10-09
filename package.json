@@ -1,6 +1,6 @@
 {
   "name": "codeshift-game",
-  "version": "0.13.0-rc.0",
+  "version": "0.13.1-rc.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -10,10 +10,11 @@
     "dev": "node scripts/run-framework.mjs dev",
     "build": "node scripts/run-framework.mjs build",
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --max-warnings 0",
     "db:generate": "drizzle-kit generate",
     "test": "node --test lib/game/*.test.ts",
     "typecheck": "tsc --noEmit",
+    "verify": "node scripts/verify-quality.mjs",
     "desktop:build": "node scripts/build-desktop.mjs",
     "desktop:test": "node --test desktop/tests/*.test.cjs",
     "desktop:package": "node desktop/scripts/package.mjs"

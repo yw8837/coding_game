@@ -20,7 +20,6 @@ export function CareerCode({jobId,files,readOnly,onMode,onEdit,onTest,hasProof=f
  useEffect(()=>{if(reportedDirty.current===dirty)return;reportedDirty.current=dirty;onDirtyChange?.(dirty);},[dirty,onDirtyChange]);
  const reportedDraft=useRef<string|null|undefined>(undefined);
  useEffect(()=>{const value=dirty?draft:null;if(reportedDraft.current===value)return;reportedDraft.current=value;onDraftChange?.(value);},[dirty,draft,source,onDraftChange]);
- // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronize accepted engine saves or external edits without replacing a different unsaved draft.
  useEffect(()=>{if(source!==previousSource.current){if(draft===previousSource.current||pending===source)setDraft(source);previousSource.current=source;}},[source,draft,pending]);
  // eslint-disable-next-line react-hooks/set-state-in-effect -- Report save success only after the engine returns the same canonical file content.
  useEffect(()=>{if(pending===null)return;setNotice(files[CAREER_CODE_FILE]===pending?'saved':'rejected');setPending(null);},[files,pending]);

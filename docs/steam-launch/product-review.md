@@ -1,4 +1,14 @@
-# 0.11 제품·소개 문구 읽기 전용 검토
+# 제품·소개 문구 검토 — 현재 범위와 이전 기록
+
+2026-10-10 갱신. 현재 상점 초안의 기준은 **0.13.1 RC**다. 세 구역마다 6개 중 4개씩 선택하는 12/18 진행, 다섯 JavaScript 대안 의뢰와 장소 안내·행사 목록·포트폴리오 개인 프로젝트를 [구조화 설명](store-copy.json)에 반영했다. `career-progress.ts`, `career-code.ts`, `release-product.ts`, `achievements.ts`의 콘텐츠·진행·업적 조건과 대조했다. 구역 전체 6개 완료 업적은 선택 4개 본편 진행과 별도다.
+
+현재 자동 검증의 실제 결과는 [0.13.1 QA](../QA-0.13.1-RC.md)를 따른다. `output/quality-gate/receipt.json`은 lint 0 errors/0 warnings와 타입·게임/데스크톱 단위·설치 패치 검사의 실행 결과를 기록한다. `output/0.13.1-qa/state-sync-report.json`의 네 production UI 회귀 시나리오는 통과 기록을 확인했다. 이 문서 작성자는 해당 브라우저 실행을 독립 재실행하지 않았다. 빌드·native·패키지에 대한 최종 메인 결과와 Git 상태는 제출 전에 대조한다.
+
+CODE:SHIFT는 작업명, 한국 정가는 ₩11,000, 출시 할인은 미정이다. 0.11.1 영상은 보관 촬영본이며 현재 버전의 화면 증거가 아니다. 사람의 코딩 이해·재미·실제 시간·높은 수준의 학습 효과, 원어민 감수와 저사양 별도 PC 결과는 미검증이다. 실제 Steam 앱 등록·설치·업적·Cloud·심사·출시를 완료한 것으로 적지 않는다. 현재 웹 전체판은 실제 Steam 출시 전까지 유지한다.
+
+## 역사적 0.11 읽기 전용 검토
+
+아래 내용은 2026-10-09의 0.11 소스·소개 검토 기록이다. 당시 native/패키지 증거는 현재 0.13.1 빌드 검사나 사람의 제품 검증을 대신하지 않는다.
 
 2026-10-09. 대상: `components/game/CodeLab.tsx`, `ChallengesHub.tsx`, `lib/game/code-lab.ts`, `docs/RELEASE-0.11-RC.md`, `app/about/content.ts`. 보상/재검사 주장 확인을 위해 `lib/game/code-lab-state.ts`와 `GameShell.tsx`의 연결도 읽었다. 브라우저를 실행하지 않았고 UI·런타임 소스는 수정하지 않았다. 인간 초보자·숙련자 플레이 검증을 대신하지 않는다.
 

@@ -1,0 +1,15 @@
+.game-moment>div:nth-child(2){min-width:0}
+.game-moment>div>span{display:block;margin:4px 0 8px;font-size:12px;line-height:1.55;color:#c7d9df;overflow-wrap:anywhere}
+.game-moment.moment-check{width:min(360px,calc(100% - 30px));padding:14px 18px;border-color:#8ac8af;background:#14332ff5}
+.game-moment.moment-check .moment-seal{width:38px;height:38px;flex-basis:38px;color:#c7eed2;border-color:#88c4a7;box-shadow:0 0 0 5px #93d6b719}
+.game-moment.moment-check small{color:#b4e1c8}
+.game-moment.moment-check>i{background:#a2d8b5}
+.game-moment.moment-milestone{border-top:3px solid #ebc77f;background:#213444f7}
+.game-moment.moment-milestone strong{font-size:19px}
+@media(prefers-reduced-motion:no-preference){
+ .game-moment.moment-milestone .moment-seal{animation:milestone-lift .45s cubic-bezier(.2,.8,.25,1.1)}
+ .game-moment.moment-delivery b,.game-moment.moment-milestone b{display:block;animation:payout-land .32s cubic-bezier(.2,.8,.25,1.2)}
+ @keyframes milestone-lift{from{transform:translateY(6px) scale(.82)}70%{transform:translateY(-2px) scale(1.06)}to{transform:translateY(0) scale(1)}}
+ @keyframes payout-land{from{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+}
+@media(max-width:600px){.game-moment.moment-milestone strong{font-size:16px}}

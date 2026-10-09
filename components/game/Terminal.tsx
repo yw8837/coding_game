@@ -1,6 +1,6 @@
 'use client';
 import {localizeUI,useLanguage} from '@/lib/game/i18n';
-import {useEffect,useLayoutEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {ChevronRight,TerminalSquare,CornerDownLeft} from 'lucide-react';
 import {terminalCompletions as commandCompletions,visibleTerminalHistory} from '@/lib/game/terminal-input';
 import {translateTerminalOutput} from '@/lib/game/terminal-translations';
@@ -10,10 +10,11 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false}:Gam
  const [input,setInput]=useState(''),[index,setIndex]=useState(-1),[suggestions,setSuggestions]=useState<string[]>([]),[selected,setSelected]=useState(-1);
  const draft=useRef(''),scroll=useRef<HTMLDivElement>(null),field=useRef<HTMLInputElement>(null),m=state.machines[state.machine],visible=visibleTerminalHistory(state.history);
  const close=()=>{setSuggestions([]);setSelected(-1);};
- const change=(value:string)=>{setInput(value);setIndex(-1);draft.current=value;close();};
+ const change=useCallback((value:string)=>{setInput(value);setIndex(-1);draft.current=value;setSuggestions([]);setSelected(-1);},[setInput,setIndex,setSuggestions,setSelected]);
+ const latestCommand=state.history.at(-1)?.command;
  // eslint-disable-next-line react-hooks/set-state-in-effect -- A parent command-queue event hydrates the editable input, consumes the queue and focuses the terminal without executing it.
- useLayoutEffect(()=>{if(queued){change(queued);onQueued();field.current?.focus();}},[queued,onQueued]);
- useEffect(()=>{if(scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;},[state.history.length,state.history.at(-1)?.command]);
+ useLayoutEffect(()=>{if(queued){change(queued);onQueued();field.current?.focus();}},[queued,onQueued,change]);
+ useEffect(()=>{if(scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;},[state.history.length,latestCommand]);
  const send=()=>{if(!input.trim())return;onCommand(input);change('');field.current?.focus();};
  const complete=()=>{const options=suggestions.length?suggestions:commandCompletions(state,input);if(!options.length)return;const next=(selected+1)%options.length;setSuggestions(options);setSelected(next);setInput(options[next]);};
  return localizeUI(<div className={'terminal-body '+(compact?'compact':'')}>

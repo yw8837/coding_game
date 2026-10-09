@@ -1,0 +1,337 @@
+diff --git a/lib/compile.js b/lib/compile.js
+index dce69be..f450dad 100644
+--- a/lib/compile.js
++++ b/lib/compile.js
+@@ -2,9 +2,14 @@
+ 
+ const fill = require('fill-range');
+ const utils = require('./utils');
++const security = require('./security');
+ 
+ const compile = (ast, options = {}) => {
++  security.checkAst(ast);
++  const budget = security.budget();
++  const emit = value => { security.append(budget, value); return value; };
+   const walk = (node, parent = {}) => {
++    security.work(budget);
+     const invalidBlock = utils.isInvalidBrace(parent);
+     const invalidNode = node.invalid === true && options.escapeInvalid === true;
+     const invalid = invalidBlock === true || invalidNode === true;
+@@ -12,36 +17,37 @@ const compile = (ast, options = {}) => {
+     let output = '';
+ 
+     if (node.isOpen === true) {
+-      return prefix + node.value;
++      return emit(prefix + node.value);
+     }
+ 
+     if (node.isClose === true) {
+       console.log('node.isClose', prefix, node.value);
+-      return prefix + node.value;
++      return emit(prefix + node.value);
+     }
+ 
+     if (node.type === 'open') {
+-      return invalid ? prefix + node.value : '(';
++      return emit(invalid ? prefix + node.value : '(');
+     }
+ 
+     if (node.type === 'close') {
+-      return invalid ? prefix + node.value : ')';
++      return emit(invalid ? prefix + node.value : ')');
+     }
+ 
+     if (node.type === 'comma') {
+-      return node.prev.type === 'comma' ? '' : invalid ? node.value : '|';
++      return emit(node.prev.type === 'comma' ? '' : invalid ? node.value : '|');
+     }
+ 
+     if (node.value) {
+-      return node.value;
++      return emit(node.value);
+     }
+ 
+     if (node.nodes && node.ranges > 0) {
+       const args = utils.reduce(node.nodes);
++      security.checkRange(args, options, true, budget);
+       const range = fill(...args, { ...options, wrap: false, toRegex: true, strictZeros: true });
+ 
+       if (range.length !== 0) {
+-        return args.length > 1 && range.length > 1 ? `(${range})` : range;
++        return emit(args.length > 1 && range.length > 1 ? `(${range})` : range);
+       }
+     }
+ 
+diff --git a/lib/expand.js b/lib/expand.js
+index 35b2c41..7cc5608 100644
+--- a/lib/expand.js
++++ b/lib/expand.js
+@@ -3,8 +3,12 @@
+ const fill = require('fill-range');
+ const stringify = require('./stringify');
+ const utils = require('./utils');
++const security = require('./security');
+ 
+-const append = (queue = '', stash = '', enclose = false) => {
++const append = (queue = '', stash = '', enclose = false, budget) => {
++  security.append(budget);
++  security.checkResults([].concat(queue));
++  security.checkResults([].concat(stash));
+   const result = [];
+ 
+   queue = [].concat(queue);
+@@ -12,25 +16,35 @@ const append = (queue = '', stash = '', enclose = false) => {
+ 
+   if (!stash.length) return queue;
+   if (!queue.length) {
+-    return enclose ? utils.flatten(stash).map(ele => `{${ele}}`) : stash;
++    const values = enclose ? utils.flatten(stash).map(ele => `{${ele}}`) : stash;
++    security.checkResults(values);
++    for (const value of values) security.append(budget, value);
++    return values;
+   }
+ 
+   for (const item of queue) {
+     if (Array.isArray(item)) {
+       for (const value of item) {
+-        result.push(append(value, stash, enclose));
++        result.push(append(value, stash, enclose, budget));
+       }
+     } else {
+       for (let ele of stash) {
+         if (enclose === true && typeof ele === 'string') ele = `{${ele}}`;
+-        result.push(Array.isArray(ele) ? append(item, ele, enclose) : item + ele);
++        const value = Array.isArray(ele) ? append(item, ele, enclose, budget) : item + ele;
++        security.append(budget, value);
++        result.push(value);
++        security.checkResults(result);
+       }
+     }
+   }
+-  return utils.flatten(result);
++  const values = utils.flatten(result);
++  security.checkResults(values);
++  return values;
+ };
+ 
+ const expand = (ast, options = {}) => {
++  security.checkAst(ast);
++  const budget = security.budget();
+   const rangeLimit = options.rangeLimit === undefined ? 1000 : options.rangeLimit;
+ 
+   const walk = (node, parent = {}) => {
+@@ -45,17 +59,18 @@ const expand = (ast, options = {}) => {
+     }
+ 
+     if (node.invalid || node.dollar) {
+-      q.push(append(q.pop(), stringify(node, options)));
++      q.push(append(q.pop(), stringify(node, options), false, budget));
+       return;
+     }
+ 
+     if (node.type === 'brace' && node.invalid !== true && node.nodes.length === 2) {
+-      q.push(append(q.pop(), ['{}']));
++      q.push(append(q.pop(), ['{}'], false, budget));
+       return;
+     }
+ 
+     if (node.nodes && node.ranges > 0) {
+       const args = utils.reduce(node.nodes);
++      security.checkRange(args, options);
+ 
+       if (utils.exceedsLimit(...args, options.step, rangeLimit)) {
+         throw new RangeError('expanded array length exceeds range limit. Use options.rangeLimit to increase or disable the limit.');
+@@ -66,7 +81,7 @@ const expand = (ast, options = {}) => {
+         range = stringify(node, options);
+       }
+ 
+-      q.push(append(q.pop(), range));
++      q.push(append(q.pop(), range, false, budget));
+       node.nodes = [];
+       return;
+     }
+@@ -90,12 +105,12 @@ const expand = (ast, options = {}) => {
+       }
+ 
+       if (child.type === 'close') {
+-        q.push(append(q.pop(), queue, enclose));
++        q.push(append(q.pop(), queue, enclose, budget));
+         continue;
+       }
+ 
+       if (child.value && child.type !== 'open') {
+-        queue.push(append(queue.pop(), child.value));
++        queue.push(append(queue.pop(), child.value, false, budget));
+         continue;
+       }
+ 
+@@ -107,7 +122,9 @@ const expand = (ast, options = {}) => {
+     return queue;
+   };
+ 
+-  return utils.flatten(walk(ast));
++  const result = utils.flatten(walk(ast));
++  security.checkResults(result);
++  return result;
+ };
+ 
+ module.exports = expand;
+diff --git a/lib/parse.js b/lib/parse.js
+index 3a6988e..4521be8 100644
+--- a/lib/parse.js
++++ b/lib/parse.js
+@@ -1,6 +1,7 @@
+ 'use strict';
+ 
+ const stringify = require('./stringify');
++const security = require('./security');
+ 
+ /**
+  * Constants
+@@ -144,6 +145,7 @@ const parse = (input, options = {}) => {
+ 
+     if (value === CHAR_LEFT_PARENTHESES) {
+       block = push({ type: 'paren', nodes: [] });
++      security.checkDepth(stack.length);
+       stack.push(block);
+       push({ type: 'text', value });
+       continue;
+@@ -210,6 +212,7 @@ const parse = (input, options = {}) => {
+       };
+ 
+       block = push(brace);
++      security.checkDepth(stack.length);
+       stack.push(block);
+       push({ type: 'open', value });
+       continue;
+diff --git a/lib/security.js b/lib/security.js
+new file mode 100644
+index 0000000..b87a40b
+--- /dev/null
++++ b/lib/security.js
+@@ -0,0 +1,85 @@
++'use strict';
++
++// Local mitigation for GHSA-vfj7-8cjw-p6xm. Hard ceilings also cover direct AST
++// entry points; caller options cannot disable these process resource limits.
++const MAX_DEPTH = 100;
++const MAX_NODES = 20000;
++const MAX_RESULTS = 10000;
++const MAX_WORK = 100000;
++const MAX_CHARS = 1000000;
++const fail = () => { throw new RangeError('braces resource limit exceeded'); };
++
++exports.checkDepth = depth => { if (depth > MAX_DEPTH) fail(); };
++exports.checkAst = ast => {
++  const pending = [{node: ast, depth: 0}];
++  let nodes = 0;
++  let chars = 0;
++  while (pending.length) {
++    const {node, depth} = pending.pop();
++    // Invalid/unclosed parsing can retain stale parents, so require bounded
++    // parent chains rather than parent identity. This also rejects cycles.
++    let ancestor = node;
++    let ancestorDepth = 0;
++    while (ancestor.parent) {
++      exports.checkDepth(++ancestorDepth);
++      ancestor = ancestor.parent;
++    }
++    exports.checkDepth(depth);
++    if (++nodes > MAX_NODES) fail();
++    // JSON AST values must remain scalar. Arrays/objects can otherwise be
++    // coerced into uncounted output when a parent concatenates their value.
++    if (node.value != null && !['string', 'number', 'boolean'].includes(typeof node.value)) fail();
++    if (typeof node.value === 'string') {
++      chars += node.value.length;
++      if (chars > MAX_CHARS) fail();
++    }
++    if (node.nodes) {
++      if (node.nodes.length + nodes + pending.length > MAX_NODES) fail();
++      for (const child of node.nodes) pending.push({node: child, depth: depth + 1});
++    }
++  }
++};
++
++exports.checkRange = (args, options, compile = false, budget) => {
++  // Parsed range tokens are scalar text. Direct AST values must not redirect
++  // fill-range's overload to an options object or a transform callback.
++  // Extra AST arguments would displace the caller's options object entirely.
++  if (args.length > 3) fail();
++  if (args.some(value => typeof value !== 'string' && typeof value !== 'number')) fail();
++  // An incomplete parsed range is literal syntax, not an enumerable range.
++  if (args.length < 2) return;
++  // Match fill-range's numeric coercion, including exponent, hexadecimal,
++  // signed and whitespace forms. A decimal-only regexp lets those bypass
++  // the guard while fill-range still enumerates an unsafe numeric range.
++  const numeric = args.slice(0, 2).every(value => Number.isInteger(Number(value)));
++  const a = numeric ? Number(args[0]) : String(args[0]).charCodeAt(0);
++  const b = numeric ? Number(args[1]) : String(args[1]).charCodeAt(0);
++  // Match the step that fill-range will actually use. Non-scalar options.step
++  // can otherwise select another overload and discard the regex settings.
++  const effectiveStep = args[2] || options.step || 1;
++  if (typeof effectiveStep !== 'string' && typeof effectiveStep !== 'number') fail();
++  const step = Math.max(Math.abs(Number(effectiveStep)), 1);
++  if (!Number.isSafeInteger(a) || !Number.isSafeInteger(b)) fail();
++  // Contiguous compiled ranges use a compact regex; stepped ranges enumerate.
++  const count = Math.floor(Math.abs(b - a) / step) + 1;
++  if ((!compile || step !== 1) && count > MAX_RESULTS) fail();
++  // Compiling several individually small stepped ranges must not enumerate
++  // an unlimited aggregate. Invalid steps are left to fill-range's checks.
++  if (budget && compile && step !== 1 && Number.isSafeInteger(count)) exports.work(budget, count);
++};
++
++exports.budget = () => ({work: 0, chars: 0});
++exports.work = (budget, amount = 1) => {
++  budget.work += amount;
++  if (!Number.isSafeInteger(budget.work) || budget.work > MAX_WORK) fail();
++};
++exports.append = (budget, value) => {
++  exports.work(budget);
++  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
++    // Numeric/boolean JSON AST leaves retain their original return types,
++    // but their text contributes to a parent's string concatenation too.
++    budget.chars += String(value).length;
++    if (budget.chars > MAX_CHARS) fail();
++  }
++};
++exports.checkResults = result => { if (result.length > MAX_RESULTS) fail(); };
+diff --git a/lib/stringify.js b/lib/stringify.js
+index 8bcf872..e5f8ed2 100644
+--- a/lib/stringify.js
++++ b/lib/stringify.js
+@@ -1,22 +1,27 @@
+ 'use strict';
+ 
+ const utils = require('./utils');
++const security = require('./security');
+ 
+ module.exports = (ast, options = {}) => {
++  security.checkAst(ast);
++  const budget = security.budget();
++  const emit = value => { security.append(budget, value); return value; };
+   const stringify = (node, parent = {}) => {
++    security.work(budget);
+     const invalidBlock = options.escapeInvalid && utils.isInvalidBrace(parent);
+     const invalidNode = node.invalid === true && options.escapeInvalid === true;
+     let output = '';
+ 
+     if (node.value) {
+       if ((invalidBlock || invalidNode) && utils.isOpenOrClose(node)) {
+-        return '\\' + node.value;
++        return emit('\\' + node.value);
+       }
+-      return node.value;
++      return emit(node.value);
+     }
+ 
+     if (node.value) {
+-      return node.value;
++      return emit(node.value);
+     }
+ 
+     if (node.nodes) {
+@@ -29,4 +34,3 @@ module.exports = (ast, options = {}) => {
+ 
+   return stringify(ast);
+ };
+-

@@ -12,6 +12,8 @@ allowBuilds:
 storeDir: ${SITES_PNPM_SHARED_STORE:-.sites-runtime/pnpm-store}
 cacheDir: ${SITES_PNPM_SHARED_STORE:-.sites-runtime/pnpm-store}/policy-cache
 enableGlobalVirtualStore: false
+patchedDependencies:
+  "braces@3.0.3": patches/braces@3.0.3.patch
 # Reuse store files with clones or hardlinks before falling back to copies.
 packageImportMethod: auto
 # The explicit installer owns dependency setup, including restored workspaces.

@@ -9,7 +9,7 @@ async function launch(){
  await fs.access(path.join(root,"desktop/renderer/index.html"));
  const env={...process.env};delete env.ELECTRON_RUN_AS_NODE;
  app=await _electron.launch({executablePath:path.join(root,'desktop/node_modules/electron/dist/electron.exe'),args:[path.join(root,'desktop'),'--qa-user-data='+profile],env,timeout:25000});
- page=await app.firstWindow();page.setDefaultTimeout(12000);page.on('pageerror',e=>errors.push(String(e)));
+ page=await app.firstWindow();page.setDefaultTimeout(12000);page.on('pageerror',e=>errors.push(String(e.stack||e)));
  await page.waitForFunction(()=>document.querySelector('.pc-play')&&!document.querySelector('.pc-play').disabled);
  return page;
 }
@@ -104,4 +104,4 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  assert.equal((await read()).gameplay.career.ending,'balanced');report.corruptPrimaryRecovered=true;
  assert.deepEqual(errors,[]);report.errors=errors;
  await fs.writeFile(path.join(out,'native-report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));
-})().catch(async error=>{if(page&&!page.isClosed())await page.screenshot({animations:'disabled',path:path.join(out,'native-failure.png')}).catch(()=>{});console.error(error);process.exitCode=1;}).finally(async()=>{if(app)await app.close();});
+})().catch(async error=>{if(page&&!page.isClosed()){await page.reload({timeout:5000}).catch(()=>{});await page.screenshot({animations:'disabled',path:path.join(out,'native-failure.png')}).catch(()=>{});}console.error(error);console.error(JSON.stringify({errors}));await fs.writeFile(path.join(out,'native-failure.json'),JSON.stringify({error:String(error),errors},null,2));process.exitCode=1;}).finally(async()=>{if(app){if(process.exitCode)await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().forEach(w=>w.destroy())).catch(()=>{});await app.close();}});

@@ -54,7 +54,8 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
  const weekdays=Array.from({length:7},(_,day)=>new Date(2023,0,1+day,12));
  const unread=gameMessages(props.state).filter(m=>!props.state.gameplay.readMessages.includes(m.id)).length;
  const welcomeUnread=unreadWelcome(props.state);
- useEffect(()=>{const el=stage.current;if(!el)return;const measure=()=>{manager.setBounds({width:el.clientWidth,height:el.clientHeight});manager.setCompact(window.innerWidth<760);};measure();const ro=new ResizeObserver(measure);ro.observe(el);return()=>ro.disconnect();},[manager.setBounds,manager.setCompact]);
+ const {setBounds,setCompact}=manager;
+ useEffect(()=>{const el=stage.current;if(!el)return;const measure=()=>{setBounds({width:el.clientWidth,height:el.clientHeight});setCompact(window.innerWidth<760);};measure();const ro=new ResizeObserver(measure);ro.observe(el);return()=>ro.disconnect();},[setBounds,setCompact]);
  useEffect(()=>{let timer:ReturnType<typeof setTimeout>;const tick=()=>{clearTimeout(timer);const current=new Date();setNow(current);setMonth(value=>value??calendarMonth(current));timer=setTimeout(tick,60000-Date.now()%60000);};const visible=()=>{if(document.visibilityState==='visible')tick();};tick();window.addEventListener('focus',tick);document.addEventListener('visibilitychange',visible);return()=>{clearTimeout(timer);window.removeEventListener('focus',tick);document.removeEventListener('visibilitychange',visible);};},[]);
  useEffect(()=>{if(start)search.current?.focus();if(calendar)calendarToday.current?.focus();},[start,calendar]);
  useEffect(()=>{if(manager.app==='desktop')startRef.current?.focus({preventScroll:true});},[manager.app]);

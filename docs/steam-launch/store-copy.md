@@ -1,6 +1,6 @@
 # 상점 문구 — KO / EN / JA
 
-2026-10-10 검토 초안. CODE:SHIFT는 가제이며 확정 이름으로 모두 교체한 뒤 제출한다. 아래 각 언어의 짧은 소개와 상세 소개만 상점 입력 후보이며, 개발 메모는 복사하지 않는다. 같은 본문은 `store-copy.json`에 필드별로 저장한다. 문구는 실제 출시 빌드와 대조하고 영어·일본어 원어민 감수를 거친다. 플레이 시간, 학습 성과, Steam Cloud·업적 활성화 또는 Steam Deck 지원을 약속하지 않는다.
+2026-10-10. 0.13.1 RC 제출 전 초안. CODE:SHIFT는 작업명이며 Steam에 등록·게시하지 않았다. 각 언어의 소개만 상점 입력 후보이고 편집 메모는 공개 본문에 포함하지 않는다. 구조화 원본은 [store-copy.json](store-copy.json)이다.
 
 ## 한국어
 
@@ -20,11 +20,11 @@ CODE:SHIFT는 가상의 바탕화면에서 의뢰를 맡고, 파일을 고치고
 
 **동네의 부탁을 맡으세요**
 
-카페 3장 이후에는 세 단계로 이어지는 동네 의뢰 18개가 기다립니다. 고객의 상황을 골라 현재 파일이 내놓는 합계, 접수 여부, 목록과 일정 결과를 실행해 보세요. 가격표, 예약, 명단, 배송과 행사 보고서의 값을 직접 입력하거나 짧은 식과 코드를 고칩니다. 처음 여섯 의뢰도 직접 입력하며, 도움을 열어 고른 예시는 입력 초안만 채웁니다. 저장·검사·전달은 직접 해야 합니다. 파일을 바꾸면 이전 실행 결과가 오래됐다고 표시되며 다시 실행해 확인합니다. 상황 실험만으로 의뢰가 완료되거나 보상이 지급되지는 않습니다. 고객에게 보낸 답장은 마지막 편지에 반영됩니다. 선택 연습 의뢰 6개도 준비되어 있습니다.
+카페 3장 이후에는 세 구역에 6개씩, 모두 18개의 동네 의뢰가 열립니다. 구역마다 원하는 4개씩 총 12개를 골라 전달하면 최종 프로젝트로 나아갈 수 있고, 남은 의뢰는 원할 때 이어 할 수 있습니다. 고객의 상황을 골라 현재 파일이 내놓는 합계, 접수 여부, 목록과 일정 결과를 실행해 보세요. 가격표, 예약, 명단, 배송과 행사 보고서의 값을 직접 입력하거나 짧은 식과 코드를 고칩니다. 빵 가격 계산, 도서 대출, 연락처 정리, 배송 요금과 행사 보고서의 다섯 의뢰는 설정 파일 대신 제한된 JavaScript 함수로도 풀 수 있습니다. 직접 작성한 함수를 저장하고 다른 입력으로 실행해 결과를 비교하세요. 도움에서 고른 예시는 입력 초안만 채우며 저장·검사·전달은 직접 해야 합니다. 파일을 바꾸면 이전 결과는 오래됐다고 표시됩니다. 상황 실험만으로 의뢰가 완료되거나 보상이 지급되지는 않습니다. 고객에게 보낸 답장은 마지막 편지에 반영됩니다. 선택 연습 의뢰 6개도 준비되어 있습니다.
 
 **내 작업실과 내 첫 배포**
 
-무료 기본 블루에서 시작해 번 크레딧으로 햇살 해변, 초록 정원, 오피스텔 작업실 배경을 구입하세요. 네 종류는 실제 바탕화면 이미지이며, 소유한 배경은 무료로 다시 적용할 수 있습니다. 복구 노트, 보조 모니터와 작업실 간판도 마련할 수 있습니다. 마지막에는 제목, 배치, 주소와 문의 보관을 연결한 동네 도움판을 만듭니다. 현재 파일을 검사하고 1.0.0을 기록한 뒤 첫 프로젝트를 배포하세요.
+무료 기본 블루에서 시작해 번 크레딧으로 햇살 해변, 초록 정원, 오피스텔 작업실 배경을 구입하세요. 소유한 배경은 무료로 다시 적용할 수 있습니다. 복구 노트, 보조 모니터와 작업실 간판도 마련할 수 있습니다. 마지막에는 장소 안내, 행사 목록 또는 포트폴리오 중 하나를 골라 내 프로젝트를 만듭니다. 제목과 설명, 직접 작성한 항목과 분류를 넣고 색과 목록·카드 배치를 고르세요. 미리보기에서 검색과 분류 필터를 써 보고, 화면 너비와 연결 주소, 문의 보관을 검사합니다. 현재 파일로 1.0.0을 기록하고 게임 안에서 첫 프로젝트를 배포하세요.
 
 **직접 다루는 컴퓨터**
 
@@ -52,11 +52,11 @@ Start by spotting a wrong sign and a menu that does not fit. In guided play, typ
 
 **Take on the neighborhood's requests**
 
-After three cafe chapters, work through 18 neighborhood jobs across three stages. Choose a client situation and run the current files to see a total, whether a request is accepted, a list or a schedule result. Type values or edit short expressions and code to fix prices, bookings, lists, deliveries and event reports. Even the first six jobs use direct input. Examples opened through Help only fill an input draft; you still save, check and deliver yourself. Editing files marks the previous run as outdated, so run the situation again. Trying a situation alone does not complete a job or award rewards. Your replies to customers shape the final letter. Six optional practice jobs are also available.
+After three cafe chapters, choose from 18 neighborhood jobs: six in each of three districts. Deliver any four in each district, 12 in total, to reach the final project. The remaining jobs can be completed when you want. Choose a client situation and run the current files to see a total, an acceptance decision, a list or a schedule. Type values or edit short expressions and code to fix prices, bookings, lists, deliveries and event reports. Five jobs—bakery prices, library loans, contact cleanup, delivery fees and festival reports—also let you write a limited JavaScript function instead of editing configuration files. Save your function, run different inputs and compare the results. Examples opened through Help only fill an input draft; you still save, check and deliver yourself. Editing files marks the previous result as outdated. Trying a situation alone does not complete a job or award rewards. Your replies to customers shape the final letter. Six optional practice jobs are also available.
 
 **Your studio. Your first release.**
 
-Start with the free Default Blue wallpaper, then buy Sunlit Coast, Morning Garden or Studio Apartment with earned credits. These four choices change the actual desktop image, and owned wallpapers can be reapplied for free. You can also buy recovery notes, a second monitor and a studio sign. Bring titles, layout, routes and request storage together in your own neighborhood help board. Check the current files, record version 1.0.0, and publish your first project inside the game.
+Start with the free Default Blue wallpaper, then buy Sunlit Coast, Morning Garden or Studio Apartment with earned credits. Owned wallpapers can be reapplied for free. You can also buy recovery notes, a second monitor and a studio sign. For your final project, choose a directory, event list or portfolio. Write its title, description, entries and categories, then choose colors and a list or card layout. Try search and category filters in the preview, and check the screen width, routes and request storage. Record version 1.0.0 from the current files and publish your first project inside the game.
 
 **A computer you can explore**
 
@@ -84,11 +84,11 @@ CODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直�
 
 **まちのお願いを引き受ける**
 
-カフェの3章を終えると、3段階に分かれた18件の依頼が待っています。お客さんの場面を選び、現在のファイルで合計、受付の可否、一覧や予定の結果を確かめましょう。値を入力し、短い式やコードを直して、価格表、予約、名簿、配送、イベント報告を修正します。最初の6件も直接入力します。自分で開いたヒントの例は入力欄の下書きを埋めるだけで、保存・検査・提出は自分で行います。ファイルを変えると前の実行結果は古いと表示され、再実行が必要です。場面を試すだけでは依頼の完了や報酬にはなりません。お客さんへの返事は最後の手紙に反映されます。任意の練習依頼も6件あります。
+カフェの3章を終えると、3つのエリアに6件ずつ、計18件の依頼が開きます。各エリアで好きな4件、合計12件を選んで提出すると最後の作品へ進めます。残りの依頼は好きなときに続けられます。お客さんの場面を選び、現在のファイルで合計、受付の可否、一覧や予定の結果を確かめましょう。値や短い式、コードを直して、価格表、予約、名簿、配送、イベント報告を修正します。パンの価格計算、図書貸出、連絡先整理、配送料、イベント報告の5件では、設定ファイルの編集に代えて限られたJavaScript構文で関数を書くこともできます。自分の関数を保存し、異なる入力で実行して結果を比べましょう。ヒントの例は下書きを埋めるだけで、保存・検査・提出は自分で行います。編集すると前の結果は古いと表示されます。場面を試すだけでは依頼の完了や報酬にはなりません。お客さんへの返事は最後の手紙に反映されます。任意の練習依頼も6件あります。
 
 **自分の作業場と、初めての公開**
 
-無料の標準ブルーから始めて、クレジットで陽だまりの海岸、朝の庭、ワンルームの作業場の壁紙を購入できます。4種類とも実際のデスクトップ画像が変わり、購入済みの壁紙は無料で再適用できます。復旧ノート、追加モニター、作業場の看板も購入できます。最後は見出し、レイアウト、アドレスと問い合わせ保存をつなげ、まちの案内板を作ります。現在のファイルを検査し、1.0.0を記録して、ゲーム内で初めての作品を公開しましょう。
+無料の標準ブルーから始めて、クレジットで陽だまりの海岸、朝の庭、ワンルームの作業場の壁紙を購入できます。購入済みの壁紙は無料で再適用できます。復旧ノート、追加モニター、作業場の看板も用意できます。最後は場所案内、イベント一覧、ポートフォリオから自分の作品を選びます。タイトル、説明、項目と分類を自分で書き、色とリスト・カードのレイアウトを選びましょう。プレビューで検索と分類フィルターを試し、画面の幅、アドレス、問い合わせ保存を検査します。現在のファイルで1.0.0を記録し、ゲーム内で初めての作品を公開しましょう。
 
 **自分で操作するパソコン**
 
@@ -98,24 +98,16 @@ CODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直�
 
 任意のコード実験室には、JavaScriptの限られた構文を使う12個の関数パズルがあります。条件、繰り返し、配列、集計から、API応答規則、重複要求、アトミックな更新、キャッシュへ。異なる入力で結果を確かめましょう。
 
-## Code Lab 公開条件 — 編集メモ
+## 공개 전 편집 메모
 
-0.11では12課題と制限付きインタープリターを実装しており、上の本文にその範囲を記載した。自動検証を人間の初心者テストや学習効果の証拠として扱わない。最終ビルドでメニュー到達、12課題の正解・不正解判定、保存と復元、3言語を確認してから公開する。Code Labを同梱しないビルドでは追加段落を削除する。自由なJavaScriptの全仕様、実ネットワークやホストのコード実行を約束しない。
+현재 문구는 0.13.1 RC의 구현 범위를 설명하는 제출 전 초안이다. KO/EN/JA 원어민 감수, 사람의 이해·재미·플레이 시간, 별도 저사양 PC 및 실제 Steam 실행 검증은 미완료다. 제한된 JavaScript 함수와 게임 안의 배포를 일반 JavaScript 실행, 호스트 프로그램 실행 또는 실제 서비스 배포로 소개하지 않는다. 최종 Steam 빌드에 포함한 콘텐츠와 언어·저장 검증을 대조하며, Code Lab 미동봉 시 해당 단락을 제거한다. 모든 의뢰 18개를 완료하는 업적과 구역마다 4개를 선택하는 본편 진행은 구분한다.
 
-- KO: 선택 콘텐츠인 코드 실험실에서는 12개의 짧은 함수 문제를 직접 고칩니다. 계산과 조건에서 시작해 배열, 집계와 요청 처리 규칙까지, 서로 다른 입력으로 결과를 시험하세요.
-- EN: In the optional Code Lab, repair 12 short function challenges. Move from arithmetic and conditions to arrays, reports and request-handling rules, testing your results against different inputs.
-- JA: 任意のコード実験室では、12個の短い関数課題を直接修正します。計算と条件から配列、集計、要求処理のルールへ進み、異なる入力で結果を確かめましょう。
+CODE:SHIFT는 작업명이다. 한국 정가는 사용자가 정한 ₩11,000이며 Steam에 미적용이다. 출시 할인은 미정이다. 첫 7일 20%·₩8,800은 추천안이며 확정하거나 예약한 할인은 아니다. 지역 가격은 Steam 가격 필드에서 별도 설정한다. 공식 할인 정책과 확인 날짜는 [출처](official-sources.md)를 따른다.
 
-## 編集メモ
+현재 웹은 전체 무료다. 실제 Steam 본편 구매가 가능해진 뒤 카페 입문 3장을 무료 홍보 데모로 남길 계획이며, 웹 제한은 아직 구현하지 않았다. 전환 전에 기존 저장 보존·내보내기·본편 가져오기와 실제 상점 링크를 확인한다.
 
-価格は日本・米国等の本文に換算額を埋め込まず、Steamの地域価格欄で扱う。ユーザーが選んだ韓国定価は₩11,000で未適用。発売時の割引率は最終選択待ち。最初の7日間の20%・₩8,800が現在の推奨案で、10%・₩9,900は以前の案、40%・₩6,600は発売時の上限案。50%はSteamの発売時割引の上限40%を超える。いずれも未適用で、販売価格の確定として本文に書かない。学習時間6〜8時間や「初心者に検証済み」は未実測・未検証のため記載しない。公開前に最終製品名、発売時点の実装数、Steam機能チェックボックスと本体の挙動を照合する。
+## 보관된 홍보영상 — 현재 빌드와 구분
 
-- KO: 현재 웹은 전체 무료다. Steam에서 실제 구매가 가능해진 뒤 카페 입문 3장까지만 무료 데모로 남기고, 유료판에 후속 의뢰·연습·Code Lab·최종 프로젝트를 포함한 전체 캠페인을 제공할 계획이다. 웹 제한은 아직 구현하지 않았고 Steam 등록·가격 적용도 완료하지 않았다.
-- EN: The current web version is fully free. Once the game is actually available to buy on Steam, the plan is to retain the three cafe chapters as a free web demo and offer the full campaign, including later jobs, exercises, Code Lab and the final project, in the paid edition. The web limit is not implemented, and Steam registration and pricing are not complete.
-- JA: 現在のWeb版は全編無料。Steamで実際に購入できるようになった後、カフェ入門3章を無料Webデモとして残し、後半の依頼・練習・コード実験室・最後の作品を含む全キャンペーンを有料版で提供する予定。Web制限は未実装で、Steam登録・価格適用も未完了。
+`output/trailer-rebuild/final/`의 30초 KO/EN/JA 가로 영상과 KO 세로 영상은 0.11.1 한국어 UI 촬영본이다. 후반은 이전 UI 플레이 저장을 화면에서 가져와 촬영했다. 0.13.1의 선택 12/18 진행, 다섯 JavaScript 대안 풀이와 개인 프로젝트를 보여 주는 현재 빌드 증거가 아니다. Code Lab도 포함하지 않는다. 공개 후보로 사용하기 전 최종 빌드와 대조해 다시 촬영하거나 오래된 장면을 교체할 필요를 판단한다. 현재 버전 촬영·업로드 완료라고 기록하지 않는다.
 
-## 최신 홍보영상 — 편집 메모
-
-`output/trailer-rebuild/final/`의 30초 `codeshift-ko.mp4`, `codeshift-en.mp4`, `codeshift-ja.mp4`, `codeshift-ko-vertical.mp4`를 현재 후보로 사용한다. 원본 UI는 한국어이며 화면 위 큰 움직이는 문구를 KO/EN/JA로 제공한다. 0.11.1의 실제 게임 UI를 자동 촬영했고, 후반은 기존 UI 플레이로 얻은 저장을 화면에서 가져와 촬영했다. 0.12의 새 후반 고객 상황 실행 화면과 첫 여섯 의뢰의 직접 입력 화면은 이 영상에 포함되지 않는다. Code Lab도 포함하지 않는다. 영상은 기존 촬영본을 유지하며 현재 상점 본문은 0.12 출시 후보의 실제 범위와 최종 검증 결과를 대조한다.
-
-음악은 Kevin MacLeod (incompetech.com)의 **Realizer**, CC BY 4.0이다. 원본 출처는 https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024 이며 `ATTRIBUTION.txt`를 영상과 함께 제공한다. 구간을 편집하고 125→128 BPM으로 음정 유지 템포 조정 후 영상에 믹스했다. 사람의 전체 재생·청음은 수행 완료로 기록하지 않는다. 이전 42초 자료는 `output/archive/trailers-before-rebuild-20261009/trailer-0.10/`에 보존한다.
+음악은 Kevin MacLeod의 **Realizer**, CC BY 4.0이며 원본 출처는 https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024 이다. `ATTRIBUTION.txt`의 출처·라이선스·발췌 및 125→128 BPM 템포 조정 내역을 보존한다. 사람의 전체 시청·청음은 미완료다. 더 오래된 42초 영상과 스크린샷은 `output/archive/trailers-before-rebuild-20261009/trailer-0.10/`의 역사 자료다.

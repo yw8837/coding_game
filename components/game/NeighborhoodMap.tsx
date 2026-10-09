@@ -1,5 +1,6 @@
 'use client';
 import {useState} from 'react';
+import Image from 'next/image';
 import {Check,Lock,ArrowRight,MapPin,Trophy} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
 import {CAREER_JOBS} from '@/lib/game/career-content';
@@ -27,7 +28,7 @@ export function NeighborhoodMap({state,onSelect,onRelease}:{state:GameState;onSe
    {([1,2,3] as const).map(value=>{const count=CAREER_JOBS.filter(item=>item.act===value&&career.completed.includes(item.id)).length;return <button key={value} type="button" aria-pressed={act===value} onClick={()=>{setAct(value);setSelected(CAREER_JOBS.find(item=>item.act===value)!.id);}}><span>{count>=4?<Check size={16}/>:value}</span><b>{titles[value-1]}</b><small>{count}/6 · {tr('4개로 다음 구역','4 to advance','4件で次へ')}</small></button>;})}
   </nav>
   <div className="map-board"><div className="map-scroll" tabIndex={0} aria-label={tr('동네 지도 · 작은 화면에서는 옆으로 이동','Neighborhood map · scroll sideways on small screens','まちの地図 · 小さい画面では横にスクロール')}>
-   <div className="map-canvas"><img src="/game-art/neighborhood.png" alt="" width={1672} height={941} draggable={false}/>
+   <div className="map-canvas"><Image unoptimized src="/game-art/neighborhood.png" alt="" width={1672} height={941} loading="eager" draggable={false}/>
     {CAREER_JOBS.map((item,index)=>{if(item.act!==act)return null;const delivered=career.completed.includes(item.id),available=careerUnlocked(state,item);return <button type="button" key={item.id} data-testid={'map-pin-'+item.id} className={'map-pin '+(delivered?'delivered':available?'available':'locked')} style={{left:PLACES[index][0]+'%',top:PLACES[index][1]+'%'}} aria-pressed={selected===item.id} aria-label={`${item.client[lang]} · ${delivered?tr('전달 완료','Delivered','提出済み'):available?tr('의뢰 보기','View request','依頼を見る'):tr('아직 잠김','Locked','未解放')}`} onClick={()=>setSelected(item.id)}><span>{delivered?<Check size={20}/>:available?String(index+1).padStart(2,'0'):<Lock size={17}/>}</span>{selected===item.id&&<b>{item.client[lang]}</b>}</button>;})}
    </div>
   </div>

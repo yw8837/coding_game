@@ -7,31 +7,32 @@
     "ko": {
       "short_description": "내 컴퓨터에서 시작하는 개발자 이야기. 작은 카페의 문제를 관찰하고, 코드를 고쳐 동네 의뢰를 해결하세요. 번 크레딧으로 작업실을 꾸미고, 배운 것을 연결해 내 첫 프로젝트 1.0을 배포하세요.",
       "short_description_characters": 108,
-      "long_description": "컴퓨터 한 대, 도착한 메시지 하나. 작은 카페가 당신의 도움이 필요합니다.\n\nCODE:SHIFT는 가상의 바탕화면에서 의뢰를 맡고, 파일을 고치고, 결과를 확인하는 싱글 플레이 개발자 시뮬레이터입니다. 메시지, 브라우저, 편집기와 터미널을 직접 열어 작은 수리를 완성하고 동네 사람들의 다음 부탁을 만나세요.\n\n[b]직접 바꿔 보는 첫 코드[/b]\n\n잘못된 간판과 잘린 메뉴판을 먼저 관찰하세요. 함께 배우기에서는 간판 이름을 직접 입력하고 너비 슬라이더를 조절합니다. 계산 연산자와 메뉴 주소도 직접 입력하고 주문 보관을 설정하세요. 변경을 파일에 저장하고 화면과 손님 주문에서 결과를 확인합니다. 힌트는 필요할 때 직접 열며 보상 불이익이 없습니다. 실패에 시간 제한이나 크레딧 손실도 없습니다.\n\n[b]동네의 부탁을 맡으세요[/b]\n\n카페 3장 이후에는 세 단계로 이어지는 동네 의뢰 18개가 기다립니다. 고객의 상황을 골라 현재 파일이 내놓는 합계, 접수 여부, 목록과 일정 결과를 실행해 보세요. 가격표, 예약, 명단, 배송과 행사 보고서의 값을 직접 입력하거나 짧은 식과 코드를 고칩니다. 처음 여섯 의뢰도 직접 입력하며, 도움을 열어 고른 예시는 입력 초안만 채웁니다. 저장·검사·전달은 직접 해야 합니다. 파일을 바꾸면 이전 실행 결과가 오래됐다고 표시되며 다시 실행해 확인합니다. 상황 실험만으로 의뢰가 완료되거나 보상이 지급되지는 않습니다. 고객에게 보낸 답장은 마지막 편지에 반영됩니다. 선택 연습 의뢰 6개도 준비되어 있습니다.\n\n[b]내 작업실과 내 첫 배포[/b]\n\n무료 기본 블루에서 시작해 번 크레딧으로 햇살 해변, 초록 정원, 오피스텔 작업실 배경을 구입하세요. 네 종류는 실제 바탕화면 이미지이며, 소유한 배경은 무료로 다시 적용할 수 있습니다. 복구 노트, 보조 모니터와 작업실 간판도 마련할 수 있습니다. 마지막에는 제목, 배치, 주소와 문의 보관을 연결한 동네 도움판을 만듭니다. 현재 파일을 검사하고 1.0.0을 기록한 뒤 첫 프로젝트를 배포하세요.\n\n[b]직접 다루는 컴퓨터[/b]\n\n안내를 따라 한 부분씩 고치거나 직접 작업 모드에서 편집기와 가상 터미널을 사용할 수 있습니다. 직접 작업에서는 후속 의뢰와 최종 프로젝트도 전체 코드 편집으로 시작하며 언제든 한 부분씩 고치기로 전환할 수 있습니다. 힌트와 예시는 필요할 때 직접 엽니다. 게임 속 파일과 명령은 시뮬레이션 안에서 작동합니다. 한국어, 영어와 일본어로 플레이하고, 로컬 저장으로 진행을 이어가세요.\n\n[b]더 고쳐 보고 싶다면[/b]\n\n선택 콘텐츠인 코드 실험실에서는 제한된 JavaScript 문법으로 12개의 함수 퍼즐을 직접 고칩니다. 조건과 반복, 배열과 집계에서 시작해 API 응답 규칙, 중복 요청, 원자적 처리와 캐시를 서로 다른 입력으로 시험하세요."
+      "long_description": "컴퓨터 한 대, 도착한 메시지 하나. 작은 카페가 당신의 도움이 필요합니다.\n\nCODE:SHIFT는 가상의 바탕화면에서 의뢰를 맡고, 파일을 고치고, 결과를 확인하는 싱글 플레이 개발자 시뮬레이터입니다. 메시지, 브라우저, 편집기와 터미널을 직접 열어 작은 수리를 완성하고 동네 사람들의 다음 부탁을 만나세요.\n\n[b]직접 바꿔 보는 첫 코드[/b]\n\n잘못된 간판과 잘린 메뉴판을 먼저 관찰하세요. 함께 배우기에서는 간판 이름을 직접 입력하고 너비 슬라이더를 조절합니다. 계산 연산자와 메뉴 주소도 직접 입력하고 주문 보관을 설정하세요. 변경을 파일에 저장하고 화면과 손님 주문에서 결과를 확인합니다. 힌트는 필요할 때 직접 열며 보상 불이익이 없습니다. 실패에 시간 제한이나 크레딧 손실도 없습니다.\n\n[b]동네의 부탁을 맡으세요[/b]\n\n카페 3장 이후에는 세 구역에 6개씩, 모두 18개의 동네 의뢰가 열립니다. 구역마다 원하는 4개씩 총 12개를 골라 전달하면 최종 프로젝트로 나아갈 수 있고, 남은 의뢰는 원할 때 이어 할 수 있습니다. 고객의 상황을 골라 현재 파일이 내놓는 합계, 접수 여부, 목록과 일정 결과를 실행해 보세요. 가격표, 예약, 명단, 배송과 행사 보고서의 값을 직접 입력하거나 짧은 식과 코드를 고칩니다. 빵 가격 계산, 도서 대출, 연락처 정리, 배송 요금과 행사 보고서의 다섯 의뢰는 설정 파일 대신 제한된 JavaScript 함수로도 풀 수 있습니다. 직접 작성한 함수를 저장하고 다른 입력으로 실행해 결과를 비교하세요. 도움에서 고른 예시는 입력 초안만 채우며 저장·검사·전달은 직접 해야 합니다. 파일을 바꾸면 이전 결과는 오래됐다고 표시됩니다. 상황 실험만으로 의뢰가 완료되거나 보상이 지급되지는 않습니다. 고객에게 보낸 답장은 마지막 편지에 반영됩니다. 선택 연습 의뢰 6개도 준비되어 있습니다.\n\n[b]내 작업실과 내 첫 배포[/b]\n\n무료 기본 블루에서 시작해 번 크레딧으로 햇살 해변, 초록 정원, 오피스텔 작업실 배경을 구입하세요. 소유한 배경은 무료로 다시 적용할 수 있습니다. 복구 노트, 보조 모니터와 작업실 간판도 마련할 수 있습니다. 마지막에는 장소 안내, 행사 목록 또는 포트폴리오 중 하나를 골라 내 프로젝트를 만듭니다. 제목과 설명, 직접 작성한 항목과 분류를 넣고 색과 목록·카드 배치를 고르세요. 미리보기에서 검색과 분류 필터를 써 보고, 화면 너비와 연결 주소, 문의 보관을 검사합니다. 현재 파일로 1.0.0을 기록하고 게임 안에서 첫 프로젝트를 배포하세요.\n\n[b]직접 다루는 컴퓨터[/b]\n\n안내를 따라 한 부분씩 고치거나 직접 작업 모드에서 편집기와 가상 터미널을 사용할 수 있습니다. 직접 작업에서는 후속 의뢰와 최종 프로젝트도 전체 코드 편집으로 시작하며 언제든 한 부분씩 고치기로 전환할 수 있습니다. 힌트와 예시는 필요할 때 직접 엽니다. 게임 속 파일과 명령은 시뮬레이션 안에서 작동합니다. 한국어, 영어와 일본어로 플레이하고, 로컬 저장으로 진행을 이어가세요.\n\n[b]더 고쳐 보고 싶다면[/b]\n\n선택 콘텐츠인 코드 실험실에서는 제한된 JavaScript 문법으로 12개의 함수 퍼즐을 직접 고칩니다. 조건과 반복, 배열과 집계에서 시작해 API 응답 규칙, 중복 요청, 원자적 처리와 캐시를 서로 다른 입력으로 시험하세요."
     },
     "en": {
       "short_description": "Start a developer's story on your own virtual desktop. Spot a cafe's problems, repair its code, and take on neighborhood jobs. Spend earned credits on your studio, then bring what you have learned together and ship your first 1.0 project.",
       "short_description_characters": 238,
-      "long_description": "One computer. One new message. A small cafe needs your help.\n\nCODE:SHIFT is a single-player developer simulator played through a virtual desktop. Open messages, a browser, an editor and a terminal yourself. Repair files, check what changed, and meet the people behind the next neighborhood request.\n\n[b]Your first code changes[/b]\n\nStart by spotting a wrong sign and a menu that does not fit. In guided play, type the sign name and adjust a width slider. Type the calculation operator and menu address, then set order storage. Save changes to the files and check the result on screen and in customer orders. Open hints when you need them; they do not reduce rewards. Failed attempts have no time limit or credit penalty.\n\n[b]Take on the neighborhood's requests[/b]\n\nAfter three cafe chapters, work through 18 neighborhood jobs across three stages. Choose a client situation and run the current files to see a total, whether a request is accepted, a list or a schedule result. Type values or edit short expressions and code to fix prices, bookings, lists, deliveries and event reports. Even the first six jobs use direct input. Examples opened through Help only fill an input draft; you still save, check and deliver yourself. Editing files marks the previous run as outdated, so run the situation again. Trying a situation alone does not complete a job or award rewards. Your replies to customers shape the final letter. Six optional practice jobs are also available.\n\n[b]Your studio. Your first release.[/b]\n\nStart with the free Default Blue wallpaper, then buy Sunlit Coast, Morning Garden or Studio Apartment with earned credits. These four choices change the actual desktop image, and owned wallpapers can be reapplied for free. You can also buy recovery notes, a second monitor and a studio sign. Bring titles, layout, routes and request storage together in your own neighborhood help board. Check the current files, record version 1.0.0, and publish your first project inside the game.\n\n[b]A computer you can explore[/b]\n\nFollow the guided route to edit one part at a time, or use Direct Work mode in the editor and virtual terminal. Direct Work starts later jobs and the final project in full code editing; you can switch to editing one part at any time. Open hints and examples when you need them. Files and commands run inside the game's simulation. Play in Korean, English or Japanese, and continue your progress with local saves.\n\n[b]Keep experimenting[/b]\n\nThe optional Code Lab offers 12 function puzzles using a limited subset of JavaScript. Test conditions, loops, arrays and reports, then explore API response rules, repeated requests, atomic updates and caching with different inputs."
+      "long_description": "One computer. One new message. A small cafe needs your help.\n\nCODE:SHIFT is a single-player developer simulator played through a virtual desktop. Open messages, a browser, an editor and a terminal yourself. Repair files, check what changed, and meet the people behind the next neighborhood request.\n\n[b]Your first code changes[/b]\n\nStart by spotting a wrong sign and a menu that does not fit. In guided play, type the sign name and adjust a width slider. Type the calculation operator and menu address, then set order storage. Save changes to the files and check the result on screen and in customer orders. Open hints when you need them; they do not reduce rewards. Failed attempts have no time limit or credit penalty.\n\n[b]Take on the neighborhood's requests[/b]\n\nAfter three cafe chapters, choose from 18 neighborhood jobs: six in each of three districts. Deliver any four in each district, 12 in total, to reach the final project. The remaining jobs can be completed when you want. Choose a client situation and run the current files to see a total, an acceptance decision, a list or a schedule. Type values or edit short expressions and code to fix prices, bookings, lists, deliveries and event reports. Five jobs—bakery prices, library loans, contact cleanup, delivery fees and festival reports—also let you write a limited JavaScript function instead of editing configuration files. Save your function, run different inputs and compare the results. Examples opened through Help only fill an input draft; you still save, check and deliver yourself. Editing files marks the previous result as outdated. Trying a situation alone does not complete a job or award rewards. Your replies to customers shape the final letter. Six optional practice jobs are also available.\n\n[b]Your studio. Your first release.[/b]\n\nStart with the free Default Blue wallpaper, then buy Sunlit Coast, Morning Garden or Studio Apartment with earned credits. Owned wallpapers can be reapplied for free. You can also buy recovery notes, a second monitor and a studio sign. For your final project, choose a directory, event list or portfolio. Write its title, description, entries and categories, then choose colors and a list or card layout. Try search and category filters in the preview, and check the screen width, routes and request storage. Record version 1.0.0 from the current files and publish your first project inside the game.\n\n[b]A computer you can explore[/b]\n\nFollow the guided route to edit one part at a time, or use Direct Work mode in the editor and virtual terminal. Direct Work starts later jobs and the final project in full code editing; you can switch to editing one part at any time. Open hints and examples when you need them. Files and commands run inside the game's simulation. Play in Korean, English or Japanese, and continue your progress with local saves.\n\n[b]Keep experimenting[/b]\n\nThe optional Code Lab offers 12 function puzzles using a limited subset of JavaScript. Test conditions, loops, arrays and reports, then explore API response rules, repeated requests, atomic updates and caching with different inputs."
     },
     "ja": {
       "short_description": "自分の仮想デスクトップから始まる開発者の物語。小さなカフェの問題を見つけ、コードを直して、まちの依頼に応えましょう。稼いだクレジットで作業場を整え、学んだことをつなげて初めての1.0作品を公開します。",
       "short_description_characters": 100,
-      "long_description": "パソコン1台と、届いたメッセージ。小さなカフェがあなたの助けを待っています。\n\nCODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直し、結果を確かめるシングルプレイの開発者シミュレーターです。メッセージ、ブラウザー、エディター、ターミナルを自分で開き、小さな修正を完成させながら、まちの人々の次のお願いに出会いましょう。\n\n[b]自分で変える、初めてのコード[/b]\n\n間違った看板と、画面に収まらないメニューを見つけるところから始めます。ガイド付きのプレイでは看板の名前を入力し、幅スライダーを動かします。計算の演算子とメニューのアドレスも入力し、注文の保存を設定しましょう。変更をファイルに保存して、画面とお客さんの注文で結果を確かめます。ヒントは必要なとき自分で開けます。使っても報酬は減りません。失敗に時間制限やクレジットのペナルティもありません。\n\n[b]まちのお願いを引き受ける[/b]\n\nカフェの3章を終えると、3段階に分かれた18件の依頼が待っています。お客さんの場面を選び、現在のファイルで合計、受付の可否、一覧や予定の結果を確かめましょう。値を入力し、短い式やコードを直して、価格表、予約、名簿、配送、イベント報告を修正します。最初の6件も直接入力します。自分で開いたヒントの例は入力欄の下書きを埋めるだけで、保存・検査・提出は自分で行います。ファイルを変えると前の実行結果は古いと表示され、再実行が必要です。場面を試すだけでは依頼の完了や報酬にはなりません。お客さんへの返事は最後の手紙に反映されます。任意の練習依頼も6件あります。\n\n[b]自分の作業場と、初めての公開[/b]\n\n無料の標準ブルーから始めて、クレジットで陽だまりの海岸、朝の庭、ワンルームの作業場の壁紙を購入できます。4種類とも実際のデスクトップ画像が変わり、購入済みの壁紙は無料で再適用できます。復旧ノート、追加モニター、作業場の看板も購入できます。最後は見出し、レイアウト、アドレスと問い合わせ保存をつなげ、まちの案内板を作ります。現在のファイルを検査し、1.0.0を記録して、ゲーム内で初めての作品を公開しましょう。\n\n[b]自分で操作するパソコン[/b]\n\nガイドに沿って1つずつ修正するほか、直接作業モードでエディターや仮想ターミナルを使えます。直接作業では後半の依頼と最後の作品もコード全体の編集から始まり、いつでも部分修正に切り替えられます。ヒントや例は必要なとき自分で開きます。ファイルとコマンドはゲーム内のシミュレーションで動作します。韓国語、英語、日本語でプレイし、ローカル保存で続きを楽しめます。\n\n[b]もっと試したいなら[/b]\n\n任意のコード実験室には、JavaScriptの限られた構文を使う12個の関数パズルがあります。条件、繰り返し、配列、集計から、API応答規則、重複要求、アトミックな更新、キャッシュへ。異なる入力で結果を確かめましょう。"
+      "long_description": "パソコン1台と、届いたメッセージ。小さなカフェがあなたの助けを待っています。\n\nCODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直し、結果を確かめるシングルプレイの開発者シミュレーターです。メッセージ、ブラウザー、エディター、ターミナルを自分で開き、小さな修正を完成させながら、まちの人々の次のお願いに出会いましょう。\n\n[b]自分で変える、初めてのコード[/b]\n\n間違った看板と、画面に収まらないメニューを見つけるところから始めます。ガイド付きのプレイでは看板の名前を入力し、幅スライダーを動かします。計算の演算子とメニューのアドレスも入力し、注文の保存を設定しましょう。変更をファイルに保存して、画面とお客さんの注文で結果を確かめます。ヒントは必要なとき自分で開けます。使っても報酬は減りません。失敗に時間制限やクレジットのペナルティもありません。\n\n[b]まちのお願いを引き受ける[/b]\n\nカフェの3章を終えると、3つのエリアに6件ずつ、計18件の依頼が開きます。各エリアで好きな4件、合計12件を選んで提出すると最後の作品へ進めます。残りの依頼は好きなときに続けられます。お客さんの場面を選び、現在のファイルで合計、受付の可否、一覧や予定の結果を確かめましょう。値や短い式、コードを直して、価格表、予約、名簿、配送、イベント報告を修正します。パンの価格計算、図書貸出、連絡先整理、配送料、イベント報告の5件では、設定ファイルの編集に代えて限られたJavaScript構文で関数を書くこともできます。自分の関数を保存し、異なる入力で実行して結果を比べましょう。ヒントの例は下書きを埋めるだけで、保存・検査・提出は自分で行います。編集すると前の結果は古いと表示されます。場面を試すだけでは依頼の完了や報酬にはなりません。お客さんへの返事は最後の手紙に反映されます。任意の練習依頼も6件あります。\n\n[b]自分の作業場と、初めての公開[/b]\n\n無料の標準ブルーから始めて、クレジットで陽だまりの海岸、朝の庭、ワンルームの作業場の壁紙を購入できます。購入済みの壁紙は無料で再適用できます。復旧ノート、追加モニター、作業場の看板も用意できます。最後は場所案内、イベント一覧、ポートフォリオから自分の作品を選びます。タイトル、説明、項目と分類を自分で書き、色とリスト・カードのレイアウトを選びましょう。プレビューで検索と分類フィルターを試し、画面の幅、アドレス、問い合わせ保存を検査します。現在のファイルで1.0.0を記録し、ゲーム内で初めての作品を公開しましょう。\n\n[b]自分で操作するパソコン[/b]\n\nガイドに沿って1つずつ修正するほか、直接作業モードでエディターや仮想ターミナルを使えます。直接作業では後半の依頼と最後の作品もコード全体の編集から始まり、いつでも部分修正に切り替えられます。ヒントや例は必要なとき自分で開きます。ファイルとコマンドはゲーム内のシミュレーションで動作します。韓国語、英語、日本語でプレイし、ローカル保存で続きを楽しめます。\n\n[b]もっと試したいなら[/b]\n\n任意のコード実験室には、JavaScriptの限られた構文を使う12個の関数パズルがあります。条件、繰り返し、配列、集計から、API応答規則、重複要求、アトミックな更新、キャッシュへ。異なる入力で結果を確かめましょう。"
     }
   },
   "code_lab": {
     "included_in_draft": true,
-    "implementation": "0.11 limited JavaScript interpreter and 12 function puzzles",
-    "publication_condition": "Final browser/Windows package and language/save checks; remove Code Lab paragraphs if not shipped",
+    "implementation": "12 optional limited JavaScript function puzzles; included in 0.13.1 RC scope",
+    "publication_condition": "Confirm the final Steam build includes the tested browser/Windows content, language and save behavior; remove the paragraph if not shipped",
     "footage_in_0_10_trailer": false,
     "included_in_current_trailer": false
   },
   "limits": [
-    "No measured minimum system requirements",
-    "No novice human validation completed",
-    "No measured playtime or professional mastery promise",
-    "Steam achievements and Cloud not verified on real app"
+    "No measured minimum system requirements on a separate low-spec PC",
+    "No human novice understanding, fun or playtime validation completed",
+    "No native-speaker localization review completed",
+    "No professional or higher-level learning mastery promise",
+    "Real Steam app execution, achievements and Cloud unverified"
   ],
   "promo_media": {
     "directory": "output/trailer-rebuild/final",
@@ -62,23 +63,51 @@
     "human_listening": "not performed",
     "recorded_game_version": "0.11.1",
     "includes_0_12_client_situations": false,
-    "includes_0_12_first_six_direct_inputs": false
+    "includes_0_12_first_six_direct_inputs": false,
+    "status": "older 0.11.1 footage; not proof of the 0.13.1 build",
+    "represents_current_build": false,
+    "includes_0_13_chosen_route": false,
+    "includes_0_13_five_javascript_contracts": false,
+    "includes_0_13_personal_project": false
   },
   "korea_launch_discount_proposal": {
     "percent": 20,
     "days": 7,
     "price_krw": 8800,
     "applied": false,
-    "status": "recommendation-not-confirmed",
-    "decision_status": "awaiting_user_choice"
+    "status": "undecided-not-applied",
+    "decision_status": "awaiting_user_choice; 20 percent remains only a recommendation"
   },
-  "game_version_scope": "0.12 RC",
+  "game_version_scope": "0.13.1 RC; final Steam build not submitted",
   "korea_price_decision": "user-selected; not applied on Steam",
   "web_demo_transition": {
     "status": "planned-not-implemented",
     "trigger": "Only after the game is actually available to buy on Steam",
     "current_web_scope": "full game, free, no signup",
     "future_free_web_scope": "three cafe introduction chapters",
-    "paid_scope": "full campaign: cafe chapters, 18 career jobs, 6 exercises, 12 Code Lab puzzles and final project"
+    "paid_scope": "Full campaign: 3 cafe chapters, 18 available career jobs with a chosen 12-job progression, 5 JS alternatives, 6 optional exercises, 12 optional Code Lab puzzles and a personal final project"
+  },
+  "content_scope": {
+    "cafe_chapters": 3,
+    "career_jobs_available": 18,
+    "career_jobs_required_for_final_project": 12,
+    "per_district_available": 6,
+    "per_district_required": 4,
+    "javascript_alternative_jobs": 5,
+    "javascript_job_ids": [
+      "bakery-price",
+      "library-loans",
+      "contacts-clean",
+      "delivery-fees",
+      "festival-report"
+    ],
+    "optional_practice_jobs": 6,
+    "optional_code_lab_puzzles": 12,
+    "personal_project": [
+      "directory",
+      "events",
+      "portfolio"
+    ],
+    "legacy_saves": "Existing legacy progression and published-project snapshots remain supported; new-route counts describe new playthroughs"
   }
 }
