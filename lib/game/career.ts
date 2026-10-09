@@ -2,8 +2,8 @@ import {CAREER_JOBS,type CareerJob,type Localized} from './career-content.ts';
 import {evaluateCareer} from './career-evaluation.ts';
 import {createRelease,applyRelease,releasePublishedFresh,type ReleaseProgress,type ReleaseAction} from './release.ts';
 
-export type CareerProgress={active:string|null;accepted:string[];inspected:string[];completed:string[];proofs:Record<string,{hash:string;passed:boolean}>;choices:Record<string,string>;upgrades:string[];checkpoints:Record<string,Record<string,string>>;ending:'community'|'studio'|'balanced'|null;release:ReleaseProgress};
-export const createCareer=():CareerProgress=>({active:null,accepted:[],inspected:[],completed:[],proofs:{},choices:{},upgrades:[],checkpoints:{},ending:null,release:createRelease()});
+export type CareerProgress={rulesRevision:1|2;active:string|null;accepted:string[];inspected:string[];completed:string[];proofs:Record<string,{hash:string;passed:boolean}>;choices:Record<string,string>;upgrades:string[];checkpoints:Record<string,Record<string,string>>;ending:'community'|'studio'|'balanced'|null;release:ReleaseProgress};
+export const createCareer=():CareerProgress=>({rulesRevision:2,active:null,accepted:[],inspected:[],completed:[],proofs:{},choices:{},upgrades:[],checkpoints:{},ending:null,release:createRelease()});
 export type CareerAction=ReleaseAction|{type:'career-accept'|'career-inspect'|'career-test'|'career-checkpoint'|'career-restore';id:string}|{type:'career-edit';id:string;file:string;content:string}|{type:'career-deliver';id:string;choice:string}|{type:'career-upgrade';id:string}|{type:'career-ending'};
 function isReleaseAction(action:CareerAction):action is ReleaseAction{return action.type.startsWith('career-release-');}
 type Host={completed:number[];gameplay:{career:CareerProgress;openingCelebrated:boolean};machines:{local:{files:Record<string,string>;dirs:string[]}};credits:number;xp:number;notice:string};

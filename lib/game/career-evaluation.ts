@@ -50,7 +50,7 @@ function time(value:string):number {const m=value.match(/^(\d{2}):(\d{2})$/);if(
 function attributes(tag:string):Record<string,string> {
  const attrs:Record<string,string>={};const body=tag.replace(/^<\w+\s*|\/?\s*>$/g,'');
  const re=/([\w-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;let match:RegExpExecArray|null;
- while((match=re.exec(body)))attrs[match[1].toLowerCase()]=match[2]??match[3]??match[4]??'';
+ while((match=re.exec(body))){const name=match[1].toLowerCase();if(Object.hasOwn(attrs,name))throw new Error('duplicate HTML attribute');attrs[name]=match[2]??match[3]??match[4]??'';}
  return attrs;
 }
 /** Pure, bounded interpreters only. User files are data, never executable JS/Python/HTML. */
@@ -68,7 +68,12 @@ export function evaluateCareer(id:string,files:Record<string,string>):CareerEval
     const total=(n:number)=>Math.floor(n/size)*pack+(n%size)*unit;
     [0,6,8].forEach((n,i)=>add(`${n}개 합계`,`${n} rolls total`,`${n}個合計`,[0,10000,13600][i],total(n)));
     add('낱개 1개','One single','単品1個',1800,total(1));
-    add('상자 미만 3개','Three singles below a full box','1箱未満の単品3個',5400,total(3));break;
+    add('상자 미만 3개','Three singles below a full box','1箱未満の単品3個',5400,total(3));
+    // Keep prior check indices stable for the playable customer scene.
+    add('상자 하나의 빵 수','Rolls in one box','1箱のパンの個数',6,size);
+    add('상자 하나의 가격','Price of one box','1箱の価格',10000,pack);
+    add('상자 미만 5개','Five singles below a full box','1箱未満の単品5個',9000,total(5));
+    add('10개 합계','Ten rolls total','10個合計',17200,total(10));break;
    }
    case 'library-loans':{
     const c=json(files,'policy.json'),limit=integer(c.limit,1,20),inclusive=flag(c.inclusive),overdue=flag(c.allowOverdue);
@@ -108,14 +113,21 @@ export function evaluateCareer(id:string,files:Record<string,string>):CareerEval
    case 'clinic-form':{
     const html=files['booking.html'];
     if(/<\s*(script|iframe|object|embed|style)\b|\bon\w+\s*=|javascript\s*:|<\s*link\b/i.test(html))throw new Error('active HTML is not supported');
-    const inputTag=html.match(/<input\b[^>]*>/i)?.[0],label=html.match(/<label\b([^>]*)>([^<]+)<\/label\s*>/i),button=html.match(/<button\b([^>]*)>([^<]+)<\/button\s*>/i);
-    if(!inputTag||!label||!button||!/<form\b/i.test(html)||!/<\/form\s*>/i.test(html))throw new Error('form, label, input and button required');
-    const input=attributes(inputTag),labelAttrs=attributes(`<label ${label[1]}>`),buttonAttrs=attributes(`<button ${button[1]}>`),formAttrs=attributes(html.match(/<form\b[^>]*>/i)![0]);
-    const visibleForm=!Object.hasOwn(formAttrs,'hidden'),usableInput=visibleForm&&!Object.hasOwn(input,'disabled')&&!Object.hasOwn(input,'hidden');
+    // Supported teaching grammar: one form containing one label, input and
+    // button in that order. No nested forms, fieldsets or inline CSS semantics.
+    const inert=html.replace(/<!--[\s\S]*?-->/g,'');
+    const form=inert.match(/^\s*<form\b([^>]*)>([\s\S]*)<\/form\s*>\s*$/i);
+    const controls=form?.[2].match(/^\s*(<label\b[^>]*>[^<]+<\/label\s*>)\s*(<input\b[^>]*>)\s*(<button\b[^>]*>[^<]+<\/button\s*>)\s*$/i);
+    if(!form||!controls)throw new Error('supported form requires one label, input and button inside the same form');
+    const label=controls[1].match(/<label\b([^>]*)>([^<]+)<\/label\s*>/i)!,button=controls[3].match(/<button\b([^>]*)>([^<]+)<\/button\s*>/i)!;
+    const input=attributes(controls[2]),labelAttrs=attributes(`<label ${label[1]}>`),buttonAttrs=attributes(`<button ${button[1]}>`),formAttrs=attributes(`<form ${form[1]}>`);
+    if([input,labelAttrs,buttonAttrs,formAttrs].some(attrs=>Object.hasOwn(attrs,'style')))throw new Error('inline CSS is outside the supported form grammar');
+    const belongs=(attrs:Record<string,string>)=>!Object.hasOwn(attrs,'form')||!!formAttrs.id&&attrs.form===formAttrs.id;
+    const visibleForm=!Object.hasOwn(formAttrs,'hidden'),usableInput=visibleForm&&belongs(input)&&!Object.hasOwn(input,'disabled')&&!Object.hasOwn(input,'hidden');
     const validation=!Object.hasOwn(formAttrs,'novalidate')&&!Object.hasOwn(buttonAttrs,'formnovalidate');
     add('라벨과 이름 칸 연결','Label links to name input','ラベルと名前欄の接続',true,usableInput&&!!input.id&&labelAttrs.for===input.id&&input.name==='name'&&!!label[2].trim());
     add('빈 이름 거절','Reject empty name','空の名前を断る',true,usableInput&&validation&&!Object.hasOwn(input,'readonly')&&Object.hasOwn(input,'required')&&(input.type??'text')==='text');
-    add('예약 제출 버튼','Booking submits','予約送信ボタン',true,visibleForm&&!Object.hasOwn(buttonAttrs,'disabled')&&!Object.hasOwn(buttonAttrs,'hidden')&&buttonAttrs.type==='submit'&&!!button[2].trim());break;
+    add('예약 제출 버튼','Booking submits','予約送信ボタン',true,visibleForm&&belongs(buttonAttrs)&&!Object.hasOwn(buttonAttrs,'disabled')&&!Object.hasOwn(buttonAttrs,'hidden')&&buttonAttrs.type==='submit'&&!!button[2].trim());break;
    }
    case 'market-filter':{
     const c=json(files,'filter.json'),field=text(c.field,['stock']),operator=text(c.operator,['>','>=']),value=numeric(c.value),fresh=flag(c.requireFresh);

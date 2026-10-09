@@ -12,7 +12,7 @@ import subprocess
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'output' / '0.11-security'
+OUT = ROOT / os.environ.get('CODESHIFT_SECURITY_QA_DIR', 'output/0.11-security')
 OUT.mkdir(parents=True, exist_ok=True)
 BASE = os.environ.get('CODESHIFT_WEB_URL', 'http://127.0.0.1:5173').rstrip('/')
 KEY = 'codeshift-intro-demo-v1'

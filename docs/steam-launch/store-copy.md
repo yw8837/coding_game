@@ -20,7 +20,7 @@ CODE:SHIFT는 가상의 바탕화면에서 의뢰를 맡고, 파일을 고치고
 
 **동네의 부탁을 맡으세요**
 
-카페 3장 이후에는 세 단계로 이어지는 동네 의뢰 18개가 기다립니다. 가격표, 예약, 명단, 배송과 행사 보고서를 고치며 선택, 빈칸과 짧은 식으로 작업을 이어갑니다. 고객에게 보낸 답장은 마지막 편지에 반영됩니다. 선택 연습 의뢰 6개도 준비되어 있습니다.
+카페 3장 이후에는 세 단계로 이어지는 동네 의뢰 18개가 기다립니다. 고객의 상황을 골라 현재 파일이 내놓는 합계, 접수 여부, 목록과 일정 결과를 실행해 보세요. 가격표, 예약, 명단, 배송과 행사 보고서의 값을 직접 입력하거나 짧은 식과 코드를 고칩니다. 처음 여섯 의뢰도 직접 입력하며, 도움을 열어 고른 예시는 입력 초안만 채웁니다. 저장·검사·전달은 직접 해야 합니다. 파일을 바꾸면 이전 실행 결과가 오래됐다고 표시되며 다시 실행해 확인합니다. 상황 실험만으로 의뢰가 완료되거나 보상이 지급되지는 않습니다. 고객에게 보낸 답장은 마지막 편지에 반영됩니다. 선택 연습 의뢰 6개도 준비되어 있습니다.
 
 **내 작업실과 내 첫 배포**
 
@@ -28,7 +28,7 @@ CODE:SHIFT는 가상의 바탕화면에서 의뢰를 맡고, 파일을 고치고
 
 **직접 다루는 컴퓨터**
 
-안내를 따라 시작하거나 직접 작업 모드에서 편집기와 가상 터미널을 사용할 수 있습니다. 게임 속 파일과 명령은 시뮬레이션 안에서 작동합니다. 한국어, 영어와 일본어로 플레이하고, 로컬 저장으로 진행을 이어가세요.
+안내를 따라 한 부분씩 고치거나 직접 작업 모드에서 편집기와 가상 터미널을 사용할 수 있습니다. 직접 작업에서는 후속 의뢰와 최종 프로젝트도 전체 코드 편집으로 시작하며 언제든 한 부분씩 고치기로 전환할 수 있습니다. 힌트와 예시는 필요할 때 직접 엽니다. 게임 속 파일과 명령은 시뮬레이션 안에서 작동합니다. 한국어, 영어와 일본어로 플레이하고, 로컬 저장으로 진행을 이어가세요.
 
 **더 고쳐 보고 싶다면**
 
@@ -52,7 +52,7 @@ Start by spotting a wrong sign and a menu that does not fit. In guided play, typ
 
 **Take on the neighborhood's requests**
 
-After three cafe chapters, work through 18 neighborhood jobs across three stages. Fix prices, bookings, lists, deliveries and event reports using choices, blanks and short expressions. Your replies to customers shape the final letter. Six optional practice jobs are also available.
+After three cafe chapters, work through 18 neighborhood jobs across three stages. Choose a client situation and run the current files to see a total, whether a request is accepted, a list or a schedule result. Type values or edit short expressions and code to fix prices, bookings, lists, deliveries and event reports. Even the first six jobs use direct input. Examples opened through Help only fill an input draft; you still save, check and deliver yourself. Editing files marks the previous run as outdated, so run the situation again. Trying a situation alone does not complete a job or award rewards. Your replies to customers shape the final letter. Six optional practice jobs are also available.
 
 **Your studio. Your first release.**
 
@@ -60,7 +60,7 @@ Start with the free Default Blue wallpaper, then buy Sunlit Coast, Morning Garde
 
 **A computer you can explore**
 
-Follow the guided route or use Direct Work mode to work in the editor and virtual terminal. Files and commands run inside the game's simulation. Play in Korean, English or Japanese, and continue your progress with local saves.
+Follow the guided route to edit one part at a time, or use Direct Work mode in the editor and virtual terminal. Direct Work starts later jobs and the final project in full code editing; you can switch to editing one part at any time. Open hints and examples when you need them. Files and commands run inside the game's simulation. Play in Korean, English or Japanese, and continue your progress with local saves.
 
 **Keep experimenting**
 
@@ -84,7 +84,7 @@ CODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直�
 
 **まちのお願いを引き受ける**
 
-カフェの3章を終えると、3段階に分かれた18件の依頼が待っています。価格表、予約、名簿、配送、イベント報告を、選択肢や空欄、短い式で修正します。お客さんへの返事は最後の手紙に反映されます。任意の練習依頼も6件あります。
+カフェの3章を終えると、3段階に分かれた18件の依頼が待っています。お客さんの場面を選び、現在のファイルで合計、受付の可否、一覧や予定の結果を確かめましょう。値を入力し、短い式やコードを直して、価格表、予約、名簿、配送、イベント報告を修正します。最初の6件も直接入力します。自分で開いたヒントの例は入力欄の下書きを埋めるだけで、保存・検査・提出は自分で行います。ファイルを変えると前の実行結果は古いと表示され、再実行が必要です。場面を試すだけでは依頼の完了や報酬にはなりません。お客さんへの返事は最後の手紙に反映されます。任意の練習依頼も6件あります。
 
 **自分の作業場と、初めての公開**
 
@@ -92,7 +92,7 @@ CODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直�
 
 **自分で操作するパソコン**
 
-ガイドに沿って進めるほか、直接作業モードでエディターや仮想ターミナルを使えます。ファイルとコマンドはゲーム内のシミュレーションで動作します。韓国語、英語、日本語でプレイし、ローカル保存で続きを楽しめます。
+ガイドに沿って1つずつ修正するほか、直接作業モードでエディターや仮想ターミナルを使えます。直接作業では後半の依頼と最後の作品もコード全体の編集から始まり、いつでも部分修正に切り替えられます。ヒントや例は必要なとき自分で開きます。ファイルとコマンドはゲーム内のシミュレーションで動作します。韓国語、英語、日本語でプレイし、ローカル保存で続きを楽しめます。
 
 **もっと試したいなら**
 
@@ -108,10 +108,10 @@ CODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直�
 
 ## 編集メモ
 
-価格は日本・米国等の本文に換算額を埋め込まず、Steamの地域価格欄で扱う。韓国案は₩21,000で未適用。学習時間6〜8時間や「初心者に検証済み」は未実測・未検証のため記載しない。公開前に最終製品名、発売時点の実装数、Steam機能チェックボックスと本体の挙動を照合する。
+価格は日本・米国等の本文に換算額を埋め込まず、Steamの地域価格欄で扱う。韓国案は₩9,900で未適用。学習時間6〜8時間や「初心者に検証済み」は未実測・未検証のため記載しない。公開前に最終製品名、発売時点の実装数、Steam機能チェックボックスと本体の挙動を照合する。
 
 ## 최신 홍보영상 — 편집 메모
 
-`output/trailer-rebuild/final/`의 30초 `codeshift-ko.mp4`, `codeshift-en.mp4`, `codeshift-ja.mp4`, `codeshift-ko-vertical.mp4`를 현재 후보로 사용한다. 원본 UI는 한국어이며 화면 위 큰 움직이는 문구를 KO/EN/JA로 제공한다. 실제 게임 UI를 새로 자동 촬영했고, 후반은 기존 UI 플레이로 얻은 저장을 화면에서 가져와 촬영했다. Code Lab은 포함하지 않는다.
+`output/trailer-rebuild/final/`의 30초 `codeshift-ko.mp4`, `codeshift-en.mp4`, `codeshift-ja.mp4`, `codeshift-ko-vertical.mp4`를 현재 후보로 사용한다. 원본 UI는 한국어이며 화면 위 큰 움직이는 문구를 KO/EN/JA로 제공한다. 0.11.1의 실제 게임 UI를 자동 촬영했고, 후반은 기존 UI 플레이로 얻은 저장을 화면에서 가져와 촬영했다. 0.12의 새 후반 고객 상황 실행 화면과 첫 여섯 의뢰의 직접 입력 화면은 이 영상에 포함되지 않는다. Code Lab도 포함하지 않는다. 영상은 기존 촬영본을 유지하며 현재 상점 본문은 0.12 출시 후보의 실제 범위와 최종 검증 결과를 대조한다.
 
 음악은 Kevin MacLeod (incompetech.com)의 **Realizer**, CC BY 4.0이다. 원본 출처는 https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024 이며 `ATTRIBUTION.txt`를 영상과 함께 제공한다. 구간을 편집하고 125→128 BPM으로 음정 유지 템포 조정 후 영상에 믹스했다. 사람의 전체 재생·청음은 수행 완료로 기록하지 않는다. 이전 42초 자료는 `output/archive/trailers-before-rebuild-20261009/trailer-0.10/`에 보존한다.

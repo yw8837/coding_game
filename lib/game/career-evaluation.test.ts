@@ -2,8 +2,36 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CAREER_JOBS} from './career-content.ts';
 import {evaluateCareer,exampleSolution} from './career-evaluation.ts';
+import {act,createGame} from './engine.ts';
+import {readSave} from './save.ts';
 
 const ids=['bakery-price','library-loans','florist-stock','bike-hours','contacts-clean','clinic-form','market-filter','school-sort','workshop-slots','delivery-fees','museum-layout','bookstore-invoice','community-api','photo-cache','transit-logs','archive-backup','tutor-timezone','festival-report'];
+
+test('a five-roll box cannot impersonate the requested six-roll box or earn delivery credit',()=>{
+ const files=exampleSolution('bakery-price');files['pricing.json']='{"unitPrice":1800,"packSize":5,"packPrice":8200}';
+ assert.equal(evaluateCareer('bakery-price',files).passed,false);
+ const solved=evaluateCareer('bakery-price',exampleSolution('bakery-price'));
+ assert.equal(solved.checks.find(c=>c.name.en==='Five singles below a full box')?.actual,'9000');
+ assert.equal(solved.checks.find(c=>c.name.en==='Ten rolls total')?.actual,'17200');
+ let s=createGame();s.completed=[0,1,2];s=act(s,{type:'celebrate-opening'});
+ s=act(s,{type:'career-accept',id:'bakery-price'});s=act(s,{type:'career-inspect',id:'bakery-price'});
+ s=act(s,{type:'career-edit',id:'bakery-price',file:'pricing.json',content:files['pricing.json']});s=act(s,{type:'career-test',id:'bakery-price'});
+ const credits=s.credits;s=act(s,{type:'career-deliver',id:'bakery-price',choice:'care'});
+ assert.equal(s.credits,credits);assert.deepEqual(s.gameplay.career.completed,[]);assert.deepEqual(readSave(JSON.stringify(s)).gameplay.career.completed,[]);
+});
+
+test('booking controls must belong to the same supported form and malformed ownership cannot earn credit',()=>{
+ const controls='<label for="name">Name</label><input id="name" name="name" type="text" required><button type="submit">Book</button>';
+ const invalid=[controls+'<form></form>','<form>'+controls.replace(' required',' required form="elsewhere"')+'</form>','<form>'+controls.replace('type="submit"','type="submit" form="elsewhere"')+'</form>','<form>'+controls.replace('type="text"','type="hidden" type="text"')+'</form>','<form><!--'+controls+'--></form>','<form><fieldset disabled>'+controls+'</fieldset></form>','<form>'+controls+'</form><form></form>','<form style="display:none">'+controls+'</form>','<form>'+controls.replace('type="submit"','type="submit" style="visibility:hidden"')+'</form>'];
+ for(const content of invalid){
+  const files={...exampleSolution('clinic-form'),'booking.html':content};assert.equal(evaluateCareer('clinic-form',files).passed,false,content);
+  let s=createGame();s.completed=[0,1,2];s=act(s,{type:'celebrate-opening'});s=act(s,{type:'career-accept',id:'clinic-form'});s=act(s,{type:'career-inspect',id:'clinic-form'});s=act(s,{type:'career-edit',id:'clinic-form',file:'booking.html',content});s=act(s,{type:'career-test',id:'clinic-form'});
+  const credits=s.credits;s=act(s,{type:'career-deliver',id:'clinic-form',choice:'care'});assert.equal(s.credits,credits);assert.deepEqual(s.gameplay.career.completed,[]);
+ }
+ const owned='<form id="booking">'+controls.replace(' required',' required form="booking"').replace('type="submit"','type="submit" form="booking"')+'</form>';
+ assert.equal(evaluateCareer('clinic-form',{...exampleSolution('clinic-form'),'booking.html':owned}).passed,true);
+ assert.equal(evaluateCareer('clinic-form',exampleSolution('clinic-form')).passed,true);
+});
 
 test('all eighteen contracts produce failing starter evidence and pass the explicit help example',()=>{
  assert.deepEqual(CAREER_JOBS.map(j=>j.id),ids);

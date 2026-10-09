@@ -7,6 +7,7 @@ import "./workflow.css";
 import "./pc.css";
 import "./practice.css";
 import "./career.css";
+import "./career-playground.css";
 import "./game-art.css";
 import "./release.css";
 import "./coach.css";

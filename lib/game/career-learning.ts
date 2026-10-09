@@ -12,7 +12,7 @@ const css=(property:string,correct:string,wrong:string,title:Localized,why:Local
 export const CAREER_LEARNING:Record<string,CareerLearningStep[]>={
  'bakery-price':[
   j('pricing.json','packSize',6,5,L('상자 하나에 빵을 몇 개 담을까요?','How many rolls fit in one box?','1箱にパンを何個入れますか？'),L('6개씩 묶으면 8개는 상자 하나와 낱개 둘이 됩니다. packSize는 묶는 개수예요.','Boxes of six turn eight rolls into one box and two singles. packSize is the number in a box.','6個ずつなら8個は1箱と単品2個です。packSizeは箱の個数です。')),
-  j('pricing.json','packPrice',10000,10800,L('한 상자의 가격을 골라 주세요.','Choose the price of a box.','1箱の価格を選びましょう。'),L('상자 가격 10,000원에 남은 낱개 가격만 더합니다. packPrice는 낱개 가격과 별도예요.','Start with the 10,000 box price and add only the remaining singles. packPrice is separate from the single price.','箱の10,000に残りの単品だけを足します。packPriceは単品価格とは別です。')),
+  j('pricing.json','packPrice',10000,10800,L('한 상자의 가격을 입력해 주세요.','Enter the price of a box.','1箱の価格を入力しましょう。'),L('상자 가격 10,000원에 남은 낱개 가격만 더합니다. packPrice는 낱개 가격과 별도예요.','Start with the 10,000 box price and add only the remaining singles. packPrice is separate from the single price.','箱の10,000に残りの単品だけを足します。packPriceは単品価格とは別です。')),
  ],
  'library-loans':[
   j('policy.json','inclusive',true,false,L('딱 3권도 빌릴 수 있게 할까요?','Allow exactly three books too?','ちょうど3冊も借りられるようにしますか？'),L('true는 이 규칙을 켭니다. inclusive를 켜면 총 3권까지 허용해요.','true turns this rule on. inclusive includes the limit of three.','trueはこのルールを有効にします。inclusiveなら上限3冊も含みます。')),

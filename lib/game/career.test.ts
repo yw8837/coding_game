@@ -91,7 +91,7 @@ test('upgrades reject insufficient funds and checkpoint restoration needs a new 
 
 test('old saves gain empty career progress while invalid replies, duplicates and premature endings fail schema',()=>{
  const original=afterCafe();const old=JSON.parse(JSON.stringify(original));delete old.gameplay.career;
- const restored=readSave(JSON.stringify(old));assert.deepEqual(restored.gameplay.career,createCareer());assert.equal(restored.credits,1720);assert.deepEqual(restored.completed,[0,1,2]);
+ const restored=readSave(JSON.stringify(old));assert.deepEqual(restored.gameplay.career,{...createCareer(),rulesRevision:1});assert.equal(restored.credits,1720);assert.deepEqual(restored.completed,[0,1,2]);
  const good=deliver(original,'bakery-price');assert.equal(readSave(JSON.stringify(good)).gameplay.career.completed[0],'bakery-price');
  for(const mutate of [
   (c:GameState['gameplay']['career'])=>{c.choices['bakery-price']='invalid';},

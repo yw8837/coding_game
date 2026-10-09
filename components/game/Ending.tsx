@@ -7,7 +7,7 @@ import {CafeScene} from './CafeScene';
 import {CHAPTERS} from '@/lib/game/story';
 import type {GameProps} from './types';
 
-export function OpeningEnding({state,onAction,onOpen,onNavigate}:GameProps){
+export function OpeningEnding({state,onAction,onOpen,onNavigate,onFollow}:GameProps){
  const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
  const opened=state.gameplay.openingCelebrated;
  const [burst,setBurst]=useState(false);
@@ -24,9 +24,9 @@ export function OpeningEnding({state,onAction,onOpen,onNavigate}:GameProps){
    <div className="ending-recap">{CHAPTERS.map((c,i)=><div key={c.title}><Check size={17}/><span>{c.unlock}</span><small>{i===0?'화면을 고치다':i===1?'규칙을 만들다':'컴퓨터를 연결하다'}</small></div>)}</div>
    <div className="career-summary"><div><span>해결한 의뢰</span><strong>3<small> / 3</small></strong></div><div><span>누적 경험치</span><strong>{state.xp}<small> XP</small></strong></div><div><span>모은 배지</span><strong>{state.badges.length}<small> 개</small></strong></div></div>
    <div className="earned-badges">{state.badges.map(b=><span key={b}><Trophy size={15}/>{b}</span>)}</div>
-   <p className="ending-credit">{tr("카페에서의 소문을 듣고 새 고객들이 찾아왔어요.","Word of your cafe work has brought new clients.","カフェでの仕事を聞いた新しい顧客が訪れました。")}<br/><span>{tr("이제 내 작업실에서 18개 의뢰를 맡아 보세요.","Take on 18 jobs at your own desk.","今度は自分の作業場で18件の依頼に挑戦しましょう。")}</span></p>
+   <p className="ending-credit">{tr("내가 바꾼 화면 글자, 계산 규칙, 연결과 보관이 카페를 움직였어요.","Your heading, calculation rule, connection and storage made the cafe work.","自分で変えた見出し・計算ルール・接続・保存でカフェが動きました。")}<br/><span>{tr("이제 첫 새 고객의 부탁을 읽어 보세요. 이번에도 현재 결과를 보고, 값을 직접 바꾸고, 손님처럼 확인합니다.","Read your first new client’s request. Again, inspect the current result, change a value yourself and try it as a customer.","次は最初の新しいお客さんの依頼です。今の結果を見て、自分で値を変え、お客さんとして確かめましょう。")}</span></p>
    <CampaignGoal state={state}/>
-   <div className="ending-actions"><button className="primary-button" onClick={()=>onOpen("career")}>{tr("새 고객의 의뢰 보기","Meet your next clients","新しい顧客の依頼を見る")} →</button><button className="primary-button" onClick={()=>onOpen('desktop')}><Coffee size={18}/>나의 바탕화면으로</button><button className="outline-button" onClick={()=>onOpen('workbench')}>남은 보너스 즐기기</button><button className="text-button" onClick={()=>onNavigate('https://mono.cafe')}>내가 완성한 카페 보기 →</button></div>
+   <div className="ending-actions"><button className="primary-button" data-testid="opening-first-client" onClick={onFollow}>{tr("첫 새 고객의 부탁 읽기","Read your first new client’s request","最初の新しいお客さんの依頼を読む")} →</button><button className="primary-button" onClick={()=>onOpen('desktop')}><Coffee size={18}/>나의 바탕화면으로</button><button className="outline-button" onClick={()=>onOpen('workbench')}>남은 보너스 즐기기</button><button className="text-button" onClick={()=>onNavigate('https://mono.cafe')}>내가 완성한 카페 보기 →</button></div>
   </>}
  </div>);
 }

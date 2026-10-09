@@ -1,0 +1,322 @@
+[
+  {
+    "name": "legacy-false-pass-bakery-price",
+    "source": "445d474 baseline reducer actions, existing 0.11 cafe save; no browser replay",
+    "credits": 1920,
+    "xp": 640,
+    "career": {
+      "release": {
+        "started": false,
+        "proof": null,
+        "build": null,
+        "published": null
+      },
+      "active": "bakery-price",
+      "accepted": [
+        "bakery-price"
+      ],
+      "inspected": [
+        "bakery-price"
+      ],
+      "completed": [
+        "bakery-price"
+      ],
+      "proofs": {
+        "bakery-price": {
+          "hash": "bdd768fa",
+          "passed": true
+        }
+      },
+      "choices": {
+        "bakery-price": "care"
+      },
+      "upgrades": [],
+      "checkpoints": {},
+      "ending": null
+    },
+    "files": {
+      "/home/dev/jobs/bakery-price/pricing.json": "{\"unitPrice\":1800,\"packSize\":5,\"packPrice\":8200}"
+    },
+    "dirs": [
+      "/home/dev/jobs",
+      "/home/dev/jobs/bakery-price"
+    ]
+  },
+  {
+    "name": "legacy-false-pass-clinic-form",
+    "source": "445d474 baseline reducer actions, existing 0.11 cafe save; no browser replay",
+    "credits": 1920,
+    "xp": 640,
+    "career": {
+      "release": {
+        "started": false,
+        "proof": null,
+        "build": null,
+        "published": null
+      },
+      "active": "clinic-form",
+      "accepted": [
+        "clinic-form"
+      ],
+      "inspected": [
+        "clinic-form"
+      ],
+      "completed": [
+        "clinic-form"
+      ],
+      "proofs": {
+        "clinic-form": {
+          "hash": "8f2cf90d",
+          "passed": true
+        }
+      },
+      "choices": {
+        "clinic-form": "care"
+      },
+      "upgrades": [],
+      "checkpoints": {},
+      "ending": null
+    },
+    "files": {
+      "/home/dev/jobs/clinic-form/booking.html": "<label for=\"name\">Name</label><input id=\"name\" name=\"name\" type=\"text\" required><button type=\"submit\">Book</button><form></form>"
+    },
+    "dirs": [
+      "/home/dev/jobs",
+      "/home/dev/jobs/clinic-form"
+    ]
+  },
+  {
+    "name": "legacy-normal-complete",
+    "source": "445d474 baseline reducer actions, existing 0.11 cafe save; no browser replay",
+    "credits": 8320,
+    "xp": 3020,
+    "career": {
+      "release": {
+        "started": true,
+        "proof": {
+          "hash": "6b70b97f7dfad911",
+          "passed": true
+        },
+        "build": {
+          "hash": "6b70b97f7dfad911",
+          "version": "1.0.0"
+        },
+        "published": {
+          "hash": "6b70b97f7dfad911",
+          "version": "1.0.0"
+        }
+      },
+      "active": "festival-report",
+      "accepted": [
+        "bakery-price",
+        "library-loans",
+        "florist-stock",
+        "bike-hours",
+        "contacts-clean",
+        "clinic-form",
+        "market-filter",
+        "school-sort",
+        "workshop-slots",
+        "delivery-fees",
+        "museum-layout",
+        "bookstore-invoice",
+        "community-api",
+        "photo-cache",
+        "transit-logs",
+        "archive-backup",
+        "tutor-timezone",
+        "festival-report"
+      ],
+      "inspected": [
+        "bakery-price",
+        "library-loans",
+        "florist-stock",
+        "bike-hours",
+        "contacts-clean",
+        "clinic-form",
+        "market-filter",
+        "school-sort",
+        "workshop-slots",
+        "delivery-fees",
+        "museum-layout",
+        "bookstore-invoice",
+        "community-api",
+        "photo-cache",
+        "transit-logs",
+        "archive-backup",
+        "tutor-timezone",
+        "festival-report"
+      ],
+      "completed": [
+        "bakery-price",
+        "library-loans",
+        "florist-stock",
+        "bike-hours",
+        "contacts-clean",
+        "clinic-form",
+        "market-filter",
+        "school-sort",
+        "workshop-slots",
+        "delivery-fees",
+        "museum-layout",
+        "bookstore-invoice",
+        "community-api",
+        "photo-cache",
+        "transit-logs",
+        "archive-backup",
+        "tutor-timezone",
+        "festival-report"
+      ],
+      "proofs": {
+        "bakery-price": {
+          "hash": "e07749ba",
+          "passed": true
+        },
+        "library-loans": {
+          "hash": "34cb0641",
+          "passed": true
+        },
+        "florist-stock": {
+          "hash": "b18359bf",
+          "passed": true
+        },
+        "bike-hours": {
+          "hash": "da7ea6e1",
+          "passed": true
+        },
+        "contacts-clean": {
+          "hash": "67c487e5",
+          "passed": true
+        },
+        "clinic-form": {
+          "hash": "4972d279",
+          "passed": true
+        },
+        "market-filter": {
+          "hash": "2ab63c0b",
+          "passed": true
+        },
+        "school-sort": {
+          "hash": "d100a431",
+          "passed": true
+        },
+        "workshop-slots": {
+          "hash": "17394a56",
+          "passed": true
+        },
+        "delivery-fees": {
+          "hash": "af3d9cde",
+          "passed": true
+        },
+        "museum-layout": {
+          "hash": "ba0b7ca8",
+          "passed": true
+        },
+        "bookstore-invoice": {
+          "hash": "8bc1af75",
+          "passed": true
+        },
+        "community-api": {
+          "hash": "a9cbba0",
+          "passed": true
+        },
+        "photo-cache": {
+          "hash": "ca703a0e",
+          "passed": true
+        },
+        "transit-logs": {
+          "hash": "38069f95",
+          "passed": true
+        },
+        "archive-backup": {
+          "hash": "bf401478",
+          "passed": true
+        },
+        "tutor-timezone": {
+          "hash": "c2ac38e",
+          "passed": true
+        },
+        "festival-report": {
+          "hash": "67ad1663",
+          "passed": true
+        }
+      },
+      "choices": {
+        "bakery-price": "care",
+        "library-loans": "care",
+        "florist-stock": "care",
+        "bike-hours": "care",
+        "contacts-clean": "care",
+        "clinic-form": "care",
+        "market-filter": "care",
+        "school-sort": "care",
+        "workshop-slots": "care",
+        "delivery-fees": "care",
+        "museum-layout": "care",
+        "bookstore-invoice": "care",
+        "community-api": "care",
+        "photo-cache": "care",
+        "transit-logs": "care",
+        "archive-backup": "care",
+        "tutor-timezone": "care",
+        "festival-report": "care"
+      },
+      "upgrades": [],
+      "checkpoints": {},
+      "ending": "community"
+    },
+    "files": {
+      "/home/dev/jobs/bakery-price/pricing.json": "{\n  \"unitPrice\": 1800,\n  \"packSize\": 6,\n  \"packPrice\": 10000\n}\n",
+      "/home/dev/jobs/library-loans/policy.json": "{\n  \"limit\": 3,\n  \"inclusive\": true,\n  \"allowOverdue\": false\n}\n",
+      "/home/dev/jobs/florist-stock/inventory.csv": "name,stock,reserved\nrose,12,5\ntulip,8,0\nlily,3,3\n",
+      "/home/dev/jobs/bike-hours/hours.json": "{\n  \"opens\": 9,\n  \"closes\": 18,\n  \"lastEntry\": 17,\n  \"closedDays\": [\n    \"sun\"\n  ]\n}\n",
+      "/home/dev/jobs/contacts-clean/contacts.csv": "name,email\nLuna, LUNA@example.test \nLuna again,luna@example.test\nJun,jun@example.test\nNo address,\n",
+      "/home/dev/jobs/contacts-clean/clean.json": "{\n  \"trim\": true,\n  \"lowercase\": true,\n  \"deduplicate\": true,\n  \"skipBlank\": true\n}\n",
+      "/home/dev/jobs/clinic-form/booking.html": "<form>\n  <label for=\"name\">Name</label>\n  <input id=\"name\" name=\"name\" type=\"text\" required>\n  <button type=\"submit\">Book</button>\n</form>\n",
+      "/home/dev/jobs/market-filter/products.csv": "name,stock,fresh\napple,3,true\ncarrot,1,true\nbread,2,true\nmilk,0,true\ncandy,5,false\n",
+      "/home/dev/jobs/market-filter/filter.json": "{\n  \"field\": \"stock\",\n  \"operator\": \">\",\n  \"value\": 0,\n  \"requireFresh\": true\n}\n",
+      "/home/dev/jobs/school-sort/scores.csv": "name,score\nAri,80\nMina,95\nJo,90\n",
+      "/home/dev/jobs/school-sort/sort.json": "{\n  \"field\": \"score\",\n  \"direction\": \"desc\",\n  \"tie\": \"name\"\n}\n",
+      "/home/dev/jobs/workshop-slots/schedule.csv": "id,start,end\nA,09:00,10:00\nB,10:00,11:00\nC,11:00,12:00\n",
+      "/home/dev/jobs/delivery-fees/delivery.json": "{\n  \"base\": 2000,\n  \"perKm\": 300,\n  \"freeAt\": 20000,\n  \"maxKm\": 10\n}\n",
+      "/home/dev/jobs/museum-layout/gallery.css": ".gallery {\n  width: 100%;\n  max-width: 900px;\n  padding: 16px;\n  box-sizing: border-box;\n}\n",
+      "/home/dev/jobs/bookstore-invoice/items.csv": "item,quantity,unit\npen,3,1200\nbook,2,7000\ncard,0,500\n",
+      "/home/dev/jobs/bookstore-invoice/invoice.json": "{\n  \"discountMin\": 15000,\n  \"discount\": 2000,\n  \"taxRate\": 0.1,\n  \"discountBeforeTax\": true\n}\n",
+      "/home/dev/jobs/community-api/routes.json": "{\n  \"read\": {\n    \"path\": \"/api/events\",\n    \"method\": \"GET\"\n  },\n  \"write\": {\n    \"path\": \"/api/rsvp\",\n    \"method\": \"POST\"\n  },\n  \"persist\": true\n}\n",
+      "/home/dev/jobs/photo-cache/cache.json": "{\n  \"assetMaxAge\": 86400,\n  \"privateMaxAge\": 0,\n  \"varyAuth\": true\n}\n",
+      "/home/dev/jobs/transit-logs/service.log": "09:00 INFO /arrivals 200\n09:01 ERROR /arrivals 503\n09:02 WARN /tickets 404\n09:03 ERROR /tickets 503\n09:04 ERROR /arrivals 503\n09:05 ERROR /other 500\n",
+      "/home/dev/jobs/transit-logs/report.json": "{\n  \"level\": \"ERROR\",\n  \"status\": 503,\n  \"groupBy\": \"route\"\n}\n",
+      "/home/dev/jobs/archive-backup/copies.csv": "name,daysOld,sizeMB\ntoday,0,12\nyesterday,1,13\nweekly,7,14\nold,8,15\n",
+      "/home/dev/jobs/archive-backup/retention.json": "{\n  \"maxDays\": 7,\n  \"inclusive\": true\n}\n",
+      "/home/dev/jobs/tutor-timezone/timezone.json": "{\n  \"offsetHours\": 9,\n  \"carryDay\": true\n}\n",
+      "/home/dev/jobs/festival-report/sales.csv": "booth,quantity,unit,status\nbread,3,2000,paid\ncraft,2,5000,paid\nmusic,4,1500,refunded\nbread,1,2000,paid\ncraft,1,5000,pending\n",
+      "/home/dev/jobs/festival-report/summary.json": "{\n  \"includeStatus\": \"paid\",\n  \"operation\": \"multiply\",\n  \"groupBy\": \"booth\"\n}\n",
+      "/home/dev/studio/launch/index.html": "<h1>My neighborhood studio</h1>\n",
+      "/home/dev/studio/launch/style.css": ".portal { width: 100%; }\n",
+      "/home/dev/studio/launch/server.json": "{\n  \"route\": \"/api/places\",\n  \"saveRequests\": true\n}\n"
+    },
+    "dirs": [
+      "/home/dev/jobs",
+      "/home/dev/jobs/bakery-price",
+      "/home/dev/jobs/library-loans",
+      "/home/dev/jobs/florist-stock",
+      "/home/dev/jobs/bike-hours",
+      "/home/dev/jobs/contacts-clean",
+      "/home/dev/jobs/clinic-form",
+      "/home/dev/jobs/market-filter",
+      "/home/dev/jobs/school-sort",
+      "/home/dev/jobs/workshop-slots",
+      "/home/dev/jobs/delivery-fees",
+      "/home/dev/jobs/museum-layout",
+      "/home/dev/jobs/bookstore-invoice",
+      "/home/dev/jobs/community-api",
+      "/home/dev/jobs/photo-cache",
+      "/home/dev/jobs/transit-logs",
+      "/home/dev/jobs/archive-backup",
+      "/home/dev/jobs/tutor-timezone",
+      "/home/dev/jobs/festival-report",
+      "/home/dev/studio",
+      "/home/dev/studio/launch"
+    ]
+  }
+]

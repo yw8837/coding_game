@@ -5,6 +5,7 @@ import {createRelease} from './release.ts';
 const jobId=z.string().max(64).refine(id=>CAREER_JOBS.some(j=>j.id===id));
 const ids=z.array(jobId).max(18).refine(a=>new Set(a).size===a.length);
 export const careerSchema=z.object({
+ rulesRevision:z.union([z.literal(1),z.literal(2)]).default(1),
  release:z.object({started:z.boolean(),proof:z.object({hash:z.string().max(40),passed:z.boolean()}).nullable(),build:z.object({hash:z.string().max(40),version:z.literal('1.0.0')}).nullable(),published:z.object({hash:z.string().max(40),version:z.literal('1.0.0')}).nullable()}).default(createRelease),
  active:jobId.nullable(),accepted:ids,inspected:ids,completed:ids,
  proofs:z.record(jobId,z.object({hash:z.string().max(40),passed:z.boolean()})),
@@ -23,4 +24,4 @@ export const careerSchema=z.object({
  if(c.ending&&c.completed.length!==CAREER_JOBS.length)ctx.addIssue({code:'custom',message:'Ending requires all contracts'});
  if(c.ending){const care=CAREER_JOBS.filter(j=>j.choices.find(x=>x.id===c.choices[j.id])?.style==='care').length;if(c.ending!==(care>=12?'community':care<=6?'studio':'balanced'))ctx.addIssue({code:'custom',message:'Ending must match delivered replies'});}
  for(const [id,files] of Object.entries(c.checkpoints))if(Object.keys(files).some(p=>!Object.hasOwn(CAREER_JOBS.find(j=>j.id===id)!.files,p)))ctx.addIssue({code:'custom',message:'Invalid checkpoint file'});
-}).default(createCareer);
+}).default(()=>({...createCareer(),rulesRevision:1 as const}));
