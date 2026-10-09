@@ -1,10 +1,11 @@
 'use client';
 import {useCallback,useEffect,useRef,useState,type ReactNode} from 'react';
-import {Monitor,Globe,Code2,TerminalSquare,MessageCircle,FolderOpen,FileText,Settings2,Trophy,Palette,Server,Send,LayoutGrid,Search,Power,Volume2,VolumeX,Wifi,PanelRight,Check,Flag,Puzzle,Expand} from 'lucide-react';
+import {Monitor,Code2,TerminalSquare,MessageCircle,FolderOpen,FileText,Settings2,Trophy,Palette,Server,Send,LayoutGrid,Search,Power,Volume2,VolumeX,Wifi,PanelRight,Check,Flag,Puzzle,Expand} from 'lucide-react';
 import {useLanguage,t} from '@/lib/game/i18n';
 import {gameMessages} from '@/lib/game/gameplay';
 import {openWindow,focusedWindow,type WindowState,type Bounds} from '@/lib/game/windows';
 import {CharacterPortrait} from './StoryArt';
+import {BrowserIcon} from './BrowserIcon';
 import {DesktopWindow} from './DesktopWindow';
 import {QuestTracker,QuestRibbon} from './QuestTracker';
 import type {AppId,GameProps} from './types';
@@ -12,7 +13,7 @@ import type {AppId,GameProps} from './types';
 export const DESKTOP_APPS=[
  {id:'computer',ko:'내 PC',en:'This PC',ja:'PC',icon:FolderOpen,color:'gold'},
  {id:'messages',ko:'메시지',en:'Messages',ja:'メッセージ',icon:MessageCircle,color:'green'},
- {id:'browser',ko:'그롬',en:'Grome',ja:'グローム',icon:Globe,color:'blue'},
+ {id:'browser',ko:'Ghrom',en:'Ghrom',ja:'Ghrom',icon:BrowserIcon,color:'grom'},
  {id:'editor',ko:'에디터',en:'Editor',ja:'エディター',icon:Code2,color:'blue'},
  {id:'terminal',ko:'터미널',en:'Terminal',ja:'ターミナル',icon:TerminalSquare,color:'dark'},
  {id:'notes',ko:'메모장',en:'Notepad',ja:'メモ帳',icon:FileText,color:'paper'},
@@ -52,7 +53,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
  const activeApps=manager.windows.filter(w=>!w.closed);
  const toggleTask=(id:AppId)=>{const w=manager.windows.find(w=>w.id===id);if(w&&manager.app===id)manager.change({...w,minimized:true});else open(id);};
  return <>
-  <div className="pc-topbar"><span className="pc-session"><Monitor size={14}/> CODE:SHIFT <span>/</span> {tr('내 작업실','My workspace','マイデスク')}</span><div><span className="pc-save" role="status"><Check size={13}/>{saved?tr('저장됨','Saved','保存済み'):tr('저장 실패 · 설정에서 백업','Save failed · Back up in Settings','保存失敗 · 設定でバックアップ')}</span><b>{props.state.credits.toLocaleString()} cr</b><button onClick={onSidebar} aria-expanded={sidebarOpen} aria-label={tr('퀘스트 열기 또는 접기','Toggle quest','クエストを開閉')}><Flag size={15}/>{tr('의뢰','Quest','依頼')}</button></div></div>
+  <div className="pc-topbar"><span className="pc-session"><Monitor size={14}/> CODE:SHIFT <span>/</span> {tr('내 작업실','My workspace','マイデスク')}</span><div><span className="pc-save" role="status"><Check size={13}/>{saved?tr('저장됨','Saved','保存済み'):tr('저장 실패 · 설정에서 백업','Save failed · Back up in Settings','保存失敗 · 設定でバックアップ')}</span><button className="pc-wallet" data-testid="open-wallet" onClick={()=>props.onOpen('workbench')} title={tr('크레딧 사용 · 작업실 상점','Spend credits · Workspace shop','クレジットを使う · 作業場ショップ')}><b>{props.state.credits.toLocaleString()} cr</b></button><button onClick={onSidebar} aria-expanded={sidebarOpen} aria-label={tr('퀘스트 열기 또는 접기','Toggle quest','クエストを開閉')}><Flag size={15}/>{tr('의뢰','Quest','依頼')}</button></div></div>
   <div className="pc-main">
    <div className="pc-workarea"><div className="pc-compact-quest"><QuestRibbon {...props}/></div><div className="pc-stage" ref={stage}>
     <Wallpaper/>

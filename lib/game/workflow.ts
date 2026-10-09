@@ -3,6 +3,7 @@ import {lessonFacts} from './lesson.ts';
 import {PROJECT,REPO_URL,MISSIONS} from './content.ts';
 import {setupReadiness} from './setup.ts';
 import {careerCurrent,careerFresh,careerNext} from './career.ts';
+import {releaseFresh,releaseBuildFresh} from './release.ts';
 import type {Localized} from './career-content.ts';
 
 export type Task={id:string;phase:number;title:string;detail:string;app:'career'|'messages'|'browser'|'computer'|'editor'|'terminal'|'server'|'api'|'achievements';command?:string;url?:string;file?:string;find?:string;next?:boolean;localized?:{title:Localized;detail:Localized}};
@@ -26,8 +27,17 @@ export function currentTask(s:GameState):Task{
   const c=s.gameplay.career,job=careerCurrent(s),next=careerNext(s);
   const career=(id:string,phase:number,title:Localized,detail:Localized):Task=>({id,phase,title:title.ko,detail:detail.ko,app:'career',localized:{title,detail}});
   const l=(ko:string,en:string,ja:string)=>({ko,en,ja});
-  if(c.ending)return career('career-finished',5,l('내 작업실의 다음 날','The next day at your desk','作業場の次の日'),l('완료한 의뢰와 고객의 답장을 돌아보세요. 남은 연습 의뢰도 할 수 있어요.','Revisit completed jobs and client replies, or try the practice jobs.','完了した依頼や顧客の返信を振り返れます。練習の依頼にも挑戦できます。'));
-  if(c.completed.length===18)return career('career-ending',5,l('작업실의 마지막 편지 열기','Open the last letter','最後の手紙を開く'),l('18개 의뢰를 마쳤어요. 의뢰 센터에서 그동안의 선택으로 달라진 마지막 편지를 읽어 보세요.','All 18 jobs are delivered. Read the final letter shaped by your choices in Contracts.','18件の依頼が完了しました。依頼センターで選択に応じた最後の手紙を読みましょう。'));
+  if(c.completed.length===18){
+   const release=c.release;
+   if(!release.started)return career('release-start',0,l('최종 프로젝트 시작하기','Start your final project','最後の作品を始める'),l('18개 의뢰를 마쳤어요. 이제 동네 도움판을 내 첫 프로그램으로 완성하고 1.0을 배포하세요.','All 18 jobs are done. Complete a neighborhood board of your own and release version 1.0.','18件の依頼を終えました。自分のまちの案内板を完成させ、1.0を公開しましょう。'));
+   if(!release.published){
+    if(!releaseFresh(s))return career('release-check',2,l('내 프로젝트 수정하고 검사하기','Edit and check your project','自分の作品を修正・検査する'),l('제목, 화면 폭, 연결 주소, 문의 보관을 확인하세요. 직접 써 본 뒤 현재 파일 검사를 누르세요.','Check the title, page width, connection address and inquiry storage. Try the preview, then check current files.','タイトル、画面幅、接続先、問い合わせ保存を確認。試してから現在のファイルを検査します。'));
+    if(!releaseBuildFresh(s))return career('release-build',3,l('첫 1.0.0 버전 기록하기','Build your first version 1.0.0','最初の1.0.0を記録する'),l('네 조건을 통과했어요. 최종 프로젝트 아래에서 1.0.0 버전 기록을 누르세요.','All four checks passed. Choose Build version 1.0.0 below the final project.','4条件に合格しました。最後の作品の下で1.0.0を記録してください。'));
+    return career('release-publish',4,l('내 첫 버전 배포하기','Release your first version','最初の版を公開する'),l('검사한 파일로 버전을 만들었어요. 내 첫 버전 배포를 눌러 마지막 편지를 받으세요.','A version was built from your checked files. Release it to receive the final letter.','検査したファイルで版を作りました。公開して最後の手紙を受け取りましょう。'));
+   }
+   if(c.ending)return career('career-finished',5,l('첫 정식 배포 · 이야기 완료','First release · story complete','初の正式公開 · 物語クリア'),l('내 프로젝트 1.0과 마지막 편지가 남았어요. 배포한 프로그램을 써 보거나 동네의 작업 기록을 돌아보세요.','Your project 1.0 and final letter are saved. Try your released app or revisit the neighborhood records.','自分の作品1.0と最後の手紙が残りました。公開したアプリを試したり、まちの記録を振り返れます。'));
+   return career('career-ending',5,l('마지막 편지 읽기','Read the final letter','最後の手紙を読む'),l('내 첫 프로젝트를 배포했어요. 지우와 민서가 보낸 편지로 이야기를 마무리하세요.','Your first project is released. Finish the story with the letter from Jiwoo and Minseo.','初めての作品を公開しました。ジウとミンソの手紙で物語を締めくくりましょう。'));
+  }
   if(!job||c.completed.includes(job.id))return career('career-next',0,l('새 고객의 의뢰 고르기','Choose your next client','次の顧客の依頼を選ぶ'),next?next.brief:l('의뢰 센터를 열어 보세요.','Open Contracts.','依頼センターを開きましょう。'));
   if(!c.inspected.includes(job.id))return career('career-inspect',1,l('현재 결과에서 문제 찾기','Inspect the current result','現在の結果を確認する'),l('의뢰 센터에서 현재 결과를 보고 문제 확인을 누르세요. 목표와 어디가 다른지 살펴보세요.','In Contracts, compare the current result with the request, then confirm you inspected it.','依頼センターで現在の結果と依頼内容を比べ、確認ボタンを押しましょう。'));
   if(!careerFresh(s,job.id))return career('career-edit',2,l('파일을 고치고 결과 검사하기','Edit the files and run checks','ファイルを直して検査する'),l('의뢰 센터에서 파일을 수정한 뒤 검사 실행을 누르세요. 막히면 단계별 힌트를 볼 수 있어요.','Edit the files in Contracts and run checks. Step-by-step hints are available if you get stuck.','依頼センターでファイルを編集して検査しましょう。困ったら段階別のヒントを使えます。'));

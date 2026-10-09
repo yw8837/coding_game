@@ -5,6 +5,7 @@ import {CAREER_JOBS} from './career-content.ts';
 import {exampleSolution} from './career-evaluation.ts';
 import {careerFiles,careerFresh,careerRoot,careerUnlocked,createCareer} from './career.ts';
 import {readSave} from './save.ts';
+import {RELEASE_EXAMPLE} from './release.ts';
 
 // A completed-cafe fixture isolates follow-up contracts from the separately tested cafe route.
 function afterCafe():GameState {const s=createGame();s.completed=[0,1,2];s.mission=2;s.credits=1720;s.xp=560;return act(s,{type:'celebrate-opening'});}
@@ -73,7 +74,8 @@ test('reaccepting preserves edits and invalid paths or oversized career edits ch
 test('ending selection uses completed reply styles and stays fixed without a repeat reward',()=>{
  const incomplete=act(afterCafe(),{type:'career-ending'});assert.equal(incomplete.gameplay.career.ending,null);
  for(const [count,want] of [[12,'community'],[6,'studio'],[9,'balanced']] as const){
-  let s=finish(count);const credits=s.credits,xp=s.xp;s=act(s,{type:'career-ending'});assert.equal(s.gameplay.career.ending,want);
+  let s=finish(count);const credits=s.credits,xp=s.xp;s=act(s,{type:'career-ending'});assert.equal(s.gameplay.career.ending,null);
+  s=act(s,{type:'career-release-start'});for(const [file,content] of Object.entries(RELEASE_EXAMPLE))s=act(s,{type:'career-release-edit',file,content});s=act(s,{type:'career-release-test'});s=act(s,{type:'career-release-build'});s=act(s,{type:'career-release-publish'});s=act(s,{type:'career-ending'});assert.equal(s.gameplay.career.ending,want);
   s=readSave(JSON.stringify(s));s=act(s,{type:'career-ending'});assert.equal(s.gameplay.career.ending,want);assert.equal(s.credits,credits);assert.equal(s.xp,xp);
  }
 });

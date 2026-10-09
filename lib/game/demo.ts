@@ -13,7 +13,7 @@ export function demoGuide(s:GameState):DemoGuideStep {
  if(!m.tools.includes('nodejs')||!m.tools.includes('npm'))return command('Node.js와 npm 준비하기','Node.js는 JavaScript 실행 도구, npm은 프로젝트에 필요한 도구를 준비하는 명령이에요.','sudo apt install nodejs npm');
  if(m.cwd!==r.root)return command('프로젝트 폴더로 이동하기','cd는 폴더를 이동해요. 명령은 현재 폴더를 기준으로 실행되므로 위치가 중요해요.','cd ~/menu-site');
  if(!m.dependencies.includes(r.root))return command('프로젝트에 필요한 도구 준비하기','npm install은 이 폴더의 package.json을 읽고 필요한 도구를 준비해요.','npm install');
- if(!isProjectServerRunning(s))return m.processes.frontend?command('다른 폴더의 서버 종료하기','지금 실행 중인 서버를 멈추고 현재 프로젝트에서 다시 시작해요.','pkill node'):command('미리보기 서버 켜기','npm run dev를 실행하면 그롬의 localhost:5173에서 작업 중인 페이지를 볼 수 있어요.','npm run dev');
+ if(!isProjectServerRunning(s))return m.processes.frontend?command('다른 폴더의 서버 종료하기','지금 실행 중인 서버를 멈추고 현재 프로젝트에서 다시 시작해요.','pkill node'):command('미리보기 서버 켜기','npm run dev를 실행하면 Ghrom의 localhost:5173에서 작업 중인 페이지를 볼 수 있어요.','npm run dev');
  const hash=sourceHash(files),tested=s.tests?.hash===hash&&s.tests.checks.length===3&&s.tests.checks.every(c=>c.passed);
  if(!tested){
   const title=files['index.html']?.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1]??'';

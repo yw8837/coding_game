@@ -6,6 +6,7 @@ import {careerSchema} from './career-save.ts';
 import {CAREER_JOBS} from './career-content.ts';
 import {careerFiles} from './career.ts';
 import {evaluateCareer} from './career-evaluation.ts';
+import {releaseUnlocked,releaseFiles,releaseHash,evaluateRelease,releasePublishedFresh} from './release.ts';
 const text=z.string().max(60000);
 const files=z.record(z.string().max(300),text);
 const snapshot=z.object({id:z.string(),message:z.string(),files,mission:z.number().int().min(0).max(2),hash:z.string()});
@@ -17,12 +18,18 @@ const gameplay=z.object({career:careerSchema,practice,inspected:z.array(z.number
 const schema=z.object({gameplay,version:z.literal(1),mission:z.number().int().min(0).max(2),accepted:z.boolean(),credits:z.number().finite().nonnegative(),xp:z.number().finite().nonnegative(),completed:z.array(z.number().int().min(0).max(2)),badges:z.array(z.string()),machine:z.enum(['local','server']),machines:z.object({local:machine,server:machine}),serverReady:z.boolean(),discovered:z.object({search:z.boolean(),repo:z.boolean(),preview:z.boolean()}),repo:z.object({root:z.string(),staged:z.record(z.string(),text.nullable()),commits:z.array(snapshot).min(1),remote:snapshot,merged:snapshot,deployed:snapshot,pr:z.object({commit:snapshot,status:z.enum(['changes-requested','approved','merged']),feedback:z.string()}).nullable()}).nullable(),tests:z.object({hash:z.string(),mission:z.number().int().min(0).max(2),checks:z.array(z.object({name:z.string(),passed:z.boolean(),detail:z.string().optional()}))}).nullable(),testRequest:z.number().int().nonnegative(),orders:z.array(z.object({id:z.number().int(),item:z.string(),quantity:z.number().int()})),localOrders:z.array(z.object({id:z.number().int(),item:z.string(),quantity:z.number().int()})),apiEvidence:z.object({menu:z.boolean(),order:z.boolean()}),notice:z.string(),logs:z.array(z.string()),history:z.array(z.object({command:z.string(),output:z.string(),error:z.boolean(),machine:z.enum(['local','server']),cwd:z.string()}))});
 export const SAVE_KEY='codeshift-intro-demo-v1';
 const MAX_SAVE_CHARS=4_000_000;
-function validateCareer(state:GameState){const c=state.gameplay.career;if(c.accepted.length&&(!state.gameplay.openingCelebrated||![0,1,2].every(m=>state.completed.includes(m))))throw Error('Career requires the cafe opening');for(const id of c.completed){const job=CAREER_JOBS.find(j=>j.id===id)!;const files=careerFiles(state,id);if(Object.keys(job.files).some(p=>typeof files[p]!=='string'||files[p].length>20000)||!evaluateCareer(id,files).passed)throw Error('Delivered job files are missing or invalid');}}
+function validateCareer(state:GameState){const c=state.gameplay.career;if(c.accepted.length&&(!state.gameplay.openingCelebrated||![0,1,2].every(m=>state.completed.includes(m))))throw Error('Career requires the cafe opening');for(const id of c.completed){const job=CAREER_JOBS.find(j=>j.id===id)!;const files=careerFiles(state,id);if(Object.keys(job.files).some(p=>typeof files[p]!=='string'||files[p].length>20000)||!evaluateCareer(id,files).passed)throw Error('Delivered job files are missing or invalid');}
+ const release=c.release;if(!release)return;if(release.started&&!releaseUnlocked(state))throw Error('Release requires cafe OPEN and all career deliveries');
+ const files=releaseFiles(state),hash=releaseHash(files),evaluation=evaluateRelease(files);
+ if(release.proof&&(release.proof.hash!==hash||release.proof.passed!==evaluation.passed))throw Error('Release proof must match current source');
+ if(release.build&&(release.build.hash!==hash||!evaluation.passed))throw Error('Release build must match passing current source');
+ if(release.published&&!releasePublishedFresh(state))throw Error('Published release source or records are invalid');
+}
 export function readSave(raw:string):GameState {if(raw.length>MAX_SAVE_CHARS)throw new Error('Save too large');const state=schema.parse(JSON.parse(raw)) as GameState;validateCareer(state);return state;}
 export function writeSave(storage:Pick<Storage,'setItem'>,state:GameState):void {
  const raw=JSON.stringify(state);
  if(raw.length>MAX_SAVE_CHARS)throw new Error('Save too large');
- schema.parse(state);
- validateCareer(state);
+ const parsed=schema.parse(state) as GameState;
+ validateCareer(parsed);
  storage.setItem(SAVE_KEY,raw);
 }

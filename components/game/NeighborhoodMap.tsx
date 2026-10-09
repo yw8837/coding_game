@@ -11,7 +11,7 @@ const PLACES=[[8,53],[36,61],[16,57],[25,59],[45,68],[58,74],
  [68,32],[13,24],[31,19],[36,29],[46,20],[57,28],
  [62,9],[77,16],[93,22],[82,36],[91,42],[88,56]];
 
-export function NeighborhoodMap({state,onSelect}:{state:GameState;onSelect:(id:string)=>void}){
+export function NeighborhoodMap({state,onSelect,onRelease}:{state:GameState;onSelect:(id:string)=>void;onRelease:()=>void}){
  const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
  const suggested=careerNext(state)??CAREER_JOBS[0];
  const [act,setAct]=useState(suggested.act),[selected,setSelected]=useState(suggested.id);
@@ -21,6 +21,7 @@ export function NeighborhoodMap({state,onSelect}:{state:GameState;onSelect:(id:s
  return <section className="neighborhood-view" data-testid="neighborhood-map">
   <header><div><span className="career-section-label">{tr('의뢰 지도','NEIGHBORHOOD','依頼マップ')}</span><h2>{tr('당신이 고친 동네','The neighborhood you repair','あなたが直すまち')}</h2></div><div className="map-total"><Trophy size={20}/><strong>{career.completed.length}<small> / 18</small></strong></div></header>
   <p>{tr('장소를 골라 의뢰를 읽어 보세요. 전달한 곳에는 완료 도장이 남습니다.','Choose a place to read its request. Each delivery leaves a completion stamp.','場所を選んで依頼を読みましょう。提出した場所には完了スタンプが残ります。')}</p>
+  {career.completed.length===CAREER_JOBS.length&&<div className="map-final-call"><div><strong>{career.release.published?tr('내 첫 1.0 배포 완료','Your first 1.0 is released','初めての1.0を公開しました'):tr('18개 의뢰 완료. 이제 내 첫 프로젝트를 배포할 차례예요.','18 jobs delivered. Time to release your own project.','18件の依頼が完了。次は自分の作品を公開しましょう。')}</strong></div><button className="primary-button" data-testid="map-final-project" onClick={onRelease}>{career.release.published?tr('마지막 편지 보기','View final letter','最後の手紙を見る'):tr('최종 프로젝트 열기','Open final project','最後の作品を開く')}<ArrowRight size={16}/></button></div>}
   <nav className="map-chapters" aria-label={tr('의뢰 지도 장 선택','Map chapter','マップの章を選択')}>
    {([1,2,3] as const).map(value=>{const count=CAREER_JOBS.filter(item=>item.act===value&&career.completed.includes(item.id)).length;return <button key={value} type="button" aria-pressed={act===value} onClick={()=>{setAct(value);setSelected(CAREER_JOBS.find(item=>item.act===value)!.id);}}><span>{count===6?<Check size={16}/>:value}</span><b>{titles[value-1]}</b><small>{count}/6</small></button>;})}
   </nav>

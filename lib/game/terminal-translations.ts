@@ -3,6 +3,10 @@ import type {Language} from './translations.ts';
 
 // Exact authored lines only. Paths, commands, code and user messages are opaque.
 const lines:Record<string,readonly [string,string]>={
+ 'pwd를 뜻했나요? /는 절대경로를 시작합니다.':['Did you mean pwd? / starts an absolute path.','pwdの意味ですか？ / は絶対パスの先頭です。'],
+ 'help로 지원 명령과 사용법을 확인하세요.':['Use help to see supported commands and usage.','helpで対応コマンドと使い方を確認してください。'],
+ '작업 저장소가 이미 있습니다. 기존 프로젝트를 사용하세요.':['A working repository already exists. Use the existing project.','作業リポジトリはすでにあります。既存のプロジェクトを使用してください。'],
+ '지원 명령: git clone / status / diff / add / commit -m / push / pull / log':['Supported commands: git clone / status / diff / add / commit -m / push / pull / log','対応コマンド: git clone / status / diff / add / commit -m / push / pull / log'],
  'shell: 따옴표 또는 역슬래시가 닫히지 않았어요.':['shell: A quote or backslash is not closed.','shell: 引用符またはバックスラッシュが閉じられていません。'],
  '도구가 이 컴퓨터에 설치되어 있지 않습니다.':['This tool is not installed on this computer.','このコンピューターにツールがインストールされていません。'],
  'LINUX  pwd · ls · cd <경로> · cat <파일> · mkdir <폴더> · cp · mv · touch · clear':['LINUX  pwd · ls · cd <path> · cat <file> · mkdir <folder> · cp · mv · touch · clear','LINUX  pwd · ls · cd <パス> · cat <ファイル> · mkdir <フォルダー> · cp · mv · touch · clear'],

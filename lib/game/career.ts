@@ -1,10 +1,12 @@
 import {CAREER_JOBS,type CareerJob,type Localized} from './career-content.ts';
 import {evaluateCareer} from './career-evaluation.ts';
+import {createRelease,applyRelease,releasePublishedFresh,type ReleaseProgress,type ReleaseAction} from './release.ts';
 
-export type CareerProgress={active:string|null;accepted:string[];inspected:string[];completed:string[];proofs:Record<string,{hash:string;passed:boolean}>;choices:Record<string,string>;upgrades:string[];checkpoints:Record<string,Record<string,string>>;ending:'community'|'studio'|'balanced'|null};
-export const createCareer=():CareerProgress=>({active:null,accepted:[],inspected:[],completed:[],proofs:{},choices:{},upgrades:[],checkpoints:{},ending:null});
-export type CareerAction={type:'career-accept'|'career-inspect'|'career-test'|'career-checkpoint'|'career-restore';id:string}|{type:'career-edit';id:string;file:string;content:string}|{type:'career-deliver';id:string;choice:string}|{type:'career-upgrade';id:string}|{type:'career-ending'};
-type Host={gameplay:{career:CareerProgress;openingCelebrated:boolean};machines:{local:{files:Record<string,string>;dirs:string[]}};credits:number;xp:number;notice:string};
+export type CareerProgress={active:string|null;accepted:string[];inspected:string[];completed:string[];proofs:Record<string,{hash:string;passed:boolean}>;choices:Record<string,string>;upgrades:string[];checkpoints:Record<string,Record<string,string>>;ending:'community'|'studio'|'balanced'|null;release:ReleaseProgress};
+export const createCareer=():CareerProgress=>({active:null,accepted:[],inspected:[],completed:[],proofs:{},choices:{},upgrades:[],checkpoints:{},ending:null,release:createRelease()});
+export type CareerAction=ReleaseAction|{type:'career-accept'|'career-inspect'|'career-test'|'career-checkpoint'|'career-restore';id:string}|{type:'career-edit';id:string;file:string;content:string}|{type:'career-deliver';id:string;choice:string}|{type:'career-upgrade';id:string}|{type:'career-ending'};
+function isReleaseAction(action:CareerAction):action is ReleaseAction{return action.type.startsWith('career-release-');}
+type Host={completed:number[];gameplay:{career:CareerProgress;openingCelebrated:boolean};machines:{local:{files:Record<string,string>;dirs:string[]}};credits:number;xp:number;notice:string};
 const l=(ko:string,en:string,ja:string):Localized=>({ko,en,ja});
 export const CAREER_UPGRADES=[
  {id:'recovery-kit',price:250,name:l('복구 노트','Recovery notebook','復元ノート'),detail:l('의뢰마다 수정본 한 묶음을 보관하고 다시 불러옵니다.','Keep and restore a checkpoint for each job.','依頼ごとに修正版を保存し、復元できます。')},
@@ -22,10 +24,11 @@ export function careerPhase(s:Host){const job=careerCurrent(s),c=s.gameplay.care
 function replaceFiles(s:Host,id:string,files:Record<string,string>){const root=careerRoot(id);for(const p of ['/home/dev/jobs',root])if(!s.machines.local.dirs.includes(p))s.machines.local.dirs.push(p);for(const [p,c] of Object.entries(files))s.machines.local.files[root+'/'+p]=c;}
 /** Called only on the engine's cloned state. The machine filesystem is canonical. */
 export function applyCareer(s:Host,a:CareerAction):void{
+ if(isReleaseAction(a)){applyRelease(s,a);return;}
  const c=s.gameplay.career;
  if(!s.gameplay.openingCelebrated)return;
  if(a.type==='career-ending'){
-  if(c.ending||!CAREER_JOBS.every(j=>c.completed.includes(j.id)))return;
+  if(c.ending||!CAREER_JOBS.every(j=>c.completed.includes(j.id))||!releasePublishedFresh(s))return;
   const care=CAREER_JOBS.filter(j=>j.choices.find(x=>x.id===c.choices[j.id])?.style==='care').length;
   c.ending=care>=12?'community':care<=6?'studio':'balanced';return;
  }

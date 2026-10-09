@@ -10,7 +10,7 @@ with sync_playwright() as pw:
   p=b.new_page(viewport={'width':1440,'height':960},locale='ko-KR');p.set_default_timeout(10000)
   p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.evaluate('(s)=>localStorage.setItem("codeshift-intro-demo-v1",JSON.stringify(s))',seed);p.reload(wait_until='networkidle');p.locator('.pc-play').click();p.locator('.quest-next button').click()
   w=p.locator('.pc-window[data-active="true"]');w.locator('.pc-window-buttons button').nth(3).click()
-  w.get_by_test_id('career-accept').click();w.get_by_test_id('career-inspect').click()
+  w.get_by_test_id('career-job-bakery-price').click();w.get_by_test_id('career-accept').click();w.get_by_test_id('career-inspect').click();w.get_by_test_id('career-code-mode').click()
   w.get_by_test_id('career-tools-button').click()
   for item in ['recovery-kit','second-screen']:w.get_by_test_id('career-upgrade-'+item).click()
   # Following the persistent quest also restores the work view from the shop.
@@ -27,6 +27,7 @@ with sync_playwright() as pw:
   w.get_by_test_id('career-job-contacts-clean').click();w.get_by_test_id('career-accept').click();w.get_by_test_id('career-inspect').click()
   p.locator('.pc-taskbar').get_by_role('button',name='내 PC',exact=True).click();w.get_by_role('button',name='고객 의뢰',exact=True).click()
   w.locator('.computer-file-row').filter(has=p.get_by_text('clean.json',exact=True)).click()
+  expect(w.locator('.career-code-input textarea')).to_be_visible()
   expect(w.locator('.career-file-tabs button[aria-pressed="true"]')).to_contain_text('clean.json')
   # Invalid JSON imports preserve current gameplay and show an actionable error.
   p.locator('.pc-language').click();p.locator('.save-tools input[type=file]').set_input_files({'name':'bad.json','mimeType':'application/json','buffer':b'{invalid'})

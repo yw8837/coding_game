@@ -28,7 +28,7 @@ with sync_playwright() as pw:
             page.locator('.pc-shortcuts').get_by_role('button',name={'ko':'터미널','en':'Terminal','ja':'ターミナル'}[lang],exact=True).click()
             field=page.locator('.pc-window[data-active="true"] .terminal-form input')
             field.fill('help');field.press('Enter')
-            expect(page.locator('.pc-window[data-active="true"]')).to_contain_text({'ko':'지원하는 학습용 명령만','en':'Only supported learning commands','ja':'対応する学習用コマンドだけ'}[lang])
+            expect(page.locator('.pc-window[data-active="true"]')).to_contain_text('echo/cat >> file')
             context.close()
         assert not errors,errors
         (out/'final-smoke.json').write_text(json.dumps({'checks':results,'pageErrors':errors},ensure_ascii=False,indent=2),encoding='utf-8')

@@ -24,6 +24,7 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  assert.equal(await page.evaluate(async()=>{try{await fetch('https://example.com');return false;}catch{return true;}}),true);
  await page.getByRole('combobox',{name:'Language'}).selectOption('ko');await page.locator('.pc-play').click();
  assert.equal(await page.locator('.pc-window:visible').count(),0);
+ await page.locator('.pc-language').click();const guided=page.getByTestId('guided-mode-toggle');if(await guided.getAttribute('aria-pressed')==='true')await guided.click();await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
  await page.locator('.pc-shortcuts').getByRole('button',{name:'메시지',exact:true}).click();await page.getByRole('button',{name:'의뢰 수락',exact:true}).click();
  await until(async()=>(await read()).accepted,true);
  const active=()=>page.locator('.pc-window[data-active="true"]');
@@ -61,12 +62,18 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  await follow();await active().locator('.pc-window-buttons button').nth(3).click();
  const jobs=await active().locator('[data-testid^=career-job-]').evaluateAll(elements=>elements.map(el=>el.dataset.testid));
  for(let index=0;index<jobs.length;index++){
-  const w=active();await w.getByTestId(jobs[index]).click();await w.getByTestId('career-accept').click();await w.getByTestId('career-inspect').click();await w.locator('.career-answer>button').click();
+  const w=active();await w.getByTestId(jobs[index]).click();await w.getByTestId('career-accept').click();await w.getByTestId('career-inspect').click();await w.getByTestId('career-code-mode').click();await w.locator('.career-answer>button').click();
   const answers=await w.locator('.career-answer>div>div').evaluateAll(elements=>elements.map(el=>[el.querySelector('strong').textContent,el.querySelector('pre').textContent]));
   for(const [filename,source] of answers){await w.locator('.career-file-tabs button').filter({has:page.getByText(filename,{exact:true})}).click();await w.locator('.career-code-input textarea').fill(source);}
   await w.locator('.career-answer>button').click();await w.getByTestId('career-test').click();await w.getByTestId('career-reply-'+(index%2===0?'care':'craft')).check();await w.getByTestId('career-deliver').click();await until(async()=>(await read()).gameplay.career.completed.length,index+1);
  }
- await active().locator('.career-client-reply>.primary-button').click();await active().getByTestId('career-ending').click();await until(async()=>(await read()).gameplay.career.ending,'balanced');report.nativeCareerUI=18;
+ await active().getByTestId('career-final-project').click();
+ const release=active();await release.getByTestId('release-start').click();await release.getByTestId('release-code-mode').click();await release.getByTestId('release-example-toggle').click();
+ const releaseAnswers=await release.locator('.release-examples>div').evaluateAll(elements=>elements.map(el=>[el.querySelector('strong').textContent,el.querySelector('pre').textContent]));assert.equal(releaseAnswers.length,3);
+ for(const [filename,source] of releaseAnswers){await release.locator('.release-files .career-file-tabs button').filter({has:page.getByText(filename,{exact:true})}).click();await release.locator('.release-code textarea').fill(source);}
+ await release.getByTestId('release-example-toggle').click();await release.getByTestId('release-test').click();await until(async()=>(await read()).gameplay.career.release.proof.passed,true);
+ await release.getByTestId('release-build').click();await release.getByTestId('release-publish').click();await until(async()=>!!(await read()).gameplay.career.release.published,true);await release.getByTestId('release-letter').click();
+ await active().getByTestId('career-ending').click();await until(async()=>(await read()).gameplay.career.ending,'balanced');report.nativeCareerUI=18;report.nativeFinalRelease=true;
  await page.screenshot({animations:'disabled',path:path.join(out,'native-offline.png')});await close();
  const first=await read();assert.equal(first.accepted,true);assert.equal(first.gameplay.career.completed.length,18);report.closeSave=true;
  await launch();assert.equal(await page.locator('html').getAttribute('lang'),'ko');await page.locator('.pc-play').click();

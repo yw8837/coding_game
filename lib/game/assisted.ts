@@ -67,7 +67,7 @@ export function assist(state:GameState,action:AssistAction):GameState {
  }
  if(state.mission===1&&['multiply','add','subtract'].includes(action)){
   const op=action==='multiply'?'*':action==='add'?'+':'-';
-  return edit('app.js',`// 한 잔 가격과 주문한 잔 수로 합계를 계산해요.\nfunction calculateTotal(price, quantity) {\n  return price ${op} quantity;\n}\n`);
+  return edit('app.js',fs['app.js'].replace(/(return\s+price\s*)[+*\/-](\s*quantity)/,'$1'+op+'$2'));
  }
  if(state.mission===2){
   if(action==='route-menu'||action==='route-home')return edit('server.py',fs['server.py'].replace(/^MENU_PATH\s*=.*$/m,'MENU_PATH = "'+(action==='route-menu'?'/api/menu':'/menu')+'"'));

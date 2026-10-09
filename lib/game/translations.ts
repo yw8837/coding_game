@@ -34,7 +34,7 @@ CODE:SHIFT / 모노 카페 이야기¦CODE:SHIFT / The Mono Cafe story¦CODE:SHI
 수리 의뢰로 돌아가기¦Back to repairs¦修理に戻る
 좋아요, 제가 해볼게요!¦Sure, I'll help!¦はい、やってみます！
 보너스 과제 보기¦View bonus tasks¦ボーナス課題を見る
-그롬에서 화면 확인¦Preview in Grome¦Gromeで確認
+Ghrom에서 화면 확인¦Preview in Ghrom¦Ghromで確認
 내 성취 보기¦View achievements¦実績を見る
 지우¦Jiwoo¦ジウ
 민서¦Minseo¦ミンソ
@@ -80,7 +80,7 @@ CODE:SHIFT / 모노 카페 이야기¦CODE:SHIFT / The Mono Cafe story¦CODE:SHI
 이전 페이지¦Back¦前のページ
 다음 페이지¦Forward¦次のページ
 페이지 새로고침¦Refresh page¦ページを更新
-그롬 주소창¦Grome address bar¦Gromeのアドレス欄
+Ghrom 주소창¦Ghrom address bar¦Ghromのアドレス欄
 가상 인터넷¦Simulated internet¦ゲーム内のインターネット
 COOCLE 홈¦COOCLE home¦COOCLEホーム
 개발자 문서¦Developer docs¦開発者ドキュメント
@@ -200,7 +200,7 @@ CatHub에서 프로젝트 찾기¦Find project on CatHub¦CatHubで探す
 Tab 들여쓰기 · Ctrl+Enter 검사¦Tab indent · Ctrl+Enter test¦Tabで字下げ・Ctrl+Enterで確認
 줄¦lines¦行
 Shift+Tab 이동¦Shift+Tab move focus¦Shift+Tabで移動
-그롬에서 보기¦View in Grome¦Gromeで見る
+Ghrom에서 보기¦View in Ghrom¦Ghromで見る
 검사 실행¦Run checks¦確認を実行
 의뢰 검사¦Request checks¦依頼の確認
 수정됨 · 다시 검사 필요¦Modified · Run checks again¦変更あり・再確認が必要
@@ -247,8 +247,8 @@ OPEN 간판 켜기¦Light the OPEN sign¦OPENの看板をつける
 서버¦Server¦サーバー
 가상 서버¦Virtual server¦仮想サーバー
 요청 실험실¦Request lab¦リクエスト実験室
-그롬¦Grome¦Grome
-그롬 — 가상 인터넷¦Grome — Game network¦Grome — ゲーム内ネットワーク
+Ghrom¦Ghrom¦Ghrom
+Ghrom — 가상 인터넷¦Ghrom — Game network¦Ghrom — ゲーム内ネットワーク
 에디터¦Editor¦エディター
 Code Editor — 작업실¦Code Editor — Workspace¦Code Editor — 作業室
 터미널¦Terminal¦ターミナル
@@ -546,7 +546,7 @@ AI_6스터디:¦AI_6 Study:¦AI_6スタディ：
 프로젝트 도착! 안에 뭐가 들었을까?¦Project received! What's inside?¦プロジェクト到着！中には何が？
 파일을 가져왔네! 프로젝트 폴더에서 pwd로 위치를 확인하고, ls로 목록을 보고, cat README.md로 안내를 읽어 봐. 세 가지를 모두 해보면 터미널 탐험가 배지를 받을 수 있어.¦You've got the files! In the project folder, use pwd for your location, ls for files and cat README.md for the guide. Try all three for the Terminal Explorer badge.¦ファイルが届いたね！フォルダーでpwdで現在地、lsで一覧、cat README.mdで説明を読もう。三つとも試すとターミナル探検家バッジがもらえるよ。
 휴대폰으로도 메뉴가 잘 보이면 좋겠어요.¦The menu should work on phones too.¦スマホでもメニューが見やすいと嬉しいです。
-메뉴 세 가지와 주문 버튼이 화면 안에 모두 보이면 돼요. 그롬에서 PC와 360px 화면을 번갈아 확인해 주세요. 직접 바꾼 코드가 화면으로 나타나는 게 신기하네요!¦All three drinks and their order buttons should fit. Check desktop and 360px views in Grome. Your code changes the page!¦三つのメニューと注文ボタンが画面に収まれば大丈夫。GromeでPCと360pxを確認してください。変えたコードが画面になるんですね！
+메뉴 세 가지와 주문 버튼이 화면 안에 모두 보이면 돼요. Ghrom에서 PC와 360px 화면을 번갈아 확인해 주세요. 직접 바꾼 코드가 화면으로 나타나는 게 신기하네요!¦All three drinks and their order buttons should fit. Check desktop and 360px views in Ghrom. Your code changes the page!¦三つのメニューと注文ボタンが画面に収まれば大丈夫。GhromでPCと360pxを確認してください。変えたコードが画面になるんですね！
 첫 손님에게 홈페이지를 보여드렸어요!¦Our first customer saw the website!¦最初のお客さんにページを見せました！
 이제 모노 카페 이름도 보이고 휴대폰으로 메뉴도 잘 읽혀요. 정말 고마워요! 약속한 350 cr를 보냈어요. 첫 배포 배지도 잘 받으셨죠? 다음에 또 함께 일해요.¦The name is right and the menu reads well on phones. Thank you! I've sent 350 cr and your First Release badge. Let's work together again.¦名前も直り、スマホでも読みやすくなりました。ありがとう！350 crと初リリースバッジを送りました。また一緒にお願いします。
 새 계산대가 조금 이상해요.¦The new register seems wrong.¦新しいレジが少し変なんです。
