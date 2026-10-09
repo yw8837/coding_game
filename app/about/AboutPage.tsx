@@ -18,6 +18,7 @@ export default function AboutPage({ language }: { language: AboutLanguage }) {
     <div className={styles.page} lang={language}>
       <a className={styles.skip} href="#about-main">{copy.skip}</a>
       <header className={styles.header}>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- Return to the game with a full document navigation; this page also runs through the Vinext shim. */}
         <a className={styles.brand} href="/" aria-label="CODE:SHIFT">CODE<span>:</span>SHIFT</a>
         <nav className={styles.navigation} aria-label={copy.navLabel}>
           <a href="#requests">{copy.nav[0]}</a>
@@ -36,6 +37,7 @@ export default function AboutPage({ language }: { language: AboutLanguage }) {
           <p className={styles.workingTitle}>{copy.workingTitle}</p>
           <h1 id="game-heading">{copy.hero}</h1>
           <p className={styles.lead}>{copy.lead}</p>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- Return to the game with a full document navigation; this page also runs through the Vinext shim. */}
           <a className={styles.play} href="/">{copy.play}<span aria-hidden="true">↗</span></a>
         </section>
 

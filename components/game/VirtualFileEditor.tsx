@@ -14,6 +14,7 @@ export function VirtualFileEditor({state,onAction,onCommand,onOpen,editorTarget}
  const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[language];
  const [path,setPath]=useState(editorTarget?.file??''),[notice,setNotice]=useState<string|null>(null);
  const smart=useRef<SmartCodeHandle>(null),numbers=useRef<HTMLDivElement>(null);
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- An external absolute file-open path/token selects its virtual file and clears the old notice; sibling selection stays local.
  useEffect(()=>{if(editorTarget?.file.startsWith('/')){setPath(editorTarget.file);setNotice(null);}},[editorTarget?.file,editorTarget?.token]);
  const files=state.machines.local.files,exists=Object.hasOwn(files,path),content=exists?files[path]:'',folder=path.slice(0,path.lastIndexOf('/'))||'/',prefix=folder==='/'?'/':folder+'/',name=path.slice(path.lastIndexOf('/')+1);
  const siblings=Object.keys(files).filter(file=>file.startsWith(prefix)&&!file.slice(prefix.length).includes('/')).sort();

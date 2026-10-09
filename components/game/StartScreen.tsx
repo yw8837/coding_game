@@ -8,6 +8,7 @@ import type {GameState} from '@/lib/game/engine';
 export function TitleScreen({state,language,onStart,onSettings,onNew,loading=false,desktop=false}:{state:GameState;language:Language;onStart:()=>void;onSettings:()=>void;onNew:()=>void;loading?:boolean;desktop?:boolean}){
  const [ready,setReady]=useState(false),start=useRef<HTMLButtonElement>(null),hasSave=state.accepted||state.gameplay.readMessages.length>0;
  const tr=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='en'?en:ja;
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- Client mount marks hydration readiness and schedules initial focus; the SSR render intentionally keeps Start disabled.
  useEffect(()=>{setReady(true);requestAnimationFrame(()=>start.current?.focus());},[]);
  return <section className="pc-title-screen" aria-label={tr('타이틀 화면','Title screen','タイトル画面')}>
   <img className="title-environment" src="/game-art/studio-evening.png" alt="" width={1672} height={941} fetchPriority="high"/>

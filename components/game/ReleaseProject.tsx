@@ -20,6 +20,7 @@ export function ReleaseProject({props,onLetter,onMap}:{props:GameProps;onLetter:
  const checked=progress.proof?.hash===releaseHash(files);
  const passed=releaseFresh(state),built=releaseBuildFresh(state),published=!!progress.published;
  const fileKey=JSON.stringify(files);
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- An external release-source snapshot change invalidates iframe load and simulated request-delivery UI evidence.
  useEffect(()=>{setLoaded(false);setRequestStatus(null);setSent([]);},[fileKey]);
  useEffect(()=>{heading.current?.focus({preventScroll:true});},[]);
  useEffect(()=>{if(published){publishedCard.current?.scrollIntoView({block:'start'});publishedCard.current?.focus({preventScroll:true});}},[published]);

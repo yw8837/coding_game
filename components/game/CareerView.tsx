@@ -64,20 +64,24 @@ export function CareerView(props:GameProps&{careerFileTarget?:CareerFileTarget|n
  const [selectedId,setSelectedId]=useState(()=>current?.id??careerNext(state)?.id??CAREER_JOBS[0]?.id??'');
  const [view,setView]=useState<'map'|'job'|'tools'|'ending'|'release'>(career.completed.length===CAREER_JOBS.length?(career.release.published&&career.ending?'ending':'release'):'map');
  const main=useRef<HTMLElement>(null);
- useEffect(()=>{if(props.toolsRequest){setView('tools');setListOpen(false);}},[props.toolsRequest]);
  const [listOpen,setListOpen]=useState(false),[tab,setTab]=useState<WorkTab>('files');
  const [selectedFiles,setSelectedFiles]=useState<Record<string,string>>({});
  const [codeModes,setCodeModes]=useState<Record<string,boolean>>({});
  const [hintLevels,setHintLevels]=useState<Record<string,number>>({}),[answerFor,setAnswerFor]=useState<string|null>(null);
  const [replies,setReplies]=useState<Record<string,string>>({}),[session,setSession]=useState(0);
  const [message,setMessage]=useState<'checkpoint'|'restore'|'length'|null>(null);
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- A parent tools-request token opens Tools once without overriding later local navigation.
+ useEffect(()=>{if(props.toolsRequest){setView('tools');setListOpen(false);}},[props.toolsRequest]);
  useEffect(()=>{if(main.current)main.current.scrollTop=0;},[view,selectedId]);
  const job=CAREER_JOBS.find(item=>item.id===selectedId)??current??CAREER_JOBS[0];
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- A parent focus-request token selects the active contract and closes the local list once.
  useEffect(()=>{if(!props.focusRequest)return;const progress=props.state.gameplay.career;const target=careerCurrent(props.state);const remaining=careerNext(props.state);setView(progress.completed.length===CAREER_JOBS.length?(progress.release.published?'ending':'release'):'job');if(target&&!progress.completed.includes(target.id))setSelectedId(target.id);else if(remaining)setSelectedId(remaining.id);setListOpen(false);},[props.focusRequest]);
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- A newly accepted external contract ID selects that contract; user browsing between ID changes remains local.
  useEffect(()=>{if(current?.id)setSelectedId(current.id);},[current?.id]);
  useEffect(()=>{
   const target=props.careerFileTarget;
   if(!target||!CAREER_JOBS.some(item=>item.id===target.jobId&&Object.hasOwn(item.files,target.file)))return;
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- The validated external file-open request atomically selects its contract, file, code mode and tab.
   setSelectedId(target.jobId);setSelectedFiles(previous=>({...previous,[target.jobId]:target.file}));setCodeModes(previous=>({...previous,[target.jobId]:true}));setView('job');setTab('files');setListOpen(false);setMessage(null);
  },[props.careerFileTarget?.jobId,props.careerFileTarget?.file,props.careerFileTarget?.requestId]);
  if(!job)return <div className="career-app career-empty" data-no-translate><p>{text('불러올 의뢰가 없어요.','There are no jobs to load.','読み込める依頼がありません。')}</p></div>;

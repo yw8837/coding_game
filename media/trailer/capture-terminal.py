@@ -25,7 +25,8 @@ MUSIC = ROOT / "output/trailer-0.9/original-pulse.wav"
 SAVE_KEY = "codeshift-intro-demo-v1"
 FPS = 30
 PLAN = [
-    ("open-code", 3, "터미널에서 내 파일을 연다."),
+    ("desktop", 1, "내 컴퓨터에서 시작하는 코딩."),
+    ("open-code", 2, "터미널에서 내 파일을 연다."),
     ("red-run", 3, "실행해 보니, 계산이 이상하다."),
     ("red-test", 2, "여러 입력으로 실패를 확인."),
     ("repair", 3, "한 글자를 고친다. + → *"),
@@ -81,11 +82,11 @@ def capture(url, workspace_testid):
             # An existing taskbar item is reused after the editor opens.
             if active().locator('.terminal-form input:visible').count():
                 return
-            taskbar = page.locator('.pc-task-apps button').filter(has=page.locator('svg.lucide-terminal-square'))
+            taskbar = page.locator('.pc-task-apps').get_by_role('button',name='터미널',exact=True)
             if taskbar.count():
                 taskbar.first.click()
             else:
-                page.locator('.pc-shortcuts button').filter(has=page.locator('svg.lucide-terminal-square')).click()
+                page.locator('.pc-shortcuts').get_by_role('button',name='터미널',exact=True).click()
             expect(active().locator('.terminal-form input')).to_be_visible()
 
         def command(text, expected_error=None):
@@ -112,6 +113,9 @@ def capture(url, workspace_testid):
                 page.get_by_role('button',name='한국어',exact=True).click()
             anchors.append(clock.record_marker(page,t0,'start'))
             page.locator('.pc-play').click()
+            s = begin()
+            pause(1.2)
+            finish('desktop',s)
             # Create real workspace files through the final visible Lab action.
             # No act(), localStorage seed, or direct filesystem edit is allowed.
             page.locator('.pc-shortcuts button').filter(has=page.locator('svg.lucide-puzzle')).click()
@@ -295,9 +299,51 @@ def render():
     write_json(OUT/'verification.json',report)
 
 
+def review():
+    """Decode scene/cut samples for subsequent visual inspection; no browser."""
+    from PIL import Image,ImageDraw
+    renderer = module('terminal_review','render.py')
+    ffmpeg = renderer.media_binary('ffmpeg',None)
+    video = OUT/'codeshift-terminal-ko.mp4'
+    _,shots,frames = short_edl(EDL,8)
+    work = OUT/'review-frames'
+    work.mkdir(exist_ok=True)
+    samples,boundaries = [],[]
+
+    def extract(seconds,path,width=480,height=270):
+        subprocess.run([ffmpeg,'-y','-v','error','-threads','2','-filter_threads','1','-ss',str(seconds),'-i',str(video),'-frames:v','1','-vf',f'scale={width}:{height}','-update','1',str(path)],check=True,capture_output=True,timeout=30)
+
+    def sheet(items,name):
+        image = Image.new('RGB',(1440,math.ceil(len(items)/3)*296),'#101923')
+        draw = ImageDraw.Draw(image)
+        for index,(path,label) in enumerate(items):
+            x,y = index%3*480,index//3*296
+            image.paste(Image.open(path).convert('RGB'),(x,y))
+            draw.text((x+8,y+276),label,fill='#ddd7cc')
+        image.save(OUT/name)
+
+    cursor = 0
+    for index,shot in enumerate(shots):
+        midpoint = cursor+shot['duration']/2
+        path = work/f'{index:02}-mid.png'
+        extract(midpoint,path)
+        samples.append((path,f'{midpoint:.2f}s {shot["id"]}'))
+        if shot['id'] in ['desktop','repair','green-test','reward','title']:
+            extract(midpoint,OUT/f'{shot["id"]}-sample.png',1920,1080)
+        if index:
+            for delta in [-.15,.15]:
+                path = work/f'{index:02}-cut-{delta:+.2f}.png'
+                extract(cursor+delta,path)
+                boundaries.append((path,f'{cursor+delta:.2f}s cut{index}'))
+        cursor += shot['duration']
+    sheet(samples,'contact-sheet.png')
+    sheet(boundaries,'cut-boundaries.png')
+    write_json(OUT/'review-evidence.json',{'sceneSamples':len(samples),'cutBoundarySamples':len(boundaries),'duration':frames/FPS,'visualReview':'Pending model inspection of decoded sample artifacts','humanListening':'Not performed','output':{'file':video.name,'bytes':video.stat().st_size,'sha256':hashlib.sha256(video.read_bytes()).hexdigest()},'reviewArtifacts':['contact-sheet.png','cut-boundaries.png','desktop-sample.png','repair-sample.png','green-test-sample.png','reward-sample.png','title-sample.png']})
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--mode',choices=['plan','capture','render'],default='plan')
+    parser.add_argument('--mode',choices=['plan','capture','render','review'],default='plan')
     parser.add_argument('--url',default='http://127.0.0.1:5173/')
     parser.add_argument('--workspace-testid',default='lab-terminal-workspace',help='Confirmed visible receipt workspace preparation button')
     args = parser.parse_args()
@@ -305,8 +351,10 @@ def main():
         print(json.dumps({'status':'prepared-not-captured','duration':sum(row[1] for row in PLAN),'shots':PLAN,'requires':'Main task capture-slot authorization; selectors must match final terminal implementation'},ensure_ascii=False,indent=2))
     elif args.mode=='capture':
         capture(args.url,args.workspace_testid)
-    else:
+    elif args.mode=='render':
         render()
+    else:
+        review()
 
 
 if __name__=='__main__':

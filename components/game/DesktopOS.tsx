@@ -102,6 +102,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
 export function Notepad(){
  const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>lang==='ko'?ko:lang==='en'?en:ja;
  const [note,setNote]=useState(''),[failed,setFailed]=useState(false);
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- Client mount hydrates the note from external localStorage after SSR and records storage-access failure.
  useEffect(()=>{try{setNote((localStorage.getItem('codeshift-notepad')??'').slice(0,12000));}catch{setFailed(true);}},[]);
  return <div className="pc-notepad"><header><FileText size={16}/>{tr('내 메모.txt','My notes.txt','メモ.txt')}<span>{failed?tr('저장 실패','Save failed','保存失敗'):tr('자동 저장','Autosaved','自動保存')}</span></header><textarea aria-label={tr('메모 내용','Notes','メモ内容')} maxLength={12000} value={note} onChange={e=>{setNote(e.target.value);try{localStorage.setItem('codeshift-notepad',e.target.value);setFailed(false);}catch{setFailed(true);}}} placeholder={tr('찾은 단서, 해보고 싶은 것, 기억할 명령을 적어 두세요.','Keep clues, ideas and useful commands here.','見つけたヒントや試したいこと、コマンドを書いておこう。')}/><footer>{note.length.toLocaleString()} / 12,000</footer></div>;
 }

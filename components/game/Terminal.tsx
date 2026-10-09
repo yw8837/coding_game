@@ -11,6 +11,7 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false}:Gam
  const draft=useRef(''),scroll=useRef<HTMLDivElement>(null),field=useRef<HTMLInputElement>(null),m=state.machines[state.machine],visible=visibleTerminalHistory(state.history);
  const close=()=>{setSuggestions([]);setSelected(-1);};
  const change=(value:string)=>{setInput(value);setIndex(-1);draft.current=value;close();};
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- A parent command-queue event hydrates the editable input, consumes the queue and focuses the terminal without executing it.
  useLayoutEffect(()=>{if(queued){change(queued);onQueued();field.current?.focus();}},[queued,onQueued]);
  useEffect(()=>{if(scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;},[state.history.length,state.history.at(-1)?.command]);
  const send=()=>{if(!input.trim())return;onCommand(input);change('');field.current?.focus();};

@@ -6,7 +6,7 @@ export type LabAction={type:'lab-draft';id:string;source:string}|{type:'lab-run'
 export function applyLab(s:GameState,action:LabAction):GameState{
  const job=labJob(action.id);if(!job)return s;
  const lab=s.gameplay.lab??(s.gameplay.lab=createLab());
- if(action.type==='lab-workspace'){materializeLabWorkspace(s,job.id);s.notice='Workspace ready: /home/dev/code-lab';return s;}
+ if(action.type==='lab-workspace'){materializeLabWorkspace(s,job.id);s.machine='local';s.notice='Workspace ready: /home/dev/code-lab';return s;}
  if(action.type==='lab-draft'){
   if(typeof action.source!=='string'||action.source.length>12000){s.notice='Lab source is limited to 12,000 characters. The previous file was preserved.';return s;}
   lab.drafts[job.id]=action.source;delete lab.proofs[job.id];

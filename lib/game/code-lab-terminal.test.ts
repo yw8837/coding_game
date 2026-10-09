@@ -28,10 +28,17 @@ test('workspace creates real local files, preserves edits and opens existing fil
 test('runner reads edited source and actual input JSON with no reward for sample execution',()=>{
  let s=workspace();const credits=s.credits;assert.equal(runCommand(s,'node run.cjs receipt.js receipt.input.json').output,'3003');
  s=edit(s,'receipt.js',labJob('receipt')!.solution);s=edit(s,'receipt.input.json','{"price":10,"quantity":7}');
- let r=runCommand(s,'node run.cjs receipt.js receipt.input.json');assert.equal(r.output,'70');assert.equal(r.error,false);assert.equal(r.state.credits,credits);
+ const r=runCommand(s,'node run.cjs receipt.js receipt.input.json');assert.equal(r.output,'70');assert.equal(r.error,false);assert.equal(r.state.credits,credits);
  s=edit(s,'receipt.input.json','{"price":10,"quantity":0}');assert.equal(runCommand(s,'node run.cjs receipt.js receipt.input.json').output,'0');
  s=edit(s,'receipt.input.json','{invalid');assert.match(runCommand(s,'node run.cjs receipt.js receipt.input.json').output,/valid JSON/);
  s=edit(s,'receipt.input.json','null');assert.equal(runCommand(s,'node run.cjs receipt.js receipt.input.json').error,true);
+});
+
+test('preparing local lab files returns from the server without changing server files',()=>{
+ const s=workspace();s.machine='server';const server=structuredClone(s.machines.server);
+ const prepared=act(s,{type:'lab-workspace',id:'receipt'});
+ assert.equal(prepared.machine,'local');assert.deepEqual(prepared.machines.server,server);
+ assert.equal(runCommand(prepared,'cd /home/dev/code-lab').error,false);
 });
 
 test('node --test derives wrong/correct outcomes and awards the existing contract once',()=>{
@@ -117,7 +124,7 @@ test('node prerequisites, machine boundary and unknown scripts remain explicit f
 });
 
 test('generic editor honors existing-file and delivered-career read-only protections',()=>{
- let s=workspace();assert.equal(edit(s,'missing.js','created').machines.local.files[`${LAB_ROOT}/missing.js`],undefined);
+ const s=workspace();assert.equal(edit(s,'missing.js','created').machines.local.files[`${LAB_ROOT}/missing.js`],undefined);
  const target='/home/dev/jobs/bakery-price/pricing.json';s.machines.local.files[target]='original';s.gameplay.career.completed.push('bakery-price');assert.equal(edit(s,target,'changed').machines.local.files[target],'original');
  assert.equal(runCommand(s,'rm '+target).error,true);
  // A cafe cloned at LAB_ROOT can expose Lab files through its legacy editor too.

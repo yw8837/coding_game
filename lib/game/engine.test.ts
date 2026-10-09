@@ -17,7 +17,7 @@ test('missing npm, wrong cwd and absent project dependencies are distinct states
 });
 
 test('relative paths normalize and quoted arguments remain one value',()=>{
-  let s=commands(['mkdir "my work"','cd "my work"','mkdir child','cd child/..']);
+  const s=commands(['mkdir "my work"','cd "my work"','mkdir child','cd child/..']);
   assert.equal(s.machines.local.cwd,'/home/dev/my work');
   assert.match(runCommand(s,'cat missing.txt').output,/No such file/);
 });

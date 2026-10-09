@@ -54,12 +54,15 @@ for name in ['native-report.json','packaged-report.json']:
  copy(root/'output/steam-qa'/name,Path('qa')/name)
 copy(root/'output/art-qa/offline-package-report.json','qa/offline-package-report.json')
 copy(root/'output/pc-qa/final-smoke.json','qa/about-smoke.json')
+for path in (root/'output/0.11-security').glob('*'):
+ if path.is_file() and path.suffix in ['.json','.tap','.log','.png','.mjs','.cjs'] and 'failure' not in path.name:copy(path,Path('qa/security')/path.name)
 for folder in ['trailer-0.10','trailer-0.11-terminal']:
  source=root/'output'/folder
  if not source.exists():raise FileNotFoundError(str(source))
  for path in source.glob('*'):
-  if path.is_file() and (path.suffix in ['.mp4','.json','.md','.srt','.png']) and path.name!='gameplay-master.mp4':copy(path,Path('video')/folder/path.name)
+  if path.is_file() and (path.suffix in ['.mp4','.json','.md','.srt','.png']) and path.name!='gameplay-master.mp4' and 'failure' not in path.name:copy(path,Path('video')/folder/path.name)
 copy(root/'output/trailer-0.10/screenshots','screenshots')
+copy(root/'output/trailer-0.11-terminal/screenshots','screenshots/0.11-terminal')
 for path in (root/'output/0.11-qa').glob('ko-*.png'):
  if any(label in path.name for label in ['desktop-','start-','calendar-','terminal-']):copy(path,Path('screenshots/0.11')/path.name)
 copy(Path(receipt['source']['archive']),'site-build.tar.gz')

@@ -39,11 +39,11 @@ test('each button respects prerequisites and engine failures stay failures',()=>
  const empty=accepted();assert.deepEqual(runSetupStep(empty,'prepare').commands,[]);assert.deepEqual(runSetupStep(empty,'preview').commands,[]);
  let state=runSetupStep(empty,'copy').state;assert.deepEqual(runSetupStep(state,'preview').commands,[]);
  state=act(state,{type:'edit',path:'package.json',content:'broken'});const result=runSetupStep(state,'prepare');assert.equal(result.error,true);assert.match(result.output,/EJSONPARSE/);assert.equal(result.readiness.prepared,false);assert.equal(result.readiness.preview,false);assert.equal(result.commands.at(-1),'npm install');
- let occupied=runCommand(empty,'mkdir menu-site').state;const copy=runSetupStep(occupied,'copy');assert.equal(copy.error,true);assert.equal(copy.readiness.copied,false);assert.equal(occupied.repo,null);
+ const occupied=runCommand(empty,'mkdir menu-site').state;const copy=runSetupStep(occupied,'copy');assert.equal(copy.error,true);assert.equal(copy.readiness.copied,false);assert.equal(occupied.repo,null);
 });
 
 test('wrong-root frontend is stopped and restarted for this project',()=>{
- let state=runSetupStep(runSetupStep(accepted(),'copy').state,'prepare').state;
+ const state=runSetupStep(runSetupStep(accepted(),'copy').state,'prepare').state;
  state.machines.local.processes.frontend=true;state.machines.local.frontendRoot='/home/dev/another-project';
  assert.equal(setupReadiness(state).preview,false);const result=runSetupStep(state,'preview');assert.deepEqual(result.commands,['pkill node','npm run dev']);assert.equal(result.readiness.ready,true);
 });

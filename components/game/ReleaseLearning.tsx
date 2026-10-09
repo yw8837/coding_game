@@ -6,6 +6,7 @@ export function ReleaseLearning({files,onEdit}:{files:Record<string,string>;onEd
  const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
  const evaluation=evaluateRelease(files),index=evaluation.checks.findIndex(c=>!c.passed);
  const [value,setValue]=useState(''),[help,setHelp]=useState(false),[error,setError]=useState('');
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- An external release-check transition resets the previous task answer, help and validation message.
  useEffect(()=>{setValue('');setHelp(false);setError('');},[index]);
  const tasks=[
   {file:'index.html',label:tr('내 프로그램 이름','Name your app','アプリの名前'),prompt:tr('카페 간판처럼 제목을 붙여 보세요. 이번에는 내가 정하는 이름입니다.','Give it a heading, just like the cafe sign. This time, you choose its name.','カフェの看板のように見出しをつけましょう。今度は自分で名前を決めます。'),before:'<h1>',after:'</h1>',example:tr('우리 동네 도움판','My neighborhood board','私のまちの案内板')},

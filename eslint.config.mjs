@@ -12,7 +12,18 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated renderer bundles and QA captures are not authored source.
+    "desktop/renderer/**",
+    "output/**",
   ]),
+  {
+    files: ["**/*.cjs"],
+    rules: {
+      // Electron main/preload and Node fixtures deliberately use CommonJS.
+      // Keep this syntax exception out of TypeScript and React source.
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
   {
     files: ["components/ui/**/*.{ts,tsx}", "hooks/use-mobile.ts"],
     rules: {

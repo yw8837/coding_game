@@ -33,6 +33,7 @@ export function MessagesView(props:GameProps){
  const {state,onAction,onOpen,onNavigate}=props,messages=gameMessages(state);
  const [selected,setSelected]=useState(()=>!state.completed.length?'welcome':messages.find(m=>m.id===('chapter-'+(state.mission===1?'two':'three')))?.id??messages.find(m=>!state.gameplay.readMessages.includes(m.id))?.id??messages.at(-1)!.id);
  const message=messages.find(m=>m.id===selected)??messages.at(-1)!;
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- An external mission transition selects its new client message once; manual message selection remains local.
  useEffect(()=>{setSelected(['welcome','chapter-two','chapter-three'][state.mission]);},[state.mission]);
  useEffect(()=>{onAction({type:'read-message',id:message.id});},[message.id,onAction]);
  const perform=()=>{if(message.action==='accept'){onAction({type:'accept'});if(props.guided)onOpen('repair');else onNavigate('https://cathub.dev/mono/menu-site');}else if(message.action==='preview')onNavigate('http://localhost:5173');else if(message.action==='repair')props.onFollow();else onOpen(message.action);};

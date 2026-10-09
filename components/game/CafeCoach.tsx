@@ -15,6 +15,7 @@ export function CafeCoach(props:GameProps){
  const stage=coachStage(state),fs=projectFiles(state),facts=lessonFacts(state);
  const [review,setReview]=useState<{code:string;why:string}|null>(null),[answer,setAnswer]=useState(''),[hint,setHint]=useState(false),[error,setError]=useState(''),[quantity,setQuantity]=useState(0);
  const heading=useRef<HTMLHeadingElement>(null);
+ // eslint-disable-next-line react-hooks/set-state-in-effect -- An externally derived lesson-stage transition clears the previous answer/hint and moves focus to the new lesson.
  useEffect(()=>{setAnswer('');setError('');setHint(false);heading.current?.focus({preventScroll:true});},[stage]);
  const title=COACH_COPY[stage][lang==='ko'?0:lang==='en'?1:2];
  const cafeName=/<h1\b[^>]*>([^<]*)<\/h1>/i.exec(fs['index.html']??'')?.[1]??'Untitled';
