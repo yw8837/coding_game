@@ -9,7 +9,7 @@ await access(path.join(project, 'app', 'career.css'));
 await build({configFile: path.join(desktop, 'vite.config.mjs')});
 await cp(path.join(project, 'public', 'game-art'), path.join(desktop, 'renderer', 'game-art'), {recursive: true});
 await writeFile(path.join(desktop, 'renderer', 'build-info.json'), JSON.stringify({
-  version: '0.12.0-rc.0', runtime: 'desktop', networkRequired: false,
+  version: '0.13.0-rc.0', runtime: 'desktop', networkRequired: false,
   builtAt: new Date().toISOString(),
 }, null, 2));
 console.log('Offline renderer written to desktop/renderer. No Electron process was started.');

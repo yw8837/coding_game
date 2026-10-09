@@ -7,6 +7,7 @@ import {applyLab,type LabAction} from './code-lab-state.ts';
 import {RELEASE_ROOT,invalidateRelease} from './release.ts';
 import {parseTerminalInput,terminalArgumentError} from './terminal-shell.ts';
 import {checkLabFileWrite,syncLabWorkspace,dispatchLabNode} from './code-lab-terminal.ts';
+import {dispatchCareerNode} from './career-code-terminal.ts';
 
 export type Files = Record<string,string>;
 export type MachineId = 'local'|'server';
@@ -185,7 +186,7 @@ export function runCommand(state:GameState,input:string):CommandResult{
   else if(sub==='list')output=m.tools.map(x=>x+' [installed]').join('\n');else fail('지원 명령: sudo apt update / install / list');
  }
  else if(cmd==='code'){if(s.machine!=='local')fail('code: local workstation files only. exit to return to your local files.');else if(!a[0])fail('Usage: code <existing-file>');else{const path=commandPath(m.cwd,a[0]);if(!Object.hasOwn(m.files,path))fail(`code: file not found: ${a[0]}`);else{openFile=path;output=`Opening ${path}`;}}}
- else if(cmd==='node'){if(requireTool('nodejs')){if(a[0]==='--version'||a[0]==='-v')output='v20.11.0 [simulated]';else{const result=dispatchLabNode(s,a,resolvePath);output=result.output;error=result.error;}}}
+ else if(cmd==='node'){if(requireTool('nodejs')){if(a[0]==='--version'||a[0]==='-v')output='v20.11.0 [simulated]';else{const result=dispatchCareerNode(s,a,resolvePath)??dispatchLabNode(s,a,resolvePath);output=result.output;error=result.error;}}}
  else if(cmd==='npm'){
   if(requireTool('npm')){if(a[0]==='--version'||a[0]==='-v')output='10.2.4 [simulated]';else{const pkg=manifest();if(pkg){
    if(a[0]==='install'||a[0]==='i'){if(a.length>1)fail('이 실습은 package.json의 의존성을 설치하는 npm install을 지원합니다.');else if(!pkg.devDependencies?.vite)fail('npm ERR! 이 프로젝트는 devDependencies.vite가 필요합니다.');else{if(!m.dependencies.includes(m.cwd))m.dependencies.push(m.cwd);output='added 11 packages, and audited 12 packages\nfound 0 vulnerabilities\n[게임] 이 프로젝트의 의존성이 준비됐습니다.';}}

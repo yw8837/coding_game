@@ -37,7 +37,7 @@ test('new games record revision two and all missing historical revision fields d
 test('actual baseline delivered career snapshots retain files, replies, rewards, release and ending through read and write',()=>{
  for(const fixture of historical){
   const loaded=readSave(historicalSave(fixture));assert.equal(loaded.gameplay.career.rulesRevision,1);
-  assert.deepEqual(loaded.gameplay.career,{...fixture.career,rulesRevision:1});
+  assert.deepEqual(loaded.gameplay.career,{...fixture.career,rulesRevision:1,endingJobs:[],release:{...fixture.career.release,formatRevision:1}});
   assert.equal(loaded.credits,fixture.credits);assert.equal(loaded.xp,fixture.xp);
   for(const [path,content] of Object.entries(fixture.files))assert.equal(loaded.machines.local.files[path],content);
   assert.deepEqual(roundtrip(loaded),loaded);

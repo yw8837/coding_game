@@ -125,7 +125,7 @@ test('hand-checked outcomes cover schedule, fees, storage, logs, time carry and 
   ['florist-stock',['7','8','0']],
   ['bike-hours',['false','true','false','false']],
   ['contacts-clean',['luna@example.test','jun@example.test','2','false']],
-  ['workshop-slots',['60','60','60','0','0','09:00','12:00']],
+  ['workshop-slots',['60','60','60','0','0','true','true']],
   ['delivery-fees',['2900','0','unavailable','2000']],
   ['museum-layout',['320','768','900','16']],
   ['bookstore-invoice',['17600','2000','17160','14300','0']],

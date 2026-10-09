@@ -1,4 +1,5 @@
 import {CAREER_JOBS,L,type Localized} from './career-content.ts';
+import {careerCodeMode,careerCodeSpec,evaluateCareerCode} from './career-code.ts';
 export type CareerCheck={name:Localized;passed:boolean;expected:string;actual:string};
 export type CareerEvaluation={passed:boolean;checks:CareerCheck[];preview:{label:Localized;value:string}[]};
 type Row=Record<string,string>;
@@ -59,6 +60,7 @@ export function evaluateCareer(id:string,files:Record<string,string>):CareerEval
  try{
   if(!files||typeof files!=='object'||Array.isArray(files))throw new Error('file map required');
   for(const path of Object.keys(job.files))if(typeof files[path]!=='string'||files[path].length>20000)throw new Error('missing or oversized file');
+  if(careerCodeSpec(id)&&careerCodeMode(files)==='javascript')return evaluateCareerCode(id,files);
   const cases:{name:Localized;expected:unknown;actual:unknown}[]=[];
   const add=(ko:string,en:string,ja:string,expected:unknown,actual:unknown)=>cases.push({name:L(ko,en,ja),expected,actual});
   const unchanged=(path:string,columns:string[],numbers:string[]=[])=>sameRecords(csv(files,path,columns),csv(job.files,path,columns),columns,numbers);
@@ -151,8 +153,8 @@ export function evaluateCareer(id:string,files:Record<string,string>):CareerEval
     const overlap=(a:typeof slots[number],b:typeof slots[number])=>Math.max(0,Math.min(a.end,b.end)-Math.max(a.start,b.start));
     add('A/B 겹친 분','A/B overlapping minutes','A/B重複分',0,overlap(slots[0],slots[1]));
     add('B/C 겹친 분','B/C overlapping minutes','B/C重複分',0,overlap(slots[1],slots[2]));
-    add('A 시작','A starts','A開始','09:00',row(rows,'id','A').start);add('마지막 종료','Last class ends','最終終了','12:00',row(rows,'id','C').end);
-    add('B 시작','B starts','B開始','10:00',row(rows,'id','B').start);add('B 종료','B ends','B終了','11:00',row(rows,'id','B').end);
+    add('A는 09시 이후 시작','A starts at or after 09:00','Aは09時以降に開始',true,slots[0].start>=9*60);add('C는 13시까지 종료','C ends by 13:00','Cは13時までに終了',true,slots[2].end<=13*60);
+    add('A 다음에 B','B follows A','Aの次にB',true,slots[1].start>=slots[0].end);add('B 다음에 C','C follows B','Bの次にC',true,slots[2].start>=slots[1].end);
     add('수업 수','Class count','講座数',3,rows.length);break;
    }
    case 'delivery-fees':{

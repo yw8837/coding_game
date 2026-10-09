@@ -9,6 +9,7 @@ import '../../app/pc.css';
 import '../../app/practice.css';
 import '../../app/career.css';
 import '../../app/career-playground.css';
+import '../../app/career-code.css';
 import '../../app/game-art.css';
 import '../../app/release.css';
 import '../../app/coach.css';

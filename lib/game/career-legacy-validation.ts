@@ -1,5 +1,6 @@
 import {CAREER_JOBS} from './career-content.ts';
 import {evaluateCareer} from './career-evaluation.ts';
+import {CAREER_CODE_FILE,CAREER_CODE_MODE_FILE} from './career-code.ts';
 
 /** Frozen 0.11 attribute behavior; only used to retain already delivered saves. */
 function legacyAttributes(tag:string):Record<string,string> {
@@ -31,6 +32,7 @@ function legacyClinic(files:Record<string,string>):boolean {
  * Revision describes local save lineage, not authentication or an anti-cheat boundary.
  * Only the two changed jobs retain their bounded 0.11 acceptance rules. */
 export function deliveredCareerValid(id:string,files:Record<string,string>,rulesRevision:1|2):boolean {
+ if(files&&(Object.hasOwn(files,CAREER_CODE_FILE)||Object.hasOwn(files,CAREER_CODE_MODE_FILE)))return evaluateCareer(id,files).passed;
  if(rulesRevision!==1||!['bakery-price','clinic-form'].includes(id))return evaluateCareer(id,files).passed;
  const job=CAREER_JOBS.find(j=>j.id===id)!;
  if(!files||typeof files!=='object'||Array.isArray(files)||Object.keys(job.files).some(path=>typeof files[path]!=='string'||files[path].length>20000))return false;

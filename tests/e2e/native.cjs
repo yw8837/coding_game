@@ -69,7 +69,7 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  }
  await active().getByTestId('career-final-project').click();
  const release=active();await release.getByTestId('release-start').click();assert.equal(await release.getByTestId('release-code-mode').getAttribute('aria-pressed'),'true','Direct Work must start release in full code');await release.getByTestId('release-example-toggle').click();
- const releaseAnswers=await release.locator('.release-examples>div').evaluateAll(elements=>elements.map(el=>[el.querySelector('strong').textContent,el.querySelector('pre').textContent]));assert.equal(releaseAnswers.length,3);
+ const releaseAnswers=await release.locator('.release-examples>div').evaluateAll(elements=>elements.map(el=>[el.querySelector('strong').textContent,el.querySelector('pre').textContent]));assert.equal(releaseAnswers.length,4);
  for(const [filename,source] of releaseAnswers){await release.locator('.release-files .career-file-tabs button').filter({has:page.getByText(filename,{exact:true})}).click();await release.locator('.release-code textarea').fill(source);}
  await release.getByTestId('release-example-toggle').click();await release.getByTestId('release-test').click();await until(async()=>(await read()).gameplay.career.release.proof.passed,true);
  await release.getByTestId('release-build').click();await release.getByTestId('release-publish').click();await until(async()=>!!(await read()).gameplay.career.release.published,true);await release.getByTestId('release-letter').click();

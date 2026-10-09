@@ -1,17 +1,17 @@
 'use client';
 import {Check,Flag} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
-import {CAREER_JOBS} from '@/lib/game/career-content';
+import {careerRouteReady,careerRouteCount} from '@/lib/game/career-progress';
 import type {GameState} from '@/lib/game/engine';
 
 export function CampaignGoal({state}:{state:GameState}) {
  const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
  const career=state.gameplay.career,opened=state.gameplay.openingCelebrated;
- const allJobs=CAREER_JOBS.every(job=>career.completed.includes(job.id));
+ const allJobs=careerRouteReady(career.completed);
  const published=!!career.release?.published;
  const steps=[
   {done:opened,label:tr('카페의 첫 오픈','Open the café','カフェを開店'),detail:opened?'3 / 3':`${state.completed.length} / 3`},
-  {done:allJobs,label:tr('동네의 의뢰 해결','Help your neighbors','まちの依頼を解決'),detail:`${career.completed.length} / ${CAREER_JOBS.length}`},
+  {done:allJobs,label:tr('구역마다 의뢰 4개 선택','Choose 4 jobs per district','各エリアで4件選択'),detail:`${careerRouteCount(career.completed)} / 12`},
   {done:published,label:tr('내 첫 프로젝트 배포','Ship your first project','初めての作品を公開'),detail:'v1.0.0'},
  ];
  return <section className="campaign-goal" data-testid="campaign-goal" data-no-translate aria-label={tr('이야기의 최종 목표','Story goal','物語の最終目標')}>

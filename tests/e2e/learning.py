@@ -9,7 +9,7 @@ with sync_playwright() as pw:
  try:
   for lang in ['ko','en','ja']:
    seed=json.loads((out/f'{lang}-cafe-save.json').read_text(encoding='utf-8'))
-   c=b.new_context(viewport={'width':1440,'height':960});p=c.new_page();p.set_default_timeout(12000);errors=[];p.on('pageerror',lambda e:errors.append(str(e)))
+   c=b.new_context(viewport={'width':1440,'height':960});p=c.new_page();p.set_default_timeout(12000);errors=[];p.on('pageerror',lambda e:errors.append(str(e)));p.on('console',lambda m:errors.append(m.text) if m.type=='error' else None)
    p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.evaluate('({seed,lang})=>{localStorage.setItem("codeshift-intro-demo-v1",JSON.stringify(seed));localStorage.setItem("codeshift-language",lang)}',{'seed':seed,'lang':lang});p.reload(wait_until='networkidle');p.locator('.pc-play').click();p.locator('.quest-next button').click()
    p.locator('.pc-window[data-active=true] .pc-window-buttons button').nth(3).click()
    ids=p.locator('[data-testid^=career-job-]').evaluate_all('els=>els.map(e=>e.dataset.testid)')
@@ -57,6 +57,9 @@ with sync_playwright() as pw:
     p.get_by_test_id('career-reply-'+('care' if index%2==0 else 'craft')).check();p.get_by_test_id('career-deliver').click()
     assert len(state(p)['gameplay']['career']['completed'])==index+1
    p.get_by_test_id('career-final-project').click();p.get_by_test_id('release-start').click()
+   p.get_by_test_id('release-description').fill('A guide made during the learning playthrough')
+   p.get_by_test_id('release-items').fill('Mono Cafe | Coffee and a seat | Cafe\nWorkshop | Make something together | Class')
+   p.get_by_test_id('release-author-save').click();expect(p.get_by_test_id('release-author-saved')).to_be_visible()
    # A supported uppercase heading must remain editable after switching modes.
    p.get_by_test_id('release-code-mode').click();p.locator('.release-code textarea').fill('<H1>Untitled</H1>\n');p.get_by_test_id('release-code-mode').click()
    for value in ['My neighborhood','100%','/api/places','true']:

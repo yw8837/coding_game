@@ -4,18 +4,18 @@ import {useLanguage} from '@/lib/game/i18n';
 import {evaluateRelease} from '@/lib/game/release';
 import {releaseLearningEdit} from '@/lib/game/release-learning-edit';
 import {changedSource} from '@/lib/game/learning-display';
-export function ReleaseLearning({files,onEdit}:{files:Record<string,string>;onEdit:(file:string,content:string)=>void}){
+export function ReleaseLearning({files,onEdit,requireProject=false}:{files:Record<string,string>;onEdit:(file:string,content:string)=>void;requireProject?:boolean}){
  const lang=useLanguage(),tr=useCallback((ko:string,en:string,ja:string)=>({ko,en,ja})[lang],[lang]);
- const evaluation=evaluateRelease(files),index=evaluation.checks.findIndex(c=>!c.passed);
+ const evaluation=evaluateRelease(files,requireProject),index=evaluation.checks.findIndex(c=>!c.passed);
  const [value,setValue]=useState(''),[help,setHelp]=useState(false),[error,setError]=useState('');
  const [pending,setPending]=useState<{file:string;content:string;code:string;index:number}|null>(null),[saved,setSaved]=useState<{file:string;content:string;code:string}|null>(null);
  // eslint-disable-next-line react-hooks/set-state-in-effect -- An external release-check transition resets the previous task answer, help and validation message.
  useEffect(()=>{setValue('');setHelp(false);setError('');},[index]);
  // eslint-disable-next-line react-hooks/set-state-in-effect -- Confirm the engine's saved files before showing a change or its check result.
- useEffect(()=>{if(!pending)return;if(files[pending.file]===pending.content){setSaved(pending);setError(evaluateRelease(files).checks[pending.index]?.passed?'':tr('파일은 저장됐어요. 현재 화면과 요청을 비교해 다른 값을 시험해 보세요.','The file was saved. Compare the current screen with the request and try another value.','ファイルを保存しました。現在の画面と依頼を比べ、別の値を試してください。'));}else {setSaved(null);setError(tr('파일을 저장하지 못했어요. 수정 가능한 프로젝트인지 확인해 주세요.','The file could not be saved. Check that the project can still be edited.','ファイルを保存できませんでした。作品が編集可能か確認してください。'));}setPending(null);},[files,pending,tr]);
+ useEffect(()=>{if(!pending)return;if(files[pending.file]===pending.content){setSaved(pending);setError(evaluateRelease(files,requireProject).checks[pending.index]?.passed?'':tr('파일은 저장됐어요. 현재 화면과 요청을 비교해 다른 값을 시험해 보세요.','The file was saved. Compare the current screen with the request and try another value.','ファイルを保存しました。現在の画面と依頼を比べ、別の値を試してください。'));}else {setSaved(null);setError(tr('파일을 저장하지 못했어요. 수정 가능한 프로젝트인지 확인해 주세요.','The file could not be saved. Check that the project can still be edited.','ファイルを保存できませんでした。作品が編集可能か確認してください。'));}setPending(null);},[files,pending,tr,requireProject]);
  const tasks=[
-  {file:'index.html',label:tr('내 프로그램 이름','Name your app','アプリの名前'),prompt:tr('카페 간판처럼 제목을 붙여 보세요. 이번에는 내가 정하는 이름입니다.','Give it a heading, just like the cafe sign. This time, you choose its name.','カフェの看板のように見出しをつけましょう。今度は自分で名前を決めます。'),before:'<h1>',after:'</h1>',example:tr('우리 동네 도움판','My neighborhood board','私のまちの案内板')},
-  {file:'style.css',label:tr('휴대폰에 맞는 너비','A width that fits a phone','スマホに合う幅'),prompt:tr('카페 메뉴판을 고칠 때 썼던 값은? px 대신 화면에 맞춰 늘어나는 값을 써 보세요.','Remember the cafe menu? Use a width that follows the screen, instead of fixed pixels.','カフェのメニューで使った値を覚えていますか？pxではなく画面に合わせて伸びる値です。'),before:'.portal { width: ',after:'; }',example:'100%'},
+  {file:'index.html',label:tr('내 프로그램 이름','Name your app','アプリの名前'),prompt:tr('제목을 직접 정하고, 위 콘텐츠 작성에서 내 소개와 목록도 저장해 주세요.','Name your app, then write your description and items in the project content form above.','名前を自分で決め、上の内容フォームで紹介と一覧も保存しましょう。'),before:'<h1>',after:'</h1>',example:tr('우리 동네 도움판','My neighborhood board','私のまちの案内板')},
+  {file:'style.css',label:tr('휴대폰에 맞는 너비','A width that fits a phone','スマホに合う幅'),prompt:tr('좁은 화면에서 가로로 넘치지 않을 너비를 써 보세요. 전체 코드에서는 최대 너비와 여백도 함께 조절할 수 있어요.','Choose a width that fits narrow screens. In full code you can also combine maximum width and padding.','小さな画面からはみ出さない幅を選びましょう。コード全体では最大幅と余白も組み合わせられます。'),before:'.portal { width: ',after:'; }',example:'100%'},
   {file:'server.json',label:tr('장소 목록으로 연결','Connect the place list','場所一覧につなぐ'),prompt:tr('이번에 필요한 주소는 /api/places입니다. 미리보기 버튼이 이 주소로 목록을 요청해요.','This time the address is /api/places. The preview button asks for the list at this address.','今回のアドレスは/api/places。プレビューのボタンがここに一覧を頼みます。'),before:'"route": "',after:'"',example:'/api/places'},
   {file:'server.json',label:tr('문의가 남게 하기','Keep inquiries','問い合わせを残す'),prompt:tr('문의가 응답 뒤에도 남도록 보관 설정을 켜 주세요. 입력 모양이 생각나지 않으면 힌트를 열 수 있어요.','Enable storage so inquiries remain after the response. Open a hint if you need the input format.','応答後も問い合わせが残るよう保存をオンにしましょう。入力の形を思い出せなければヒントを開けます。'),before:'"saveRequests": ',after:'',example:'true'},
  ];

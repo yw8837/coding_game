@@ -3,6 +3,7 @@ import {lessonFacts} from './lesson.ts';
 import {PROJECT,REPO_URL,MISSIONS} from './content.ts';
 import {setupReadiness} from './setup.ts';
 import {careerCurrent,careerFresh,careerNext} from './career.ts';
+import {careerRouteReady} from './career-progress.ts';
 import {releaseFresh,releaseBuildFresh} from './release.ts';
 import type {Localized} from './career-content.ts';
 
@@ -27,9 +28,9 @@ export function currentTask(s:GameState):Task{
   const c=s.gameplay.career,job=careerCurrent(s),next=careerNext(s);
   const career=(id:string,phase:number,title:Localized,detail:Localized):Task=>({id,phase,title:title.ko,detail:detail.ko,app:'career',localized:{title,detail}});
   const l=(ko:string,en:string,ja:string)=>({ko,en,ja});
-  if(c.completed.length===18){
+  if(careerRouteReady(c.completed)&&(!job||c.completed.includes(job.id))){
    const release=c.release;
-   if(!release.started)return career('release-start',0,l('최종 프로젝트 시작하기','Start your final project','最後の作品を始める'),l('18개 의뢰를 마쳤어요. 이제 동네 도움판을 내 첫 프로그램으로 완성하고 1.0을 배포하세요.','All 18 jobs are done. Complete a neighborhood board of your own and release version 1.0.','18件の依頼を終えました。自分のまちの案内板を完成させ、1.0を公開しましょう。'));
+   if(!release.started)return career('release-start',0,l('최종 프로젝트 시작하기','Start your final project','最後の作品を始める'),l('각 구역에서 의뢰 4개를 마쳤어요. 내 프로젝트를 완성하고 1.0을 배포하세요. 남은 의뢰는 원할 때 이어 할 수 있어요.','Four jobs in each district are done. Build your own project and release version 1.0. The remaining jobs are optional.','各エリアで4件を終えました。自分の作品を完成させ、1.0を公開しましょう。残りの依頼は任意です。'));
    if(!release.published){
     if(!releaseFresh(s))return career('release-check',2,l('내 프로젝트 수정하고 검사하기','Edit and check your project','自分の作品を修正・検査する'),l('제목, 화면 폭, 연결 주소, 문의 보관을 확인하세요. 직접 써 본 뒤 현재 파일 검사를 누르세요.','Check the title, page width, connection address and inquiry storage. Try the preview, then check current files.','タイトル、画面幅、接続先、問い合わせ保存を確認。試してから現在のファイルを検査します。'));
     if(!releaseBuildFresh(s))return career('release-build',3,l('첫 1.0.0 버전 기록하기','Build your first version 1.0.0','最初の1.0.0を記録する'),l('네 조건을 통과했어요. 최종 프로젝트 아래에서 1.0.0 버전 기록을 누르세요.','All four checks passed. Choose Build version 1.0.0 below the final project.','4条件に合格しました。最後の作品の下で1.0.0を記録してください。'));

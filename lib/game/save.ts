@@ -21,8 +21,8 @@ const schema=z.object({gameplay,version:z.literal(1),mission:z.number().int().mi
 export const SAVE_KEY='codeshift-intro-demo-v1';
 const MAX_SAVE_CHARS=4_000_000;
 function validateCareer(state:GameState){const c=state.gameplay.career;if(c.accepted.length&&(!state.gameplay.openingCelebrated||![0,1,2].every(m=>state.completed.includes(m))))throw Error('Career requires the cafe opening');for(const id of c.completed){const job=CAREER_JOBS.find(j=>j.id===id)!;const files=careerFiles(state,id);if(Object.keys(job.files).some(p=>typeof files[p]!=='string'||files[p].length>20000)||!deliveredCareerValid(id,files,c.rulesRevision))throw Error('Delivered job files are missing or invalid');}
- const release=c.release;if(!release)return;if(release.started&&!releaseUnlocked(state))throw Error('Release requires cafe OPEN and all career deliveries');
- const files=releaseFiles(state),hash=releaseHash(files),evaluation=evaluateRelease(files);
+ const release=c.release;if(!release)return;if(release.started&&!releaseUnlocked(state))throw Error('Release requires cafe OPEN and four deliveries per district');
+ const files=releaseFiles(state),hash=releaseHash(files),evaluation=evaluateRelease(files,release.formatRevision===2);
  if(release.proof&&(release.proof.hash!==hash||release.proof.passed!==evaluation.passed))throw Error('Release proof must match current source');
  if(release.build&&(release.build.hash!==hash||!evaluation.passed))throw Error('Release build must match passing current source');
  if(release.published&&!releasePublishedFresh(state))throw Error('Published release source or records are invalid');

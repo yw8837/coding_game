@@ -17,16 +17,16 @@ function solve(s:GameState,id:string):GameState {
 function deliver(s:GameState,id:string,choice='care'):GameState{return act(solve(s,id),{type:'career-deliver',id,choice});}
 function finish(careCount:number):GameState {let s=afterCafe();CAREER_JOBS.forEach((job,index)=>{s=deliver(s,job.id,index<careCount?'care':'craft');});return s;}
 
-test('follow-up actions stay locked before cafe OPEN and later acts require every earlier commission',()=>{
+test('follow-up actions stay locked before cafe OPEN and later acts require four chosen commissions per earlier district',()=>{
  let s=createGame();const original=JSON.stringify(s.machines.local.files);
  for(const job of CAREER_JOBS)s=act(s,{type:'career-accept',id:job.id});
  s=act(s,{type:'career-upgrade',id:'recovery-kit'});s=act(s,{type:'career-ending'});
  assert.deepEqual(s.gameplay.career,createCareer());assert.equal(JSON.stringify(s.machines.local.files),original);assert.equal(s.credits,120);
  s=afterCafe();const second=CAREER_JOBS.find(j=>j.act===2)!;
  assert.equal(careerUnlocked(s,second),false);s=act(s,{type:'career-accept',id:second.id});assert.equal(s.gameplay.career.active,null);
- for(const job of CAREER_JOBS.filter(j=>j.act===1).slice(0,5))s=deliver(s,job.id);
+ for(const job of CAREER_JOBS.filter(j=>j.act===1).slice(0,3))s=deliver(s,job.id);
  assert.equal(careerUnlocked(s,second),false);
- s=deliver(s,CAREER_JOBS.filter(j=>j.act===1)[5].id);
+ s=deliver(s,CAREER_JOBS.filter(j=>j.act===1)[3].id);
  assert.equal(careerUnlocked(s,second),true);
  assert.equal(careerUnlocked(s,CAREER_JOBS.find(j=>j.act===3)!),false);
 });
