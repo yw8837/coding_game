@@ -44,3 +44,9 @@ next-env.d.ts
 /.codex/
 /outputs/
 /work/
+
+/.playwright-cli/
+/output/
+
+# Generated TypeScript cache
+*.tsbuildinfo
