@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import array
+import hashlib
 import json
 import math
 import os
@@ -351,7 +352,15 @@ def render(args: argparse.Namespace) -> None:
     for shot in shots:
         cuts.append(cursor / FPS)
         cursor += shot["frames"]
-    synthesis = synthesize_audio(output / "original-pulse.wav", total, cuts)
+    if args.audio_source:
+        audio_source = Path(args.audio_source).expanduser().resolve()
+        audio_info = probe(ffprobe, audio_source)
+        if abs(float(audio_info["format"]["duration"]) - total) > 1 / FPS:
+            raise ValueError("Reused music duration must match this edit within one frame")
+        shutil.copyfile(audio_source, output / "original-pulse.wav")
+        synthesis = {"source": "Reused existing local audio source", "path": str(audio_source), "sha256": hashlib.sha256(audio_source.read_bytes()).hexdigest()}
+    else:
+        synthesis = synthesize_audio(output / "original-pulse.wav", total, cuts)
     normalized = normalize_audio(ffmpeg, output)
     for language in LANGUAGES:
         write_captions(output, shots, total, language, False)
@@ -418,6 +427,7 @@ def main() -> int:
     parser.add_argument("--no-vertical", action="store_true")
     parser.add_argument("--ffmpeg")
     parser.add_argument("--ffprobe")
+    parser.add_argument("--audio-source", help="Reuse an existing local WAV matching the edit duration")
     args = parser.parse_args()
     try:
         render(args)

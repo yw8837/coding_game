@@ -1,0 +1,312 @@
+{
+  "source": "../../output/trailer-0.10/raw.webm",
+  "capture": "Real local game UI; fresh cafe play; visible import of UI-earned legacy save for later scenes",
+  "captureViewport": [
+    1920,
+    1080
+  ],
+  "captureTiming": {
+    "method": "two full-frame magenta markers; constant host-to-decoded-PTS offset",
+    "sourceDuration": 66.0,
+    "sourceFps": 25.0,
+    "offsetSeconds": 0.6474388999975047,
+    "offsetUncertaintySeconds": 0.035877499997732654,
+    "captureDelayAllowanceFrames": 2,
+    "endSafetyFrames": 1,
+    "anchors": [
+      {
+        "label": "start",
+        "wallBefore": 6.869377299997723,
+        "wallAfterPaint": 6.883316399995238,
+        "firstPts": 6.28,
+        "lastPts": 6.92,
+        "frames": 17,
+        "offsetBounds": [
+          0.5893772999977225,
+          0.6833163999952373
+        ]
+      },
+      {
+        "label": "end",
+        "wallBefore": 63.89156139999977,
+        "wallAfterPaint": 63.89520210000046,
+        "firstPts": 63.28,
+        "lastPts": 63.96,
+        "frames": 18,
+        "offsetBounds": [
+          0.611561399999772,
+          0.6952021000004595
+        ]
+      }
+    ],
+    "wallShots": [
+      {
+        "id": "desktop",
+        "start": 8.075,
+        "end": 11.766,
+        "duration": 3,
+        "caption": {
+          "ko": "내 컴퓨터에서 시작되는 이야기.",
+          "en": "A story inside your own PC.",
+          "ja": "自分のパソコンから始まる物語。"
+        }
+      },
+      {
+        "id": "message",
+        "start": 11.766,
+        "end": 15.158,
+        "duration": 3,
+        "caption": {
+          "ko": "도착한 메시지. 작은 카페의 부탁.",
+          "en": "A new message. A small café needs you.",
+          "ja": "届いたメッセージ。小さなカフェのお願い。"
+        }
+      },
+      {
+        "id": "observe",
+        "start": 15.698,
+        "end": 19.547,
+        "duration": 3,
+        "caption": {
+          "ko": "먼저 보고, 무엇이 다른지 찾아보자.",
+          "en": "Look first. Find what feels wrong.",
+          "ja": "まず見て、違うところを探そう。"
+        }
+      },
+      {
+        "id": "choose",
+        "start": 19.547,
+        "end": 23.719,
+        "duration": 4,
+        "caption": {
+          "ko": "골라 보고, 바뀐 코드도 만나고.",
+          "en": "Make a choice. Meet the code it changes.",
+          "ja": "選んでみると、変わったコードに出会う。"
+        }
+      },
+      {
+        "id": "width",
+        "start": 23.738,
+        "end": 26.899,
+        "duration": 3,
+        "caption": {
+          "ko": "작은 수정으로 휴대폰에 쏙.",
+          "en": "A small change. A menu that fits.",
+          "ja": "小さな修正で、スマホにぴったり。"
+        }
+      },
+      {
+        "id": "operator",
+        "start": 28.161,
+        "end": 32.559,
+        "duration": 4,
+        "caption": {
+          "ko": "이번에는 한 글자를 직접 써 보자.",
+          "en": "Now type one character yourself.",
+          "ja": "今度は1文字、自分で書いてみよう。"
+        }
+      },
+      {
+        "id": "order",
+        "start": 35.89,
+        "end": 38.987,
+        "duration": 3,
+        "caption": {
+          "ko": "화면과 연결, 주문 보관까지.",
+          "en": "Connect the screen. Keep the orders.",
+          "ja": "画面をつなぎ、注文も残そう。"
+        }
+      },
+      {
+        "id": "tools",
+        "start": 40.79,
+        "end": 45.644,
+        "duration": 4,
+        "caption": {
+          "ko": "번 크레딧으로 내 작업실을 채우고.",
+          "en": "Put your earnings into your studio.",
+          "ja": "稼いだクレジットで作業場を整える。"
+        }
+      },
+      {
+        "id": "project",
+        "start": 47.31,
+        "end": 51.515,
+        "duration": 4,
+        "caption": {
+          "ko": "배운 것을 연결해, 내 프로젝트로.",
+          "en": "Bring what you learned into your own app.",
+          "ja": "学んだことをつなぎ、自分の作品へ。"
+        }
+      },
+      {
+        "id": "release",
+        "start": 51.515,
+        "end": 56.158,
+        "duration": 4,
+        "caption": {
+          "ko": "현재 파일을 검사하고, 첫 1.0 배포.",
+          "en": "Check your files. Ship your first 1.0.",
+          "ja": "今のファイルを検査して、初めての1.0公開。"
+        }
+      },
+      {
+        "id": "letter",
+        "start": 56.158,
+        "end": 60.321,
+        "duration": 4,
+        "caption": {
+          "ko": "동네에 남긴 선택, 마지막 편지.",
+          "en": "Your choices around town. A final letter.",
+          "ja": "まちに残した選択と、最後の手紙。"
+        }
+      },
+      {
+        "id": "title",
+        "start": 60.61,
+        "end": 63.615,
+        "duration": 3,
+        "caption": {
+          "ko": "CODE:SHIFT · 개발 중인 작업명",
+          "en": "CODE:SHIFT · Working title in development",
+          "ja": "CODE:SHIFT · 開発中の仮タイトル"
+        }
+      }
+    ],
+    "reviewRequired": "Watch cut boundaries; compositor delay is bounded by assumption, not measured independently."
+  },
+  "shots": [
+    {
+      "id": "desktop",
+      "start": 7.428,
+      "end": 11.119,
+      "duration": 3,
+      "caption": {
+        "ko": "내 컴퓨터에서 시작되는 이야기.",
+        "en": "A story inside your own PC.",
+        "ja": "自分のパソコンから始まる物語。"
+      }
+    },
+    {
+      "id": "message",
+      "start": 11.119,
+      "end": 14.511,
+      "duration": 3,
+      "caption": {
+        "ko": "도착한 메시지. 작은 카페의 부탁.",
+        "en": "A new message. A small café needs you.",
+        "ja": "届いたメッセージ。小さなカフェのお願い。"
+      }
+    },
+    {
+      "id": "observe",
+      "start": 15.051,
+      "end": 18.9,
+      "duration": 3,
+      "caption": {
+        "ko": "먼저 보고, 무엇이 다른지 찾아보자.",
+        "en": "Look first. Find what feels wrong.",
+        "ja": "まず見て、違うところを探そう。"
+      }
+    },
+    {
+      "id": "choose",
+      "start": 18.9,
+      "end": 23.072,
+      "duration": 4,
+      "caption": {
+        "ko": "골라 보고, 바뀐 코드도 만나고.",
+        "en": "Make a choice. Meet the code it changes.",
+        "ja": "選んでみると、変わったコードに出会う。"
+      }
+    },
+    {
+      "id": "width",
+      "start": 23.091,
+      "end": 26.252,
+      "duration": 3,
+      "caption": {
+        "ko": "작은 수정으로 휴대폰에 쏙.",
+        "en": "A small change. A menu that fits.",
+        "ja": "小さな修正で、スマホにぴったり。"
+      }
+    },
+    {
+      "id": "operator",
+      "start": 27.514,
+      "end": 31.912,
+      "duration": 4,
+      "caption": {
+        "ko": "이번에는 한 글자를 직접 써 보자.",
+        "en": "Now type one character yourself.",
+        "ja": "今度は1文字、自分で書いてみよう。"
+      }
+    },
+    {
+      "id": "order",
+      "start": 35.243,
+      "end": 38.34,
+      "duration": 3,
+      "caption": {
+        "ko": "화면과 연결, 주문 보관까지.",
+        "en": "Connect the screen. Keep the orders.",
+        "ja": "画面をつなぎ、注文も残そう。"
+      }
+    },
+    {
+      "id": "tools",
+      "start": 40.143,
+      "end": 44.997,
+      "duration": 4,
+      "caption": {
+        "ko": "번 크레딧으로 내 작업실을 채우고.",
+        "en": "Put your earnings into your studio.",
+        "ja": "稼いだクレジットで作業場を整える。"
+      }
+    },
+    {
+      "id": "project",
+      "start": 46.663,
+      "end": 50.868,
+      "duration": 4,
+      "caption": {
+        "ko": "배운 것을 연결해, 내 프로젝트로.",
+        "en": "Bring what you learned into your own app.",
+        "ja": "学んだことをつなぎ、自分の作品へ。"
+      }
+    },
+    {
+      "id": "release",
+      "start": 50.868,
+      "end": 55.511,
+      "duration": 4,
+      "caption": {
+        "ko": "현재 파일을 검사하고, 첫 1.0 배포.",
+        "en": "Check your files. Ship your first 1.0.",
+        "ja": "今のファイルを検査して、初めての1.0公開。"
+      }
+    },
+    {
+      "id": "letter",
+      "start": 55.511,
+      "end": 59.674,
+      "duration": 4,
+      "caption": {
+        "ko": "동네에 남긴 선택, 마지막 편지.",
+        "en": "Your choices around town. A final letter.",
+        "ja": "まちに残した選択と、最後の手紙。"
+      }
+    },
+    {
+      "id": "title",
+      "start": 59.963,
+      "end": 62.968,
+      "duration": 3,
+      "caption": {
+        "ko": "CODE:SHIFT · 개발 중인 작업명",
+        "en": "CODE:SHIFT · Working title in development",
+        "ja": "CODE:SHIFT · 開発中の仮タイトル"
+      }
+    }
+  ]
+}

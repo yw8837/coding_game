@@ -3,8 +3,8 @@ Not a user learning study. One browser process, three sequential locales.
 """
 from playwright.sync_api import sync_playwright,expect
 from pathlib import Path
-import json
-out=Path('output/0.10-qa');out.mkdir(parents=True,exist_ok=True)
+import json, os
+out=Path(os.environ.get('CODESHIFT_QA_DIR','output/0.10-qa'));out.mkdir(parents=True,exist_ok=True)
 def state(p): return p.evaluate("JSON.parse(localStorage.getItem('codeshift-intro-demo-v1'))")
 def click(p,id):p.get_by_test_id(id).click()
 def finish(p):

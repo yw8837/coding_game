@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-09",
+  "short_descriptions": {
+    "ko": {
+      "unicode_characters": 108,
+      "utf16_code_units": 108,
+      "maximum": 300,
+      "passed": true
+    },
+    "en": {
+      "unicode_characters": 238,
+      "utf16_code_units": 238,
+      "maximum": 300,
+      "passed": true
+    },
+    "ja": {
+      "unicode_characters": 100,
+      "utf16_code_units": 100,
+      "maximum": 300,
+      "passed": true
+    }
+  },
+  "achievement_count": 9,
+  "achievement_ids_exactly_match_desktop_catalog": true,
+  "all_achievements_have_ko_en_ja": true,
+  "official_source_count": 8,
+  "code_lab_in_draft_requires_final_ship_validation": true,
+  "no_appid_assigned": true,
+  "publication": "No upload, fee payment, app registration or publishing performed"
+}

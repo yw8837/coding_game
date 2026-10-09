@@ -1,6 +1,6 @@
 # CODE:SHIFT Windows desktop release candidate
 
-The desktop shell packages the existing game as an offline Windows x64 application. The working title is **CODE:SHIFT**, and the candidate version is **0.10.0-rc.0**. This is a runnable packaging architecture with native-save and Steam adapters; it is not a claim that Steam review, store setup, or release QA is complete.
+The desktop shell packages the existing game as an offline Windows x64 application. The working title is **CODE:SHIFT**, and the candidate version is **0.11.0-rc.0**. This is a runnable packaging architecture with native-save and Steam adapters; it is not a claim that Steam review, store setup, or release QA is complete.
 
 ## Layout and build commands
 
@@ -143,7 +143,7 @@ This command sets an internal QA flag in the temporary packaging staging copy, r
 
 ## Verification status and remaining release checks
 
-Current execution results and their limits are maintained in [QA-0.10-RC.md](QA-0.10-RC.md). Native unit tests cover save ordering, bounded JSON and shape validation, malformed saves, backup recovery and preservation, write failures, asset-origin/path restrictions, main-frame IPC authorization, missing/invalid Steam configuration, optional SDK failure, achievement allowlisting, native export, dialog language and QA-profile separation. These use temporary directories and fake Steam clients; separate UI harnesses launch the actual Electron runtime and a packaged QA executable.
+Current execution results and their limits are maintained in [QA-0.11-RC.md](QA-0.11-RC.md). Native unit tests cover save ordering, bounded JSON and shape validation, malformed saves, backup recovery and preservation, write failures, asset-origin/path restrictions, main-frame IPC authorization, missing/invalid Steam configuration, optional SDK failure, achievement allowlisting, native export, dialog language and QA-profile separation. These use temporary directories and fake Steam clients; separate UI harnesses launch the actual Electron runtime and a packaged QA executable.
 
 Real Steam initialization, depot upload, executable signing and a clean separate Windows machine remain outside the current verified scope. With the real AppID, launch through Steam, test every achievement and SDK DLL loading, then verify Cloud if configured. Complete Steam dashboard/store assets, launch options, depot IDs and any desired executable signing. Keep measured performance, supported OS versions and QA results with the reviewed build. A portable offline build does not establish Steam store release approval.
 

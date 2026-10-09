@@ -1,0 +1,174 @@
+{
+  "checked_date": "2026-10-09",
+  "method": "Read public official documentation via HTTPS; excerpt plain text from fetched HTML",
+  "sources": [
+    {
+      "url": "https://partner.steamgames.com/doc/gettingstarted/appfee",
+      "resolved_url": "https://partner.steamgames.com/doc/gettingstarted/appfee",
+      "checked_date": "2026-10-09",
+      "http_status": 200,
+      "response_html_sha256": "48705963cce5a9953fa1b8b10310f337d18c3f45d9160cf2bc6793c470d2678d",
+      "excerpts": [
+        {
+          "matched_term": "pay a $100 USD",
+          "text": "ady an established Steamworks developer, you can now simply pay a $100 USD (or equivalent) fee for each new app you wish to distribute on Steam. Read below for details on how it works. Onboard On Steamworks When you are signing up as a Steamworks developer for the first time, you'll need to complete a set of digital paperwork. One o"
+        },
+        {
+          "matched_term": "not refundable",
+          "text": "licy Recouping The Steam Direct Fee The Steam Direct Fee is not refundable, but will be recoupable in the payment made after your product has at least $1,000.00 Adjusted Gross Revenue for Steam Store or in-app purchases. The recoupment of the Steam Direct Fee will be shown as a separate line item in your monthly report. Payment of r"
+        },
+        {
+          "matched_term": "excluding Steam wallet funds",
+          "text": "ith any payment method that Steam supports in your country, excluding Steam wallet funds. Once the Steam Direct Fee is paid, an app credit will be attached to the Steam account of the person who paid the fee. The credit can only be activated by the person who paid the Steam Direct Fee. NOTE: Only users that have Admin permissions within an existi"
+        }
+      ]
+    },
+    {
+      "url": "https://partner.steamgames.com/doc/gettingstarted/onboarding?l=english",
+      "resolved_url": "https://partner.steamgames.com/doc/gettingstarted/onboarding?l=english",
+      "checked_date": "2026-10-09",
+      "http_status": 200,
+      "response_html_sha256": "a477255bd467c8eae576a7dfcb6f9f3dc7cdb0c0da8b65c23d6dfde9a6884438",
+      "excerpts": [
+        {
+          "matched_term": "A 21-day waiting period",
+          "text": "ents before you can release your first few titles on Steam: A 21-day waiting period between when you paid the app fee and when you can release that game. This gives us time to review your information and confirm that we know who we're doing business with. You’ll need to prepare your store page and put up a publicly-visible ‘coming soon’ page"
+        },
+        {
+          "matched_term": "publicly-visible",
+          "text": "s with. You’ll need to prepare your store page and put up a publicly-visible ‘coming soon’ page for at least two weeks. This will help you start building your audience of interested customers that can wishlist your game or participate in discussions. This also gives you the opportunity to practice how you talk about your product so th"
+        }
+      ]
+    },
+    {
+      "url": "https://partner.steamgames.com/doc/store/review_process",
+      "resolved_url": "https://partner.steamgames.com/doc/store/review_process",
+      "checked_date": "2026-10-09",
+      "http_status": 200,
+      "response_html_sha256": "4dba335a0519bcd31de5387125762815c87e780cc9c0611794f7a9a17e829d4e",
+      "excerpts": [
+        {
+          "matched_term": "typically takes 3-5 business days",
+          "text": " Reviewing Store Presence Our review of your store presence typically takes 3-5 business days to complete, but you'll want to submit your page for review at least 7 business days before you want it live to account for potential changes you'll need to make. We'll send you any feedback if necessary, or if none is necessary, we'll mark your store page as"
+        },
+        {
+          "matched_term": "at least 7 business days",
+          "text": "to complete, but you'll want to submit your page for review at least 7 business days before you want it live to account for potential changes you'll need to make. We'll send you any feedback if necessary, or if none is necessary, we'll mark your store page as \"Ready for release\". Here's a list of things we check for when reviewing the store p"
+        },
+        {
+          "matched_term": "only contain features",
+          "text": "the store presence for your product: Your store page should only contain features and content that will be available at launch You will need to remove screenshots, trailers, or features listed that contain content that are incomplete or planned to be implemented. If you include content that's planned to be implemented later in your descrip"
+        }
+      ]
+    },
+    {
+      "url": "https://partner.steamgames.com/doc/store/coming_soon",
+      "resolved_url": "https://partner.steamgames.com/doc/store/coming_soon",
+      "checked_date": "2026-10-09",
+      "http_status": 200,
+      "response_html_sha256": "618aac46a85ea54856d17626417e2f9a2629417a909b4a7ae0ccc33af2f859db",
+      "excerpts": [
+        {
+          "matched_term": "at least two weeks",
+          "text": ". For new products, you must have a Coming Soon page up for at least two weeks before releasing. Timing It is recommended that you publish your Coming Soon page as soon as you are ready to start talking publicly about your game. When you post information about your game, you can use your Coming Soon page on Steam to start collecting fee"
+        },
+        {
+          "matched_term": "Post as Coming Soon",
+          "text": "r page has been approved, you will need to click the green \"Post as Coming Soon\" button for it to show up publicly as coming soon. For more information on preparing for release, please see the Release Process documentation. Where & How It Appears Release Date Display: You can control how your release date appears and how specific you are"
+        }
+      ]
+    },
+    {
+      "url": "https://partner.steamgames.com/doc/gettingstarted/contentsurvey",
+      "resolved_url": "https://partner.steamgames.com/doc/gettingstarted/contentsurvey",
+      "checked_date": "2026-10-09",
+      "http_status": 200,
+      "response_html_sha256": "38177dfb99b64acec309e25416148186387723855384be1e65611c392a401a4b",
+      "excerpts": [
+        {
+          "matched_term": "Pre-Generated:",
+          "text": "will require you to describe that implementation in detail: Pre-Generated: Any kind of content that ships with your game and is consumed by players that is created with the help of AI tools during development. Under the Steam Distribution Agreement, you promise Valve that your game will not include illegal or infringing content, and"
+        },
+        {
+          "matched_term": "Live-Generated:",
+          "text": "nt - including a check that your game meets those promises. Live-Generated: Any kind of content created with the help of AI tools while the game is running. In addition to following the same rules as Pre-Generated AI content, this comes with an additional requirement - in the Content Survey, you'll need to tell us what kind of guardr"
+        },
+        {
+          "matched_term": "artwork, sound, narrative, localization",
+          "text": ", and is consumed by players. This includes content such as artwork, sound, narrative, localization, etc. If your game used AI services during development or incorporates AI services as a part of the product, this section will require you to describe that implementation in detail: Pre-Generated: Any kind of content that ships with your game and is consumed "
+        }
+      ]
+    },
+    {
+      "url": "https://partner.steamgames.com/doc/store/assets/standard",
+      "resolved_url": "https://partner.steamgames.com/doc/store/assets/standard",
+      "checked_date": "2026-10-09",
+      "http_status": 200,
+      "response_html_sha256": "562cb72036429f623ae048c05608f57a786eb1ea1e5fe5cc0b2a6cf99ecc1bbd",
+      "excerpts": [
+        {
+          "matched_term": "920px x 430px",
+          "text": "asily legible against the background. Size: Please provide '920px x 430px' . Smaller versions will be generated from this. Note: Generally, this artwork should not change. If you want to include text about major game updates, tournaments, or other time-sensitive events on your capsules, then Artwork Overrides will allow you to uplo"
+        },
+        {
+          "matched_term": "462px x 174px",
+          "text": "s on making the logo clearly legible. Size: Please provide '462px x 174px' image. From that, two smaller sizes (120x45 and 184x69) capsules are automatically generated. Requirements: Small Capsule should contain readable logo, even at smallest size. In most cases, this means your logo should nearly fill the small capsule. The art i"
+        },
+        {
+          "matched_term": "1232px x 706px",
+          "text": "type should be easily legible against the background. Size: 1232px x 706px Note: Generally, this artwork should not change. If you want to include text about major game updates, tournaments, or other time-sensitive events on your capsules, then Artwork Overrides will allow you to upload bespoke capsule images to market something spe"
+        },
+        {
+          "matched_term": "748px x 896px",
+          "text": "type should be easily legible against the background. Size: 748px x 896px Note: Generally, this artwork should not change. If you want to include text about major game updates, tournaments, or other time-sensitive events on your capsules, then Artwork Overrides will allow you to upload bespoke capsule images to market something spe"
+        },
+        {
+          "matched_term": "1920x1080 minimum",
+          "text": "pear in these places, even if it otherwise qualifies. Size: 1920x1080 minimum. 16:9 aspect ratio Page Background Optional Usage: This is the image that may be used in the background of your store page. Design: This should be ambient so as not to compete with the content on the page. A template will automatically be applied to your uplo"
+        }
+      ]
+    },
+    {
+      "url": "https://partner.steamgames.com/doc/store/assets/libraryassets",
+      "resolved_url": "https://partner.steamgames.com/doc/store/assets/libraryassets",
+      "checked_date": "2026-10-09",
+      "http_status": 200,
+      "response_html_sha256": "3f52b63e158d7a634049ab6dcfe6df2136a193769f44d22158bd6eefc1f0db73",
+      "excerpts": [
+        {
+          "matched_term": "600px x 900px",
+          "text": "logo should be easily legible against the background. Size: 600px x 900px (an additional half-size 300px x 450px PNG will be auto-generated from larger file) Library Header Required The library header is used in different places within the Steam Client Library. Usage: Appears in various places in the Steam Client Library, including"
+        },
+        {
+          "matched_term": "3840px x 1240px",
+          "text": "d be entirely in the safe area or risk being cropped. Size: 3840px x 1240px (an additional half-size 1920px x 620px PNG will be auto-generated from larger file) Library Logo Required Usage: Appears at the top of a user’s library details page for this product, placed on top of the hero graphic. Design: This image should contain only y"
+        },
+        {
+          "matched_term": "1280px wide and/or 720px tall",
+          "text": "aspect ratio for your logo, however the logo must be either 1280px wide and/or 720px tall. For best results, use the logo that is being used for any retail boxes or marketing. You’ll want to ensure the logo is both visible and legible against the hero graphic background. The PNG image should have a transparent background. Size: Either 1280px wide "
+        }
+      ]
+    },
+    {
+      "url": "https://partner.steamgames.com/doc/store/assets/rules",
+      "resolved_url": "https://partner.steamgames.com/doc/store/assets/rules",
+      "checked_date": "2026-10-09",
+      "http_status": 200,
+      "response_html_sha256": "b20d42ae5ec8265a64daeb6da479b1dfadde4b33ea39819afac464f005297f1b",
+      "excerpts": [
+        {
+          "matched_term": "No review scores",
+          "text": "e name, and any official subtitle. For clarity, this means: No review scores of any kind, including Steam reviews or external news sources No award names , symbols, or logos No discount marketing copy (eg. no \"On Sale Now\" or \"Up to 90% off\" text) No marketing copy asking a user to take an action (eg. no \"Prepurchase Now\" or \"Wishlist"
+        },
+        {
+          "matched_term": "No discount marketing copy",
+          "text": "or external news sources No award names , symbols, or logos No discount marketing copy (eg. no \"On Sale Now\" or \"Up to 90% off\" text) No marketing copy asking a user to take an action (eg. no \"Prepurchase Now\" or \"Wishlisting now available\" text) No text or imagery promoting a different product . This includes no marketing of sequels or other t"
+        },
+        {
+          "matched_term": "No marketing copy asking",
+          "text": "rketing copy (eg. no \"On Sale Now\" or \"Up to 90% off\" text) No marketing copy asking a user to take an action (eg. no \"Prepurchase Now\" or \"Wishlisting now available\" text) No text or imagery promoting a different product . This includes no marketing of sequels or other titles in the same franchise. No other miscellaneous text . We understand"
+        }
+      ]
+    }
+  ]
+}

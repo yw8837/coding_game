@@ -12,6 +12,9 @@ import '../../app/game-art.css';
 import '../../app/release.css';
 import '../../app/coach.css';
 import '../../app/learning.css';
+import '../../app/code-lab.css';
+import '../../app/challenges-hub.css';
+import '../../app/workstation-shell.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Game root is missing');

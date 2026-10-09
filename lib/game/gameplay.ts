@@ -1,6 +1,7 @@
 import type {GameState} from './engine.ts';
 import {createPractice,type PracticeProgress} from './practice.ts';
 import {createCareer,type CareerProgress} from './career.ts';
+import {createLab,type LabProgress} from './code-lab.ts';
 
 export const COSMETICS=[
  {id:'mint',name:'미드나잇 민트',color:'#72e4bf',price:0,description:'첫 작업실의 차분한 초록빛'},
@@ -13,6 +14,7 @@ export const DESIGN_CHOICES=[
 ] as const;
 export type DesignId=typeof DESIGN_CHOICES[number]['id'];
 export type Gameplay={
+ lab:LabProgress;
  career:CareerProgress;
  practice:PracticeProgress;
  inspected:number[];
@@ -26,7 +28,7 @@ export type Gameplay={
  designChoice:DesignId|null;
  designEvidence:null|{hash:string;choice:DesignId;passed:boolean};
 };
-export function createGameplay():Gameplay{return {career:createCareer(),practice:createPractice(),inspected:[],servedCustomers:0,openingCelebrated:false,readMessages:[],exploration:{pwd:false,ls:false,readme:false},claimedBonuses:[],ownedCosmetics:['mint'],equippedCosmetic:'mint',designChoice:null,designEvidence:null};}
+export function createGameplay():Gameplay{return {lab:createLab(),career:createCareer(),practice:createPractice(),inspected:[],servedCustomers:0,openingCelebrated:false,readMessages:[],exploration:{pwd:false,ls:false,readme:false},claimedBonuses:[],ownedCosmetics:['mint'],equippedCosmetic:'mint',designChoice:null,designEvidence:null};}
 export type GameMessage={id:string;sender:string;role:string;subject:string;body:string;initial:string;action:'repair'|'accept'|'missions'|'workbench'|'preview'|'achievements'};
 export function gameMessages(s:GameState):GameMessage[]{
  const all:{message:GameMessage;unlocked:boolean}[]=[

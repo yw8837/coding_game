@@ -8,7 +8,7 @@ export function visibleTerminalHistory(history:GameState['history']):GameState['
 
 /** Complete only the current argument, preserving options and earlier paths. */
 export function terminalCompletions(state:GameState,input:string):string[]{
- const fixed=['cd -','ls -la','ls -lh','echo ','echo -n ','cat ','cp ','mv ','touch ','mkdir -p '];
+ const fixed=['cd -','cd /home/dev/code-lab','ls -la','ls -lh','echo ','echo -n ','cat ','cp ','mv ','rm ','touch ','mkdir -p ','code ','node run.cjs ','node --test '];
  const candidates=[...commandCompletions(state,input),...fixed.filter(c=>c.startsWith(input)&&c!==input)];
  let quote='',escape=false,start=0;
  for(let i=0;i<input.length;i++){
@@ -19,7 +19,7 @@ export function terminalCompletions(state:GameState,input:string):string[]{
  const prefix=input.slice(0,start),partial=input.slice(start);let before:string[],token:string;
  try{before=tokenize(prefix);token=tokenize(partial+(quote||''))[0]??'';}catch{return [...new Set(candidates)].slice(0,12);}
  const command=before[0],redirection=/>>?\s*$/.test(prefix);
- const pathCommand=['cd','cat','ls','cp','mv','touch','mkdir','python3'].includes(command)||command==='git'&&before[1]==='add'||command==='pip'&&before[1]==='install';
+ const pathCommand=['cd','cat','ls','cp','mv','rm','touch','mkdir','python3','node','code'].includes(command)||command==='git'&&before[1]==='add'||command==='pip'&&before[1]==='install';
  if(!redirection&&!pathCommand)return [...new Set(candidates)].slice(0,12);
  if(token.startsWith('-'))return [...new Set(candidates)].slice(0,12);
  const slash=token.lastIndexOf('/'),base=slash<0?'':token.slice(0,slash+1),fragment=token.slice(slash+1),machine=state.machines[state.machine],folder=resolvePath(machine.cwd,base||'.'),root=folder==='/'?'/':folder+'/';

@@ -27,6 +27,6 @@ export function aboutMetadata(language: AboutLanguage): Metadata {
       alternateLocale: Object.entries(locales).filter(([key]) => key !== language).map(([, value]) => value),
     },
     twitter: { card: 'summary', title: copy.title, description: copy.description },
-    other: { 'content-language': language, 'game-version': '0.10 RC' },
+    other: { 'content-language': language, 'game-version': '0.11 RC' },
   };
 }

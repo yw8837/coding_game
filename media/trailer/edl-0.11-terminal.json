@@ -1,0 +1,107 @@
+{
+  "status": "prepared-not-captured",
+  "source": "../../output/trailer-0.11-terminal/raw.webm",
+  "captureViewport": [
+    1920,
+    1080
+  ],
+  "notes": "Prepared24second actualUI teaser; main confirmed lab-terminal-workspace and virtual-file-source selectors. Timings remain null until calibrated capture; awaiting main capture slot permission. No capture/render run.",
+  "shots": [
+    {
+      "id": "open-code",
+      "start": null,
+      "end": null,
+      "duration": 3,
+      "caption": {
+        "ko": "터미널에서 내 파일을 연다.",
+        "en": "터미널에서 내 파일을 연다.",
+        "ja": "터미널에서 내 파일을 연다."
+      },
+      "speed": "Pending measured source/edit ratio"
+    },
+    {
+      "id": "red-run",
+      "start": null,
+      "end": null,
+      "duration": 3,
+      "caption": {
+        "ko": "실행해 보니, 계산이 이상하다.",
+        "en": "실행해 보니, 계산이 이상하다.",
+        "ja": "실행해 보니, 계산이 이상하다."
+      },
+      "speed": "Pending measured source/edit ratio"
+    },
+    {
+      "id": "red-test",
+      "start": null,
+      "end": null,
+      "duration": 2,
+      "caption": {
+        "ko": "여러 입력으로 실패를 확인.",
+        "en": "여러 입력으로 실패를 확인.",
+        "ja": "여러 입력으로 실패를 확인."
+      },
+      "speed": "Pending measured source/edit ratio"
+    },
+    {
+      "id": "repair",
+      "start": null,
+      "end": null,
+      "duration": 3,
+      "caption": {
+        "ko": "한 글자를 고친다. + → *",
+        "en": "한 글자를 고친다. + → *",
+        "ja": "한 글자를 고친다. + → *"
+      },
+      "speed": "Pending measured source/edit ratio"
+    },
+    {
+      "id": "green-run",
+      "start": null,
+      "end": null,
+      "duration": 3,
+      "caption": {
+        "ko": "다시 실행. 달라진 결과.",
+        "en": "다시 실행. 달라진 결과.",
+        "ja": "다시 실행. 달라진 결과."
+      },
+      "speed": "Pending measured source/edit ratio"
+    },
+    {
+      "id": "green-test",
+      "start": null,
+      "end": null,
+      "duration": 4,
+      "caption": {
+        "ko": "다른 주문도 검사. 빨강에서 초록으로.",
+        "en": "다른 주문도 검사. 빨강에서 초록으로.",
+        "ja": "다른 주문도 검사. 빨강에서 초록으로."
+      },
+      "speed": "Pending measured source/edit ratio"
+    },
+    {
+      "id": "reward",
+      "start": null,
+      "end": null,
+      "duration": 3,
+      "caption": {
+        "ko": "실제 첫 완료 보상 +35 cr.",
+        "en": "실제 첫 완료 보상 +35 cr.",
+        "ja": "실제 첫 완료 보상 +35 cr."
+      },
+      "speed": "Pending measured source/edit ratio"
+    },
+    {
+      "id": "title",
+      "start": null,
+      "end": null,
+      "duration": 3,
+      "caption": {
+        "ko": "CODE:SHIFT · 개발 중인 가제",
+        "en": "CODE:SHIFT · 개발 중인 가제",
+        "ja": "CODE:SHIFT · 개발 중인 가제"
+      },
+      "speed": "Pending measured source/edit ratio"
+    }
+  ]
+}

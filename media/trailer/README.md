@@ -109,3 +109,21 @@ python media/trailer/render.py --edl media/trailer/edl-0.9.json --output output/
 ```
 
 All four exports pass complete decoding, duration/frame count and encoded loudness checks in `output/trailer-0.9/verification.json`. Visual review and its limits are recorded in [0.9 QA](../../docs/QA-0.9-RC.md). Built-in image generation produced the environment/portrait images visible in the recorded game; [the prompts and asset paths](../game-art-prompts.json) are retained. No generated video substitutes for gameplay.
+
+## 0.10 RC recording
+
+`capture-learning.py` records the actual Korean game UI at commit `969f78b`: an empty desktop, incoming request, cafe observation and choice, a width repair, a typed operator, order storage, studio tools, and the final project check/build/1.0 release followed by the retained reply-based ending. The 12 selected shots total **42 seconds**. Optional Coding Lab work added after this capture is not included in these videos or screenshots.
+
+```powershell
+python media/trailer/capture-learning.py
+python media/trailer/render.py --edl media/trailer/edl-0.10.json --output output/trailer-0.10 --languages ko en ja --vertical-languages ko --audio-source output/trailer-0.9/original-pulse.wav
+python media/trailer/review-learning.py
+```
+
+Capture begins in a fresh browser context. For later career scenes, the script visibly imports the existing UI-earned `output/0.10-qa/legacy-0.9-save.json` through Save Tools; this import is outside the selected edit. That save contains 18 career deliveries and the old reply-based ending. The three tool purchases and new capstone edit/check/build/publish occur through actual UI controls on camera. The edit therefore compresses a campaign using a disclosed existing save; it is not a continuous 42-second campaign playthrough. Save hash, source commit, calibration and browser errors are recorded in `output/trailer-0.10/capture-evidence.json`.
+
+`--audio-source` reuses an existing WAV rather than synthesizing a replacement. Its duration must match the EDL within one frame; the renderer records its path and SHA-256, copies it to the new output directory, and applies the same two-pass loudness normalization and encoded-output checks. This export reuses the original 0.9 mathematical pulse, with no downloaded samples or voice.
+
+The output contains KO/EN/JA 1920×1080 exports, a KO 1080×1920 companion, editable SRT/ASS and Caption-compatible JSON, and **14 clean native 1920×1080 gameplay screenshots**. Recorded UI is Korean in all variants. The vertical companion preserves the entire game window in a 1080×608 view; its code text is smaller on phones, so use the landscape export for detailed UI presentation.
+
+All four exports passed full decoding, 42.000-second/1260-frame checks and encoded audio measurement (−16.01 LUFS, −3.34 dBTP). Model visual inspection covered all 12 scene midpoints, 22 samples around the 11 cut boundaries, a full-resolution Japanese caption sample and the vertical safe area. No calibration flash, black/corrupt sampled frame, subtitle overlap or missing Japanese glyph was observed in those samples. This was sampled visual inspection, not continuous human playback or a headphone/speaker listening session. Review artifacts and limits are retained in `output/trailer-0.10/review-evidence.json`; `review-learning.py` resets that visual review to pending when new artifacts are generated. No files were uploaded, and the final card identifies the title as a working title in development.

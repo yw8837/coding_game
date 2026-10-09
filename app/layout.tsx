@@ -11,6 +11,9 @@ import "./game-art.css";
 import "./release.css";
 import "./coach.css";
 import "./learning.css";
+import "./code-lab.css";
+import "./challenges-hub.css";
+import "./workstation-shell.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://codeshift-lab.bsfire1237.chatgpt.site"),

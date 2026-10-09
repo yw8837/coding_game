@@ -1,0 +1,180 @@
+{
+  "status": "draft-localization-not-registered",
+  "date": "2026-10-09",
+  "source_catalog": "desktop/achievements.json",
+  "source_predicates": "lib/game/achievements.ts",
+  "note": "API names unchanged. Existing career ending may be preserved in legacy saves; this catalog does not add capstone or Code Lab achievements. Actual Steam unlocks are unverified. Native-speaker review and icons remain.",
+  "achievements": [
+    {
+      "api_name": "CAFE_FIRST_DEPLOY",
+      "source_condition": "Cafe mission 0 completed",
+      "hidden_proposal": false,
+      "locales": {
+        "ko": {
+          "name": "첫 페이지",
+          "description": "카페의 첫 메뉴 페이지 의뢰를 완료하세요."
+        },
+        "en": {
+          "name": "First Page",
+          "description": "Complete the cafe’s first menu-page job."
+        },
+        "ja": {
+          "name": "最初のページ",
+          "description": "カフェの最初のメニューページ依頼を完了する。"
+        }
+      }
+    },
+    {
+      "api_name": "CAFE_BILL_FIXED",
+      "source_condition": "Cafe mission 1 completed",
+      "hidden_proposal": false,
+      "locales": {
+        "ko": {
+          "name": "한 글자의 차이",
+          "description": "카페의 주문 금액 계산 의뢰를 완료하세요."
+        },
+        "en": {
+          "name": "One Character Makes a Difference",
+          "description": "Complete the cafe’s bill-calculation job."
+        },
+        "ja": {
+          "name": "1文字の違い",
+          "description": "カフェの会計計算の依頼を完了する。"
+        }
+      }
+    },
+    {
+      "api_name": "CAFE_ORDERS_ONLINE",
+      "source_condition": "Cafe mission 2 completed",
+      "hidden_proposal": false,
+      "locales": {
+        "ko": {
+          "name": "주문을 남기는 방법",
+          "description": "카페의 서버·주문 보관 의뢰를 완료하세요."
+        },
+        "en": {
+          "name": "Orders to Keep",
+          "description": "Complete the cafe’s server and order-storage job."
+        },
+        "ja": {
+          "name": "注文を残す方法",
+          "description": "カフェのサーバーと注文保存の依頼を完了する。"
+        }
+      }
+    },
+    {
+      "api_name": "CAFE_OPEN",
+      "source_condition": "All cafe missions and openingCelebrated",
+      "hidden_proposal": false,
+      "locales": {
+        "ko": {
+          "name": "OPEN",
+          "description": "카페 오픈을 축하하세요."
+        },
+        "en": {
+          "name": "OPEN",
+          "description": "Celebrate the cafe opening."
+        },
+        "ja": {
+          "name": "OPEN",
+          "description": "カフェの開店を祝う。"
+        }
+      }
+    },
+    {
+      "api_name": "PRACTICE_ALL",
+      "source_condition": "All six practice jobs completed",
+      "hidden_proposal": false,
+      "locales": {
+        "ko": {
+          "name": "한 번 더 연습",
+          "description": "선택 연습 의뢰 6개를 모두 완료하세요."
+        },
+        "en": {
+          "name": "A Little More Practice",
+          "description": "Complete all six optional practice jobs."
+        },
+        "ja": {
+          "name": "もう少し練習",
+          "description": "任意の練習依頼6件をすべて完了する。"
+        }
+      }
+    },
+    {
+      "api_name": "CAREER_ACT_1",
+      "source_condition": "Career act 1 completed",
+      "hidden_proposal": false,
+      "locales": {
+        "ko": {
+          "name": "동네의 첫 부탁",
+          "description": "동네 의뢰 1장의 의뢰를 모두 완료하세요."
+        },
+        "en": {
+          "name": "The Neighborhood Calls",
+          "description": "Complete every job in career act 1."
+        },
+        "ja": {
+          "name": "まちの最初のお願い",
+          "description": "まちの依頼の第1章をすべて完了する。"
+        }
+      }
+    },
+    {
+      "api_name": "CAREER_ACT_2",
+      "source_condition": "Career act 2 completed",
+      "hidden_proposal": false,
+      "locales": {
+        "ko": {
+          "name": "이어지는 의뢰",
+          "description": "동네 의뢰 2장의 의뢰를 모두 완료하세요."
+        },
+        "en": {
+          "name": "More Work to Do",
+          "description": "Complete every job in career act 2."
+        },
+        "ja": {
+          "name": "続いていく依頼",
+          "description": "まちの依頼の第2章をすべて完了する。"
+        }
+      }
+    },
+    {
+      "api_name": "CAREER_ACT_3",
+      "source_condition": "Career act 3 completed",
+      "hidden_proposal": false,
+      "locales": {
+        "ko": {
+          "name": "동네의 해결사",
+          "description": "동네 의뢰 3장의 의뢰를 모두 완료하세요."
+        },
+        "en": {
+          "name": "Neighborhood Problem Solver",
+          "description": "Complete every job in career act 3."
+        },
+        "ja": {
+          "name": "まちの問題解決役",
+          "description": "まちの依頼の第3章をすべて完了する。"
+        }
+      }
+    },
+    {
+      "api_name": "CAREER_ENDING",
+      "source_condition": "Career ending celebrated",
+      "hidden_proposal": false,
+      "locales": {
+        "ko": {
+          "name": "마지막 편지",
+          "description": "커리어 엔딩을 맞이하세요."
+        },
+        "en": {
+          "name": "The Final Letter",
+          "description": "Reach the career ending."
+        },
+        "ja": {
+          "name": "最後の手紙",
+          "description": "まちの依頼のエンディングを迎える。"
+        }
+      }
+    }
+  ]
+}

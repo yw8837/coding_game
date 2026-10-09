@@ -18,6 +18,13 @@ export function codeCompletions(file:string,text:string,position:number):Complet
   const candidates=insideKey?[...new Set([...text.matchAll(/"([\w.-]+)"\s*:/g)].map(match=>match[1]))]:['true','false','null'];
   return candidates.filter(x=>x.startsWith(prefix)&&x!==prefix).slice(0,12).map(x=>({label:x,text:x,start:position-prefix.length,end:position}));
  }
+ if(file.endsWith('.js')){
+  const words=[...text.matchAll(/\b[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*/g)].map(match=>match[0]);
+  const dot=prefix.lastIndexOf('.'),receiver=dot>=0?prefix.slice(0,dot+1):'';
+  const methods=['length','map','filter','reduce','includes','push','trim','toLowerCase','split'];
+  const candidates=[...new Set([...words,...(receiver?methods.map(name=>receiver+name):['function','solve','input','calculateTotal','price','quantity','return','const','let','if','else','for','while','true','false','null'])])];
+  return candidates.filter(name=>name.startsWith(prefix)&&name!==prefix).slice(0,12).map(name=>({label:name,text:name,start:position-prefix.length,end:position}));
+ }
  const list=file.endsWith('.css')?['width: 100%;','background: #3678a8;','display: grid;','grid-template-columns: repeat(3, minmax(0, 1fr));','padding: 24px;','margin: 0;','color: #273b31;','border-radius: 12px;']:file.endsWith('.js')?['function','calculateTotal','price','quantity','return','const','let']:file.endsWith('.py')?['MENU_PATH','SAVE_ORDERS','True','False','return','request','jsonify']:file.endsWith('.html')?['h1','class','section','button','article','footer']:[];
  return list.filter(x=>x.startsWith(prefix)&&x!==prefix).map(x=>({label:x,text:x,start:position-prefix.length,end:position}));
 }

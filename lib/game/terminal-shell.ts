@@ -37,7 +37,7 @@ export function terminalArgumentError(cmd:string,args:string[]):string|null{
   return bad?`ls: unsupported option '${bad}'. Supported: -a, -l, -h, -1 (combined forms such as -la).`:args.filter(a=>!a.startsWith('-')||end>=0&&args.indexOf(a)>end).length>1?'ls: list one path at a time. Usage: ls [-alh1] [path]':null;
  }
  if(cmd==='echo')return args[0]?.startsWith('-')&&args[0]!=='-n'?`echo: unsupported option '${args[0]}'. Supported: -n.`:null;
- if(['cat','touch','cp','mv'].includes(cmd))return option([])||(cmd==='touch'?count(1,'touch <file>'):null);
+ if(['cat','touch','cp','mv','rm'].includes(cmd))return option([])||(['touch','rm'].includes(cmd)?count(1,`${cmd} <file>`):null);
  if(cmd==='mkdir')return option(['-p']);
  if(cmd==='uname')return option(['-a'])||count(1,'uname [-a]');
  if(cmd==='git'){
@@ -55,7 +55,8 @@ export function terminalArgumentError(cmd:string,args:string[]):string|null{
   if(sub==='install'){const bad=rest.find(a=>a.startsWith('-')&&!['-y','--yes'].includes(a));if(bad)return `${cmd} install: unsupported option '${bad}'. Supported: -y, --yes.`;}
  }
  if(cmd==='npm'&&args.length>(args[0]==='run'?2:1))return 'npm: supported commands: install, i, --version, -v, run dev, test, run build; no extra options.';
- if(['node','python3','ssh','pkill'].includes(cmd))return count(1,`${cmd} <argument>`);
+ if(cmd==='node')return args[0]==='--test'?count(2,'node --test <job>.test.cjs'):['--version','-v'].includes(args[0])?count(1,'node --version'):option([])||count(3,'node run.cjs <function.js> <input.json>');
+ if(['code','python3','ssh','pkill'].includes(cmd))return count(1,`${cmd} <argument>`);
  if(cmd==='curl')return option([])||count(1,'curl <URL>');
  return null;
 }

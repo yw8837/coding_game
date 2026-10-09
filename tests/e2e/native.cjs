@@ -74,13 +74,26 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  await release.getByTestId('release-example-toggle').click();await release.getByTestId('release-test').click();await until(async()=>(await read()).gameplay.career.release.proof.passed,true);
  await release.getByTestId('release-build').click();await release.getByTestId('release-publish').click();await until(async()=>!!(await read()).gameplay.career.release.published,true);await release.getByTestId('release-letter').click();
  await active().getByTestId('career-ending').click();await until(async()=>(await read()).gameplay.career.ending,'balanced');report.nativeCareerUI=18;report.nativeFinalRelease=true;
- await page.screenshot({animations:'disabled',path:path.join(out,'native-offline.png')});await close();
- const first=await read();assert.equal(first.accepted,true);assert.equal(first.gameplay.career.completed.length,18);report.closeSave=true;
+ await page.locator('.pc-start-button').click();await page.locator('.pc-start-apps').getByRole('button',{name:'연습 의뢰',exact:true}).click();await page.getByTestId('code-lab-tab').click();
+ await page.getByTestId('lab-source').locator('textarea').fill('function solve(input) { return input.price * input.quantity; }');await page.getByTestId('lab-run').click();
+ await until(async()=>(await read()).gameplay.lab.completed.includes('receipt'),true);report.nativeCodeLab=true;
+ await page.screenshot({animations:'disabled',path:path.join(out,'native-lab.png')});
+ await page.getByTestId('lab-terminal-workspace').locator('xpath=ancestor::details').locator('summary').first().click();await page.getByTestId('lab-terminal-workspace').click();
+ async function command(text){const input=page.locator('.pc-window[data-active=true] .terminal-form input');await input.fill(text);await input.press('Enter');await until(async()=>(await read()).history.at(-1)?.command,text);return (await read()).history.at(-1);}
+ const labCredits=(await read()).credits;
+ assert.equal((await command('cd /home/dev/code-lab')).error,false);assert.equal((await command('node --test receipt.test.cjs')).error,false);
+ assert.equal((await command('code receipt.input.json')).error,false);await page.getByTestId('virtual-file-source').locator('textarea').fill('{"price":3,"quantity":4}');await page.getByTestId('virtual-file-terminal').click();
+ assert.equal((await command('node run.cjs receipt.js receipt.input.json')).output,'12');assert.equal((await read()).credits,labCredits);
+ await page.getByTestId('taskbar-clock').click();await page.getByTestId('calendar-next').click();await page.keyboard.press('Escape');assert.equal(await page.getByTestId('desktop-calendar').count(),0);
+ report.nativeTerminalFiles=true;report.nativeCalendar=true;await close();
+
+ const first=await read();assert.equal(first.gameplay.lab.proofs.receipt.passed,true);assert.equal(first.accepted,true);assert.equal(first.gameplay.career.completed.length,18);report.closeSave=true;
  await launch();assert.equal(await page.locator('html').getAttribute('lang'),'ko');await page.locator('.pc-play').click();
+ await page.locator('.pc-shortcuts').getByRole('button',{name:'터미널',exact:true}).click();await command('code /home/dev/code-lab/receipt.js');await page.getByTestId('virtual-file-editor').waitFor({state:'visible'});
  // Import an actually UI-earned save from the browser edition through Settings.
  await page.locator('.pc-language').click();await page.locator('.save-tools input[type=file]').setInputFiles(path.join(out,'completed-career-save.json'));
  await page.getByRole('button',{name:'이 저장으로 이어하기',exact:true}).click();await until(async()=>(await read()).gameplay.career.ending,'balanced');
- await page.locator('.pc-play').click();await page.locator('.quest-next button').click();await page.locator('.career-conclusion').waitFor({state:'visible'});
+ await page.locator('.pc-play').click();await page.locator('.pc-shortcuts').getByRole('button',{name:'에디터',exact:true}).click();assert.equal(await page.getByTestId('virtual-file-editor').count(),0);report.importClearsEditorTarget=true;await page.locator('.quest-next button').click();await page.locator('.career-conclusion').waitFor({state:'visible'});
  await page.screenshot({animations:'disabled',path:path.join(out,'native-ending.png')});
  await app.evaluate(({dialog},file)=>{dialog.showSaveDialog=async()=>({canceled:false,filePath:file});},path.join(profile,'exported.json'));
  await page.locator('.pc-language').click();await page.getByRole('button',{name:'백업 내보내기',exact:true}).click();

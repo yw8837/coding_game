@@ -7,10 +7,15 @@ import {SmartCodeInput,type SmartCodeHandle} from './SmartCodeInput';
 import {currentTask,taskSelection} from '@/lib/game/workflow';
 import {MISSIONS,DEMO_FILE_NAMES,INITIAL_FILES} from '@/lib/game/content';
 import type {GameProps} from './types';
+import {VirtualFileEditor} from './VirtualFileEditor';
 
 function highlighted(line:string){return line.split(/("[^"\n]*"|'[^'\n]*'|\/\/.*|#.*|\b(?:function|return|const|let|from|import|def|if|True|False|class)\b|\b\d+(?:\.\d+)?(?:px|%)?\b)/g).map((part,i)=><span key={i} className={/^(\/\/|#)/.test(part)?'syntax-comment':/^["']/.test(part)?'syntax-string':/^(function|return|const|let|from|import|def|if|True|False|class)$/.test(part)?'syntax-keyword':/^\d/.test(part)?'syntax-number':''}>{part}</span>);}
 
 export function EditorView(props:GameProps){
+ return props.editorTarget?.file.startsWith('/')?<VirtualFileEditor {...props}/>:<ProjectEditorView {...props}/>;
+}
+
+function ProjectEditorView(props:GameProps){
  const {state,onAction,onTest,testing,onNavigate}=props;const task=currentTask(state);const [file,setFile]=useState(MISSIONS[state.mission].file);const smart=useRef<SmartCodeHandle>(null);const pre=useRef<HTMLPreElement>(null),numbers=useRef<HTMLDivElement>(null);const fs=projectFiles(state);const content=fs[file]??'';const dirty=dirtyFiles(state);const stale=state.tests?.hash!==sourceHash(fs)||state.tests?.mission!==state.mission;
  useEffect(()=>setFile(MISSIONS[state.mission].file),[state.mission]);
  useEffect(()=>{if(props.editorTarget)setFile(props.editorTarget.file);},[props.editorTarget]);

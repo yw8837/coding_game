@@ -3,8 +3,10 @@ import {HOME, PROJECT, REPO_URL, INITIAL_FILES, MISSIONS} from './content.ts';
 import {createGameplay,COSMETICS,DESIGN_CHOICES,gameMessages,canClaimColor,type Gameplay,type DesignId} from './gameplay.ts';
 import {createPractice,evaluatePractice,practiceJob} from './practice.ts';
 import {applyCareer,type CareerAction} from './career.ts';
+import {applyLab,type LabAction} from './code-lab-state.ts';
 import {RELEASE_ROOT,invalidateRelease} from './release.ts';
 import {parseTerminalInput,terminalArgumentError} from './terminal-shell.ts';
+import {checkLabFileWrite,syncLabWorkspace,dispatchLabNode} from './code-lab-terminal.ts';
 
 export type Files = Record<string,string>;
 export type MachineId = 'local'|'server';
@@ -21,8 +23,8 @@ export type GameState = {
  orders:{id:number;item:string;quantity:number}[];localOrders:{id:number;item:string;quantity:number}[];apiEvidence:{menu:boolean;order:boolean};
  notice:string;logs:string[];history:{command:string;output:string;error:boolean;machine:MachineId;cwd:string}[];
 };
-export type Action = CareerAction|{type:'practice-submit'|'practice-draft';id:string;answer:string}|{type:'inspect-preview';mobile:boolean;quantity:number}|{type:'serve-customer';customer:number;quantity:number}|{type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
-export type CommandResult={state:GameState;output:string;error:boolean};
+export type Action = LabAction|CareerAction|{type:'genericfile-edit';path:string;content:string}|{type:'practice-submit'|'practice-draft';id:string;answer:string}|{type:'inspect-preview';mobile:boolean;quantity:number}|{type:'serve-customer';customer:number;quantity:number}|{type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
+export type CommandResult={state:GameState;output:string;error:boolean;openFile?:string};
 
 function machine():Machine{return {cwd:HOME,tools:['git'],updated:false,files:{[HOME+'/welcome.txt']:'CODE:SHIFT 작업실에 오신 것을 환영합니다.\nhelp로 지원 명령을 확인하세요.\n'},dirs:['/','/home',HOME],dependencies:[],pythonDeps:[],processes:{frontend:false,backend:false},frontendRoot:null,backendRoot:null,backendSource:null,cloned:false};}
 export function createGame():GameState{return {gameplay:createGameplay(),version:1,mission:0,accepted:false,credits:120,xp:0,completed:[],badges:[],machine:'local',machines:{local:machine(),server:{...machine(),tools:[]}},serverReady:false,discovered:{search:false,repo:false,preview:false},repo:null,tests:null,testRequest:0,orders:[],localOrders:[],apiEvidence:{menu:false,order:false},notice:'',logs:['[system] 워크스테이션이 시작되었습니다.'],history:[]};}
@@ -31,7 +33,7 @@ export function sourceHash(files:Files):string {const str=Object.keys(files).sor
 export function resolvePath(cwd:string,path:string):string {let p=path||HOME;if(p==='~'||p.startsWith('~/'))p=HOME+p.slice(1);if(!p.startsWith('/'))p=cwd+'/'+p;const out:string[]=[];for(const part of p.split('/')){if(!part||part==='.')continue;if(part==='..')out.pop();else out.push(part);}return '/'+out.join('/');}
 const MAX_STORED_PATH=300,MAX_STORED_FILE=60000;
 function storedPath(path:string):string{if(path.length>MAX_STORED_PATH)throw new Error('ENAMETOOLONG: Path exceeds 300 characters.');return path;}
-function storedFile(path:string,content:string):void{storedPath(path);if(content.length>MAX_STORED_FILE)throw new Error('EFBIG: File exceeds 60,000 characters.');}
+function storedFile(path:string,content:string):void{storedPath(path);if(content.length>MAX_STORED_FILE)throw new Error('EFBIG: File exceeds 60,000 characters.');checkLabFileWrite(path,content);}
 function commandPath(cwd:string,path:string):string{return storedPath(resolvePath(cwd,path));}
 function validateFiles(root:string,files:Files):void{storedPath(root);for(const [p,c] of Object.entries(files))storedFile(root+'/'+p,c);}
 export function filesAt(m:Machine,root:string):Files{const r:Files={};for(const [p,c] of Object.entries(m.files))if(p.startsWith(root+'/'))r[p.slice(root.length+1)]=c;return r;}
@@ -72,6 +74,7 @@ export function parseBackend(code:string):{route:string;save:boolean}{
 export function act(state:GameState,action:Action):GameState{
  const s=clone(state);s.notice='';
  if(action.type.startsWith('career-')){applyCareer(s,action as CareerAction);return s;}
+ if(action.type.startsWith('lab-'))return applyLab(s,action as LabAction);
  if(action.type==='practice-submit'||action.type==='practice-draft'){
   const job=practiceJob(action.id);
   if(!job||typeof action.answer!=='string'||action.answer.length>80)return s;
@@ -115,7 +118,11 @@ export function act(state:GameState,action:Action):GameState{
   s.notice=badge+' 달성! '+reward+' cr와 '+xp+' XP를 받았어요.';return s;
  }
  if(action.type==='discover'){s.discovered[action.what]=true;return s;}
- if(action.type==='edit'){if(!s.repo)return s;if(action.content.length>60000){s.notice='파일은 60,000자까지 편집할 수 있어요.';return s;}if(!Object.hasOwn(projectFiles(s),action.path))return s;const path=s.repo.root+'/'+action.path;if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}s.machines.local.files[path]=action.content;invalidateRelease(s);return s;}
+ if(action.type==='genericfile-edit'){
+  if(s.machine!=='local'){s.notice='File editing is available on workstation only. exit to return to local files.';return s;}
+  try{const path=commandPath(s.machines.local.cwd,action.path);if(!Object.hasOwn(s.machines.local.files,path)){s.notice='File not found. Open an existing local file.';return s;}if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}if(typeof action.content!=='string')return s;storedFile(path,action.content);if(path.startsWith('/home/dev/jobs/')&&action.content.length>20000)throw Error('Job files can contain up to 20,000 characters.');s.machines.local.files[path]=action.content;syncLabWorkspace(s);invalidateRelease(s);}catch(e){s.notice=(e as Error).message;}return s;
+ }
+ if(action.type==='edit'){if(!s.repo)return s;if(action.content.length>60000){s.notice='파일은 60,000자까지 편집할 수 있어요.';return s;}if(!Object.hasOwn(projectFiles(s),action.path))return s;const path=s.repo.root+'/'+action.path;if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}try{storedFile(path,action.content);}catch(e){s.notice=(e as Error).message;return s;}s.machines.local.files[path]=action.content;syncLabWorkspace(s);invalidateRelease(s);return s;}
  if(action.type==='request-tests'){s.testRequest++;return s;}
  if(action.type==='test-result'){if(action.hash!==sourceHash(projectFiles(s)))return s;s.tests={hash:action.hash,mission:s.mission,checks:action.checks};if(action.designChoice&&action.designChoice===s.gameplay.designChoice)s.gameplay.designEvidence={hash:action.hash,choice:action.designChoice,passed:action.designPassed===true};s.notice=action.checks.every(c=>c.passed)?(action.designChoice===s.gameplay.designChoice&&action.designChoice?(action.designPassed?'화면과 색상 모두 통과! 보너스 창에서 보상을 받아 보세요.':'의뢰 검사는 통과했어요. 선택한 버튼 색은 아직 달라요.'):'손님 확인을 마쳤어요. 지우에게 알려 주세요.'):'아직 해결할 항목이 있어요. 검사 결과를 확인해 보세요.';return s;}
  if(action.type==='install-server'){if(s.mission<2){s.notice='세 번째 의뢰에서 서버가 지급됩니다.';return s;}s.serverReady=true;log(s,'[mono-server] Ubuntu 24.04 설치 완료 · 가상 서버');return s;}
@@ -137,7 +144,7 @@ export function act(state:GameState,action:Action):GameState{
 }
 
 export function runCommand(state:GameState,input:string):CommandResult{
- let s=clone(state);s.notice='';const origin=s.machine,cwd=s.machines[origin].cwd;let error=false;let output='';
+ let s=clone(state);s.notice='';const origin=s.machine,cwd=s.machines[origin].cwd;let error=false;let output='';let openFile:string|undefined;
  const fail=(text:string)=>{error=true;output=text;};
  let args:string[],redirect:ReturnType<typeof parseTerminalInput>['redirect']=null;try{const parsed=parseTerminalInput(input,tokenize);args=tokenize(parsed.command);redirect=parsed.redirect;}catch(e){args=[];const message=(e as Error).message;fail(message.startsWith('shell:')?message:'shell: '+message);}
  const m=s.machines[s.machine];const [cmd,...a]=args;const root=s.machine==='local'?(s.repo?.root??PROJECT):PROJECT;
@@ -150,7 +157,7 @@ export function runCommand(state:GameState,input:string):CommandResult{
  const argumentError=cmd?terminalArgumentError(cmd,a):null;
  if(argumentError)fail(argumentError);
  else if(!cmd){}else if(cmd==='clear')output='';
- else if(cmd==='help'||cmd==='man')output='FILES  pwd · ls [-alh1] [path] · cd [path|-] · cat <file...> · mkdir [-p] <directory...> · cp · mv · touch\nWRITE  echo [-n] <text> · echo/cat > file · echo/cat >> file\nTOOLS  sudo apt update · sudo apt install nodejs npm git python3 python3-pip\nNODE   node --version · npm --version · npm install · npm run dev · npm test · npm run build\nGIT    git clone <URL> · status · diff · add <file|.> · commit -m "message" · push · pull · log\nSERVER ssh dev@mono-server · exit · pip install -r requirements.txt · python3 server.py\nCHECK  curl <URL> · ps · pkill node · pkill python3\nKEYS   ↑↓ history · Tab completion · Ctrl+L / clear · Ctrl+C cancel input\nSHELL  Quotes and escaped characters supported. Run commands separately; no pipes or command substitution.';
+ else if(cmd==='help'||cmd==='man')output='FILES  pwd · ls [-alh1] [path] · cd [path|-] · cat <file...> · mkdir [-p] <directory...> · cp · mv · rm <file> · touch\nWRITE  echo [-n] <text> · echo/cat > file · echo/cat >> file\nTOOLS  sudo apt update · sudo apt install nodejs npm git python3 python3-pip\nNODE   node --version · npm --version · npm install · npm run dev · npm test · npm run build\nLAB    cd /home/dev/code-lab · code receipt.js · node run.cjs receipt.js receipt.input.json · node --test receipt.test.cjs\nGIT    git clone <URL> · status · diff · add <file|.> · commit -m "message" · push · pull · log\nSERVER ssh dev@mono-server · exit · pip install -r requirements.txt · python3 server.py\nCHECK  curl <URL> · ps · pkill node · pkill python3\nKEYS   ↑↓ history · Tab completion · Ctrl+L / clear · Ctrl+C cancel input\nSHELL  Quotes and escaped characters supported. Run commands separately; no pipes or command substitution.';
  else if(cmd==='pwd')output=m.cwd;
  else if(cmd==='whoami')output='dev';
  else if(cmd==='uname')output='Linux '+(s.machine==='local'?'shift-workstation':'mono-server')+' 6.8.0 x86_64 (simulated)';
@@ -168,6 +175,7 @@ export function runCommand(state:GameState,input:string):CommandResult{
  else if(cmd==='cat'){const separator=a.indexOf('--'),paths=separator<0?a:[...a.slice(0,separator),...a.slice(separator+1)];if(!paths.length)fail('cat: usage: cat <file...>');else{const contents:string[]=[];for(const name of paths){const path=resolvePath(m.cwd,name),content=m.files[path];if(content===undefined){fail(`cat: ${name}: ${m.dirs.includes(path)?'Is a directory':'No such file or directory'}`);break;}contents.push(content);}if(!error)output=contents.join('');}}
  else if(cmd==='mkdir'){const paths=a.filter(x=>!x.startsWith('-')).map(name=>({name,path:commandPath(m.cwd,name)}));if(!paths.length)fail('mkdir: missing operand');for(const {name,path:p} of paths){protectDelivered(p);if(m.dirs.includes(p)&&!a.includes('-p')){fail(`mkdir: cannot create directory '${name}': File exists`);break;}const parent=p.slice(0,p.lastIndexOf('/'))||'/';if(!m.dirs.includes(parent)&&!a.includes('-p')){fail(`mkdir: cannot create directory '${name}': No such file or directory`);break;}const parts=p.split('/').filter(Boolean);parts.forEach((_,i)=>{const d='/'+parts.slice(0,i+1).join('/');if(!m.dirs.includes(d))m.dirs.push(d);});}}
  else if(cmd==='touch'){if(!a[0])fail('touch: missing file operand');else{const p=commandPath(m.cwd,a[0]),parent=p.slice(0,p.lastIndexOf('/'));protectDelivered(p);if(!m.dirs.includes(parent))fail(`touch: cannot touch '${a[0]}': No such file or directory`);else m.files[p]??='';}}
+ else if(cmd==='rm'){if(!a[0])fail('Usage: rm <file>');else{const p=commandPath(m.cwd,a[0]);protectDelivered(p);if(m.dirs.includes(p))fail(`rm: ${a[0]}: Is a directory; directory removal is not supported.`);else if(!Object.hasOwn(m.files,p))fail(`rm: ${a[0]}: No such file or directory`);else delete m.files[p];}}
  else if(cmd==='cp'||cmd==='mv'){if(a.length!==2)fail(`사용법: ${cmd} <원본 파일> <대상 파일>`);else{const from=commandPath(m.cwd,a[0]);let to=commandPath(m.cwd,a[1]);if(m.dirs.includes(to))to=storedPath(to+'/'+from.split('/').at(-1));protectDelivered(to);if(cmd==='mv')protectDelivered(from);if(from===to)fail(`${cmd}: '${a[0]}' and '${a[1]}' are the same file`);else if(m.files[from]===undefined)fail(`${cmd}: cannot stat '${a[0]}': No such file or directory`);else if(!m.dirs.includes(to.slice(0,to.lastIndexOf('/'))))fail(`${cmd}: target directory does not exist`);else{if(s.machine==='local'&&to.startsWith('/home/dev/jobs/')&&m.files[from].length>20000)throw Error('Job files can contain up to 20,000 characters.');storedFile(to,m.files[from]);m.files[to]=m.files[from];if(cmd==='mv')delete m.files[from];}}}
  else if(cmd==='sudo'||cmd==='apt'){
   const apt=cmd==='sudo'?a[0]==='apt':true;const sub=cmd==='sudo'?a[1]:a[0],names=cmd==='sudo'?a.slice(2):a.slice(1);
@@ -176,7 +184,8 @@ export function runCommand(state:GameState,input:string):CommandResult{
   else if(sub==='install'){if(!m.updated)fail('E: Package lists are empty. Run sudo apt update first.');else{const packages=names.filter(x=>!x.startsWith('-'));const supported=['nodejs','npm','git','python3','python3-pip'];if(!packages.length)fail('E: 패키지 이름을 입력하세요.');else if(packages.some(x=>!supported.includes(x)))fail('E: 이 실습에서는 nodejs, npm, git, python3, python3-pip을 지원합니다.');else{const installed=[...packages];if(packages.includes('npm'))installed.push('nodejs');for(const t of installed)if(!m.tools.includes(t))m.tools.push(t);output=packages.map(t=>`Setting up ${t} ... done`).join('\n')+'\n가상 컴퓨터의 설치 상태가 갱신되었습니다.';}}}
   else if(sub==='list')output=m.tools.map(x=>x+' [installed]').join('\n');else fail('지원 명령: sudo apt update / install / list');
  }
- else if(cmd==='node'){if(requireTool('nodejs')){if(a[0]==='--version'||a[0]==='-v')output='v20.11.0 [simulated]';else fail('이 실습에서는 node --version과 npm 스크립트를 사용하세요.');}}
+ else if(cmd==='code'){if(s.machine!=='local')fail('code: local workstation files only. exit to return to your local files.');else if(!a[0])fail('Usage: code <existing-file>');else{const path=commandPath(m.cwd,a[0]);if(!Object.hasOwn(m.files,path))fail(`code: file not found: ${a[0]}`);else{openFile=path;output=`Opening ${path}`;}}}
+ else if(cmd==='node'){if(requireTool('nodejs')){if(a[0]==='--version'||a[0]==='-v')output='v20.11.0 [simulated]';else{const result=dispatchLabNode(s,a,resolvePath);output=result.output;error=result.error;}}}
  else if(cmd==='npm'){
   if(requireTool('npm')){if(a[0]==='--version'||a[0]==='-v')output='10.2.4 [simulated]';else{const pkg=manifest();if(pkg){
    if(a[0]==='install'||a[0]==='i'){if(a.length>1)fail('이 실습은 package.json의 의존성을 설치하는 npm install을 지원합니다.');else if(!pkg.devDependencies?.vite)fail('npm ERR! 이 프로젝트는 devDependencies.vite가 필요합니다.');else{if(!m.dependencies.includes(m.cwd))m.dependencies.push(m.cwd);output='added 11 packages, and audited 12 packages\nfound 0 vulnerabilities\n[게임] 이 프로젝트의 의존성이 준비됐습니다.';}}
@@ -220,14 +229,15 @@ export function runCommand(state:GameState,input:string):CommandResult{
   if(s.machine==='local'&&target.startsWith('/home/dev/jobs/')&&text.length>20000)throw Error('Job files can contain up to 20,000 characters.');
   m.files[target]=text;output='';
  }
- }catch(e){s=clone(state);s.notice='';fail((e as Error).message);}
+ syncLabWorkspace(s);
+ }catch(e){s=clone(state);s.notice='';openFile=undefined;fail((e as Error).message);}
  if(!error&&origin==='local'&&s.repo){
   if(cmd==='pwd'&&cwd===s.repo.root)s.gameplay.exploration.pwd=true;
   if(cmd==='ls'&&resolvePath(cwd,a.find(x=>!x.startsWith('-'))||'.')===s.repo.root)s.gameplay.exploration.ls=true;
   if(cmd==='cat'&&a[0]&&resolvePath(cwd,a[0])===s.repo.root+'/README.md')s.gameplay.exploration.readme=true;
  }
  invalidateRelease(s);
- if(input.trim())s.history.push({command:input,output,error,machine:origin,cwd});s.history=s.history.slice(-100);return {state:s,output,error};
+ if(input.trim())s.history.push({command:input,output,error,machine:origin,cwd});s.history=s.history.slice(-100);return {state:s,output,error,...(openFile?{openFile}:{})};
 }
 
 export function apiRequest(state:GameState,method:string,path:string,body:string):{state:GameState;status:number;data:unknown}{
