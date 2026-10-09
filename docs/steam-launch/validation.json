@@ -1,6 +1,6 @@
 {
   "date": "2026-10-10",
-  "game_version_scope": "0.13.1 RC",
+  "game_version_scope": "0.13.2 RC",
   "short_descriptions": {
     "ko": {
       "unicode_characters": 108,
@@ -48,8 +48,13 @@
   "launch_discount": "undecided; recommendation only, not applied",
   "working_title": "CODE:SHIFT",
   "current_web_scope": "full game until actual Steam purchase availability",
-  "promo_footage_version": "0.11.1; older than current RC",
+  "promo_footage_version": "0.13.2-rc.0; actual Korean UI with KO/EN/JA editorial type",
   "human_playtime_fun_learning_native_speaker_low_spec_validation": "not performed or not verified",
   "publication": "No upload, fee payment, app registration or publishing performed",
-  "limits": "Document consistency/source checks; not Steam approval, human review, or a rerun of browser/native QA"
+  "limits": "Document consistency/source checks; not Steam approval, human review, or a rerun of browser/native/package/media QA",
+  "promo_media_directory": "output/trailer-current/final",
+  "promo_capture_evidence": "output/trailer-current/capture-evidence.json",
+  "promo_raw_source": "output/trailer-current/raw.webm",
+  "promo_montage_scope": "Visible import of UI-earned cafe save, chosen 12-job route and personal portfolio 1.0.0 in-game release; retimed montage, not continuous gameplay; no Code Lab footage",
+  "qa_reference": "docs/QA-0.13.2-RC.md and associated receipts govern final browser/native/package/media results"
 }

@@ -1,6 +1,6 @@
 # 상점 문구 — KO / EN / JA
 
-2026-10-10. 0.13.1 RC 제출 전 초안. CODE:SHIFT는 작업명이며 Steam에 등록·게시하지 않았다. 각 언어의 소개만 상점 입력 후보이고 편집 메모는 공개 본문에 포함하지 않는다. 구조화 원본은 [store-copy.json](store-copy.json)이다.
+2026-10-10. 0.13.2 RC 제출 전 초안. CODE:SHIFT는 작업명이며 Steam에 등록·게시하지 않았다. 각 언어의 소개만 상점 입력 후보이고 편집 메모는 공개 본문에 포함하지 않는다. 구조화 원본은 [store-copy.json](store-copy.json)이다.
 
 ## 한국어
 
@@ -100,14 +100,14 @@ CODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直�
 
 ## 공개 전 편집 메모
 
-현재 문구는 0.13.1 RC의 구현 범위를 설명하는 제출 전 초안이다. KO/EN/JA 원어민 감수, 사람의 이해·재미·플레이 시간, 별도 저사양 PC 및 실제 Steam 실행 검증은 미완료다. 제한된 JavaScript 함수와 게임 안의 배포를 일반 JavaScript 실행, 호스트 프로그램 실행 또는 실제 서비스 배포로 소개하지 않는다. 최종 Steam 빌드에 포함한 콘텐츠와 언어·저장 검증을 대조하며, Code Lab 미동봉 시 해당 단락을 제거한다. 모든 의뢰 18개를 완료하는 업적과 구역마다 4개를 선택하는 본편 진행은 구분한다.
+현재 문구는 0.13.2 RC의 구현 범위를 설명하는 제출 전 초안이다. KO/EN/JA 원어민 감수, 사람의 이해·재미·플레이 시간, 별도 저사양 PC 및 실제 Steam 실행 검증은 미완료다. 제한된 JavaScript 함수와 게임 안의 배포를 일반 JavaScript 실행, 호스트 프로그램 실행 또는 실제 서비스 배포로 소개하지 않는다. 최종 Steam 빌드에 포함한 콘텐츠와 언어·저장 검증을 대조하며, Code Lab 미동봉 시 해당 단락을 제거한다. 모든 의뢰 18개를 완료하는 업적과 구역마다 4개를 선택하는 본편 진행은 구분한다.
 
 CODE:SHIFT는 작업명이다. 한국 정가는 사용자가 정한 ₩11,000이며 Steam에 미적용이다. 출시 할인은 미정이다. 첫 7일 20%·₩8,800은 추천안이며 확정하거나 예약한 할인은 아니다. 지역 가격은 Steam 가격 필드에서 별도 설정한다. 공식 할인 정책과 확인 날짜는 [출처](official-sources.md)를 따른다.
 
 현재 웹은 전체 무료다. 실제 Steam 본편 구매가 가능해진 뒤 카페 입문 3장을 무료 홍보 데모로 남길 계획이며, 웹 제한은 아직 구현하지 않았다. 전환 전에 기존 저장 보존·내보내기·본편 가져오기와 실제 상점 링크를 확인한다.
 
-## 보관된 홍보영상 — 현재 빌드와 구분
+## 현재 출시 후보 홍보영상
 
-`output/trailer-rebuild/final/`의 30초 KO/EN/JA 가로 영상과 KO 세로 영상은 0.11.1 한국어 UI 촬영본이다. 후반은 이전 UI 플레이 저장을 화면에서 가져와 촬영했다. 0.13.1의 선택 12/18 진행, 다섯 JavaScript 대안 풀이와 개인 프로젝트를 보여 주는 현재 빌드 증거가 아니다. Code Lab도 포함하지 않는다. 공개 후보로 사용하기 전 최종 빌드와 대조해 다시 촬영하거나 오래된 장면을 교체할 필요를 판단한다. 현재 버전 촬영·업로드 완료라고 기록하지 않는다.
+`output/trailer-current/final/`의 30초 KO/EN/JA 가로 영상과 KO 세로 영상은 실제 **0.13.2 한국어 게임 UI**를 자동 조작해 촬영한 공개 후보다. KO/EN/JA는 편집 타이포그래피의 언어이며 세 언어의 게임 UI를 각각 촬영한 영상이 아니다. `output/trailer-current/raw.webm` 원본과 `capture-evidence.json`, `edit/edl-current.json`이 촬영·편집 근거다. 이전 UI 플레이로 얻은 카페 저장을 화면에서 가져오고, 촬영 중 선택 의뢰 12개를 해결한 뒤 직접 만든 포트폴리오를 게임 안에서 1.0.0으로 배포했다. 선택한 장면을 시간 조절하고 중간 행동을 생략한 몽타주이며 연속 완주나 실제 플레이 시간의 증거가 아니다. Code Lab 장면은 포함하지 않는다. 최종 영상 품질·빌드·native·패키지 검증은 [0.13.2 QA](../QA-0.13.2-RC.md)와 연결된 실행 기록을 따른다. 이 문서 갱신으로 해당 검증·업로드 완료를 선언하지 않는다.
 
-음악은 Kevin MacLeod의 **Realizer**, CC BY 4.0이며 원본 출처는 https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024 이다. `ATTRIBUTION.txt`의 출처·라이선스·발췌 및 125→128 BPM 템포 조정 내역을 보존한다. 사람의 전체 시청·청음은 미완료다. 더 오래된 42초 영상과 스크린샷은 `output/archive/trailers-before-rebuild-20261009/trailer-0.10/`의 역사 자료다.
+음악은 Kevin MacLeod의 **Realizer**, CC BY 4.0이며 원본 출처는 https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024 이다. `output/trailer-current/final/ATTRIBUTION.txt`의 출처·라이선스·발췌 및 125→128 BPM 템포 조정 내역을 보존한다. 편집 효과음도 사용되므로 게임 안 소리의 실시간 녹음으로 소개하지 않는다. 사람의 전체 시청·청음은 미완료다. 0.11.1 촬영본은 `output/trailer-rebuild/final/`, 더 오래된 42초 영상과 스크린샷은 `output/archive/trailers-before-rebuild-20261009/trailer-0.10/`의 역사 자료다.

@@ -22,7 +22,7 @@
   },
   "code_lab": {
     "included_in_draft": true,
-    "implementation": "12 optional limited JavaScript function puzzles; included in 0.13.1 RC scope",
+    "implementation": "12 optional limited JavaScript function puzzles; included in 0.13.2 RC scope",
     "publication_condition": "Confirm the final Steam build includes the tested browser/Windows content, language and save behavior; remove the paragraph if not shipped",
     "footage_in_0_10_trailer": false,
     "included_in_current_trailer": false
@@ -35,7 +35,7 @@
     "Real Steam app execution, achievements and Cloud unverified"
   ],
   "promo_media": {
-    "directory": "output/trailer-rebuild/final",
+    "directory": "output/trailer-current/final",
     "duration_seconds": 30,
     "files": [
       "codeshift-ko.mp4",
@@ -49,26 +49,33 @@
       "en",
       "ja"
     ],
-    "capture": "Fresh automated recording of actual game UI; later scenes visibly import a save earned through prior UI play",
+    "capture": "Actual Korean 0.13.2 game UI with automated input; visibly imports a prior UI-earned cafe save with zero career jobs, then solves 12 chosen jobs and creates a personal portfolio with an in-game 1.0.0 release. Retimed montage omits intervening actions; editorial KO/EN/JA typography and SFX are not localized game UI or continuous playtime evidence.",
     "code_lab_included": false,
     "music": {
       "title": "Realizer",
       "creator": "Kevin MacLeod (incompetech.com)",
       "license": "CC BY 4.0",
       "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024",
-      "attribution_file": "output/trailer-rebuild/final/ATTRIBUTION.txt",
+      "attribution_file": "output/trailer-current/final/ATTRIBUTION.txt",
       "changes": "Excerpt trimmed; tempo adjusted from 125 to 128 BPM with pitch preserved; mixed for the trailer"
     },
     "archive_directory": "output/archive/trailers-before-rebuild-20261009/trailer-0.10",
     "human_listening": "not performed",
-    "recorded_game_version": "0.11.1",
+    "recorded_game_version": "0.13.2-rc.0",
     "includes_0_12_client_situations": false,
     "includes_0_12_first_six_direct_inputs": false,
-    "status": "older 0.11.1 footage; not proof of the 0.13.1 build",
-    "represents_current_build": false,
-    "includes_0_13_chosen_route": false,
+    "status": "current RC capture; final media QA and release checks governed by docs/QA-0.13.2-RC.md and receipts, not asserted by this document",
+    "represents_current_build": true,
+    "includes_0_13_chosen_route": true,
     "includes_0_13_five_javascript_contracts": false,
-    "includes_0_13_personal_project": false
+    "includes_0_13_personal_project": true,
+    "source_raw": "output/trailer-current/raw.webm",
+    "capture_evidence": "output/trailer-current/capture-evidence.json",
+    "edit_decision_list": "output/trailer-current/edit/edl-current.json",
+    "historical_0_11_1_directory": "output/trailer-rebuild/final",
+    "language_scope": "Korean captured game UI; KO/EN/JA editorial type, not three localized UI recordings",
+    "montage_not_continuous_playthrough": true,
+    "verification_reference": "docs/QA-0.13.2-RC.md and associated receipts"
   },
   "korea_launch_discount_proposal": {
     "percent": 20,
@@ -78,7 +85,7 @@
     "status": "undecided-not-applied",
     "decision_status": "awaiting_user_choice; 20 percent remains only a recommendation"
   },
-  "game_version_scope": "0.13.1 RC; final Steam build not submitted",
+  "game_version_scope": "0.13.2 RC; final Steam build not submitted",
   "korea_price_decision": "user-selected; not applied on Steam",
   "web_demo_transition": {
     "status": "planned-not-implemented",

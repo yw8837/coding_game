@@ -6,6 +6,32 @@ test('JSON and CSV round trips preserve Korean, commas, quotes and multiline evi
 test('invalid JSON and CSV reject invalid ratings, duplicates, enum values and incomplete rows',()=>{const r={version:1,sessions:[D.empty()]};for(const mutate of [r=>r.version=2,r=>r.sessions[0].enjoyment=0,r=>r.sessions[0].tasks[0].outcome='passed',r=>r.sessions[0].tasks.pop(),r=>r.sessions.push(r.sessions[0]),r=>r.sessions[0].code='실명',r=>r.sessions[0].minutes=-1,r=>r.sessions[0].recording=true]){const v=structuredClone(r);mutate(v);assert.throws(()=>D.validate(v));}assert.throws(()=>D.parseJSON('{broken'));assert.throws(()=>D.parseJSON(' '.repeat(D.LIMIT+1)));const csv=D.exportCSV(r);assert.throws(()=>D.parseCSV(csv.split('\r\n').slice(0,2).join('\r\n')));assert.throws(()=>D.parseCSV(csv.replace('"untested"','"passed"')));assert.throws(()=>D.parseCSV('wrong,columns\n1,2'));});
 test('independent evidence needs an explicit no-help record and participant consent',()=>{const s=D.empty();s.consent=true;s.tasks[0].outcome='independent';let r={version:1,sessions:[s]};assert.equal(D.summary(r).uncertain,1);s.tasks[0].help='none';assert.equal(D.summary(r).independent,1);s.consent=false;assert.equal(D.summary(r).independent,0);assert.equal(D.summary(r).uncertain,1);});
 
+test('v1 records retain task IDs, CSV columns and optional observation notes across imports',()=>{
+ const legacy=D.empty('P001','beginner');legacy.id='legacy_v1';legacy.experience='experienced';legacy.consent=true;
+ legacy.sessionNotes='0.10 · 기존 기록: 다시 해 보고 싶다고 말함';legacy.tasks[4].evidence='보상 사용처를 찾지 못함\n다른 의뢰를 고름';
+ const experienced=D.empty('P002','experienced');experienced.experience='experienced';experienced.consent=true;experienced.transferResponse='예시와 다른 해법 · 지원 문법에서 오류';
+ const r={version:1,sessions:[legacy,experienced]},clean=D.validate(r);
+ assert.equal(D.FIELDS.length,22);assert.equal(clean.sessions[0].kind,'beginner');
+ assert.equal(JSON.stringify(clean.sessions[0].tasks.map(t=>t.id)),JSON.stringify(['desktop','message','cafe','operator','requests','transfer','return']));
+ assert.equal(JSON.stringify(D.parseJSON(D.exportJSON(r))),JSON.stringify(clean));
+ assert.equal(JSON.stringify(D.parseCSV(D.exportCSV(r))),JSON.stringify(clean));
+ assert.equal(D.group(clean.sessions[0]),'experienced');
+ assert.equal(D.summary(clean).experienced,2);assert.equal(D.summary(clean).beginners,0);
+});
+
+test('self, beginner and experienced evidence counts remain separate with missing and uncertain results',()=>{
+ const self=D.empty('P001','self'),beginner=D.empty('P002'),legacy=D.empty('P003'),expert=D.empty('P004','experienced');
+ self.experience='experienced';beginner.experience='none';legacy.experience='experienced';expert.experience='experienced';
+ for(const s of [self,beginner,legacy,expert]){s.consent=true;s.tasks[0].outcome='independent';s.tasks[0].help='none';}
+ expert.consent=false;legacy.tasks[1].outcome='assisted';legacy.tasks[1].help='game';
+ const stats=D.summary({version:1,sessions:[self,beginner,legacy,expert]});
+ assert.equal(stats.sessions,4);assert.equal(stats.self,1);assert.equal(stats.beginners,1);assert.equal(stats.experienced,1);
+ assert.equal(stats.groups.self.sessions,1);assert.equal(stats.groups.self.independent,1);
+ assert.equal(stats.groups.beginner.sessions,1);assert.equal(stats.groups.beginner.independent,1);
+ assert.equal(stats.groups.experienced.sessions,2);assert.equal(stats.groups.experienced.independent,1);assert.equal(stats.groups.experienced.assisted,1);assert.equal(stats.groups.experienced.uncertain,1);
+ for(const key of ['sessions','untested','independent','prompted','assisted','stopped','uncertain','missingRatings'])assert.equal(stats[key],Object.values(stats.groups).reduce((total,g)=>total+g[key],0));
+});
+
 function fullReport(count,character='x'){
  return {version:1,sessions:Array.from({length:count},(_,i)=>{const s=D.empty('Q'+String(i+1).padStart(3,'0'),'self');s.id='synthetic_security_'+i;const text=character.repeat(Math.floor(2000/character.length));s.sessionNotes=text;for(const t of s.tasks)for(const key of ['confusion','intervention','evidence'])t[key]=text;return s;})};
 }
