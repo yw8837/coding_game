@@ -108,7 +108,11 @@ CODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直�
 
 ## 編集メモ
 
-価格は日本・米国等の本文に換算額を埋め込まず、Steamの地域価格欄で扱う。韓国案は₩9,900で未適用。学習時間6〜8時間や「初心者に検証済み」は未実測・未検証のため記載しない。公開前に最終製品名、発売時点の実装数、Steam機能チェックボックスと本体の挙動を照合する。
+価格は日本・米国等の本文に換算額を埋め込まず、Steamの地域価格欄で扱う。ユーザーが選んだ韓国定価は₩11,000で未適用。発売時の割引率は最終選択待ち。最初の7日間の20%・₩8,800が現在の推奨案で、10%・₩9,900は以前の案、40%・₩6,600は発売時の上限案。50%はSteamの発売時割引の上限40%を超える。いずれも未適用で、販売価格の確定として本文に書かない。学習時間6〜8時間や「初心者に検証済み」は未実測・未検証のため記載しない。公開前に最終製品名、発売時点の実装数、Steam機能チェックボックスと本体の挙動を照合する。
+
+- KO: 현재 웹은 전체 무료다. Steam에서 실제 구매가 가능해진 뒤 카페 입문 3장까지만 무료 데모로 남기고, 유료판에 후속 의뢰·연습·Code Lab·최종 프로젝트를 포함한 전체 캠페인을 제공할 계획이다. 웹 제한은 아직 구현하지 않았고 Steam 등록·가격 적용도 완료하지 않았다.
+- EN: The current web version is fully free. Once the game is actually available to buy on Steam, the plan is to retain the three cafe chapters as a free web demo and offer the full campaign, including later jobs, exercises, Code Lab and the final project, in the paid edition. The web limit is not implemented, and Steam registration and pricing are not complete.
+- JA: 現在のWeb版は全編無料。Steamで実際に購入できるようになった後、カフェ入門3章を無料Webデモとして残し、後半の依頼・練習・コード実験室・最後の作品を含む全キャンペーンを有料版で提供する予定。Web制限は未実装で、Steam登録・価格適用も未完了。
 
 ## 최신 홍보영상 — 편집 메모
 
