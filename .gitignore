@@ -50,3 +50,7 @@ next-env.d.ts
 
 # Generated TypeScript cache
 *.tsbuildinfo
+
+# Python harness caches
+__pycache__/
+*.pyc

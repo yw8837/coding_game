@@ -1,25 +1,21 @@
-# CODE:SHIFT 0.3 verification — 2026-10-07
+# CODE:SHIFT 0.7 gameplay verification — 2026-10-09
 
-## Scope and automated checks
+This is the current verification overview for three chapters, the saved OPEN ending and six optional practice jobs. The former 0.3 one-mission verification, `intro-demo-verification.md` and older screenshots are historical. Their balances, focus behavior and public-access statements do not establish 0.7 results. The main task maintains the full current checklist in [QA-0.7.md](QA-0.7.md).
 
-The existing one-mission intro engine remains. The 18 Node tests pass: 12 existing engine tests, the guide test, persistence test and four new gameplay tests. New checks exercise old-save migration, successful versus failed exploration commands, one-time rewards across reload/clear, catalog-priced and idempotent cosmetic purchases, insufficient balance/unowned equip, and stale/changed-choice color evidence. The earlier guide integration still completes the main mission with no bonus activity.
+| Evidence | Recorded result |
+| --- | --- |
+| `output/pc-qa/unit.log` | 55 tests, 55 passes; failure/cancelled/skipped/todo all 0 |
+| Final-source `tsc --noEmit` | Main task confirmed exit 0; `typecheck.log` has no diagnostics |
+| `output/pc-qa/campaign-report.json` | `ok: true`, errors empty; three chapter deliveries, simulated server/API work, OPEN ending |
+| `output/pc-qa/adversarial-report.json` | EN/JA first chapter, practice and reload succeeded; overflow false; malformed-save recovery, terminal Tab/history, oversized-path rejection and bounded resize cases |
+| `output/pc-qa/final-smoke.json` | KO/EN/JA information-page metadata, 1920×1080/42-second video loaded and began playing, no media/page errors |
 
-## Browser verification
+The campaign report begins at first-chapter staging, so its step list alone does not document every preceding onboarding action. The main task separately reported final Start-to-empty-desktop and localized terminal `help` smoke checks. These observations are separate from the final-smoke JSON's page/media fields. The video checks show advancing playback time, not full viewing of all 42 seconds in each language.
 
-Verified in the managed preview with the earlier completed QA save (470 cr / 120 XP), which migrated with no new rewards on load.
+The campaign-only result was 1,720 cr / 560 XP, three completed chapters, four story badges and a saved ending. No practice or bonus was claimed in that fixture; later optional rewards and cosmetic spending must be accounted for separately. Player-save fixture contents are not published.
 
-- Message app X returns to the desktop; resume reopens the app; Escape closes it. Focus returns to the home control.
-- Settings Escape and reward Escape/X close only the dialog. Both dialogs also expose large explicit buttons.
-- Confirmed the pre-fix issue where Escape did not leave the cafe iframe after clicking an order button. After forwarding that key to the existing central handler, the same click/Escape returned to the desktop.
-- Shift+Tab leaves the terminal input without changing input text.
-- In an actual 390px embedded viewport, the page width and scroll width were both 390px. The mission panel's internal X and Escape close it. The message app's X remains visible, its text readable, and X returns to the mobile desktop.
-- Ran pwd, ls, cat README.md in the local project. Explorer claim increased 470/120 to 510 cr/140 XP, marked the bonus claimed and showed its reward dialog.
-- Selected ocean blue before editing: actual color check failed and the color reward remained unavailable, while the three mandatory checks passed.
-- Edited the visible style.css textarea, changing the order-button background to #3678a8, and ran browser layout checks. All three mandatory conditions and both-viewport computed button colors passed. Color claim increased 510/140 to 570 cr/170 XP.
-- Bought the violet theme: credits fell to 480, theme showed owned/in use, and the accent changed. Reload preserved 480 cr, 170 XP, both bonus completions and the selected theme. Main mission remained complete at 8/8.
+Reports establish bounded automated scenarios. They do not show browser completion of every practice job, every keyboard/assistive-technology path or every device. Unit tests cover additional rule/reward contracts. Session draft retention is distinct from persistence of every window position or temporary input across reload. Screenshot presence alone is not an interaction test.
 
-The 390px QA fixture was removed before packaging. No player save or temporary QA route is published. `gameplay-qa.jpg` is the captured desktop workbench, including explicit close control and both claimed bonuses. The prior complete first-mission browser run is documented in `intro-demo-verification.md`; this update adds focused interaction and regression checks rather than repeating the same whole playthrough.
+The main task owns production build/deploy and records public delivery at `D:/코딩게임/출시자료/0.7/verification/release-receipt.json`. Consult that receipt for source/build alignment and public release outcome. Development logs, screenshots, fixtures and player saves stay outside the release archive.
 
-## Public access
-
-Native access update returned `access_mode: public`, revision 2, for the existing project. Source build/save/deployment verification is performed by the Site workflow for this release. Public access does not synchronize local player saves.
+Automated completion confirms a working tested route. It does not prove a novice's comprehension/enjoyment, official age-15 certification, broad accessibility/security certification or Steam/mobile-store packaging and approval. Simulation restrictions and preview isolation are implementation/regression evidence, not a formal penetration-test result.

@@ -1,8 +1,9 @@
-import {dirtyFiles,isProjectServerRunning,projectFiles,sourceHash,type GameState} from './engine.ts';
+import {dirtyFiles,projectFiles,sourceHash,type GameState} from './engine.ts';
 import {lessonFacts} from './lesson.ts';
 import {PROJECT,REPO_URL,MISSIONS} from './content.ts';
+import {setupReadiness} from './setup.ts';
 
-export type Task={id:string;phase:number;title:string;detail:string;app:'messages'|'browser'|'editor'|'terminal'|'server'|'api'|'achievements';command?:string;url?:string;file?:string;find?:string;next?:boolean};
+export type Task={id:string;phase:number;title:string;detail:string;app:'messages'|'browser'|'computer'|'editor'|'terminal'|'server'|'api'|'achievements';command?:string;url?:string;file?:string;find?:string;next?:boolean};
 export const PHASES=['의뢰 읽기','작업 준비','문제 고치기','결과 확인','의뢰 전달'];
 const step=(id:string,phase:number,title:string,detail:string,app:Task['app'],extra:Partial<Task>={}):Task=>({id,phase,title,detail,app,...extra});
 const shell=(id:string,phase:number,title:string,detail:string,command:string)=>step(id,phase,title,detail,'terminal',{command});
@@ -19,18 +20,14 @@ function upload(s:GameState,phase:number):Task|null{
  return null;
 }
 export function currentTask(s:GameState):Task{
- const m=s.mission,r=s.repo,local=s.machines.local,server=s.machines.server,fs=projectFiles(s),facts=lessonFacts(s);
- if(s.completed.includes(m))return step('complete',5,m<2?'지우의 다음 메시지 받기':s.gameplay.openingCelebrated?'동네 해결사 엔딩 달성!':'마지막 할 일 · OPEN 간판 켜기',m<2?'의뢰가 전달됐어요. 다음 메시지를 열어 이어서 도와주세요.':'카페의 세 가지 준비가 끝났어요. 초대장을 열고 문을 열어 주세요.',m<2?'messages':'achievements',{next:m<2});
+ const m=s.mission,r=s.repo,server=s.machines.server,fs=projectFiles(s),facts=lessonFacts(s);
+ if(s.completed.includes(m))return step('complete',5,m<2?'지우의 다음 메시지 받기':s.gameplay.openingCelebrated?'동네 해결사 엔딩 달성!':'마지막 할 일 · OPEN 간판 켜기',m<2?'의뢰가 전달됐어요. 다음 메시지를 열어 이어서 도와주세요.':s.gameplay.openingCelebrated?'카페가 문을 열었어요. 성취를 확인하거나 연습 의뢰에 도전해 보세요.':'카페의 세 가지 준비가 끝났어요. 초대장을 열고 문을 열어 주세요.',m<2?'messages':'achievements',{next:m<2});
  const message=['welcome','chapter-two','chapter-three'][m];
  if(!s.gameplay.readMessages.includes(message)||!s.accepted)return step('message',0,'지우의 의뢰 읽고 수락하기','메시지 앱에서 부탁을 읽고 의뢰 수락 버튼을 누르세요.','messages');
  if(!s.discovered.repo)return step('repo',1,'브라우저에서 프로젝트 열기','지우가 보낸 CatHub에는 카페 파일이 모여 있어요. 먼저 열어 보세요.','browser',{url:'https://cathub.dev/mono/menu-site'});
- if(!r)return shell('clone',1,'카페 파일을 내 PC로 가져오기','clone은 프로젝트를 복사해 오는 명령이에요. 명령 넣기를 누르고 터미널에서 Enter를 누르세요.','git clone '+REPO_URL);
- if(s.machine==='server'&&(m<2||!local.updated||!local.tools.includes('npm')||!local.dependencies.includes(r.root)||!isProjectServerRunning(s)))return shell('exit',1,'내 PC로 돌아오기','exit는 서버 접속을 끝내요. 수정한 파일은 내 PC에 있어요.','exit');
- if(!local.updated)return shell('update',1,'도구 목록 새로 받기','프로젝트를 켜려면 실행 도구가 필요해요. 먼저 설치할 수 있는 도구 목록을 받아요.','sudo apt update');
- if(!local.tools.includes('npm'))return shell('node',1,'사이트 실행 도구 설치','Node와 npm은 이 카페 사이트를 켜는 도구예요. 명령을 실행하면 설치돼요.','sudo apt install nodejs npm');
- if(local.cwd!==r.root&&(m<2||!local.dependencies.includes(r.root)||!isProjectServerRunning(s)))return shell('cd',1,'프로젝트 폴더로 이동','cd는 폴더를 여는 명령이에요. 아래 명령을 넣고 Enter를 누르세요.','cd "'+r.root+'"');
- if(!local.dependencies.includes(r.root))return shell('dependencies',1,'프로젝트 준비물 받기','npm install은 카페 프로젝트에 필요한 파일을 준비해요.','npm install');
- if(!isProjectServerRunning(s))return shell('start',1,'카페 미리보기 켜기','npm run dev를 실행하면 브라우저에서 카페를 볼 수 있어요.',local.processes.frontend?'pkill node':'npm run dev');
+ if(!r||!setupReadiness(s).ready)return step('setup',1,'내 PC에서 카페 사이트 준비하기','컴퓨터에서 프로젝트 복사 → 준비물 받기 → 미리보기 켜기를 차례로 누르세요.','computer');
+ // Setup is complete; terminal users can keep their current folder and machine.
+ // Source edits always target the local project, and upload restores its cwd.
  if(m<2&&!s.gameplay.inspected.includes(m))return step('inspect',2,m===0?'브라우저에서 고장 난 메뉴판 보기':'계산대에서 커피 3잔 담아 보기',m===0?'360px 버튼을 눌러 휴대폰 화면을 보세요. 이름과 잘린 메뉴를 확인한 뒤 문제 확인 버튼을 누르세요.':'수량의 + 버튼으로 3잔을 담아 보세요. 13,500원이 나오는지 확인하고 문제 확인 버튼을 누르세요.','browser',{url:'http://localhost:5173'});
  if(m===0&&!facts.sign)return step('sign',2,'index.html에서 카페 이름 바꾸기','고칠 글자 찾기를 누르세요. 선택된 글자를 모노 카페로 바꾸면 돼요. <h1>과 </h1>은 남겨 주세요.','editor',{file:'index.html',find:'heading'});
  if(m===0&&!facts.size)return step('size',2,'style.css에서 메뉴 너비 고치기','고칠 글자 찾기로 960px을 선택한 뒤 100%를 입력하세요. 화면 너비에 맞춘다는 뜻이에요.','editor',{file:'style.css',find:'width'});

@@ -3,6 +3,9 @@ import {beginnerRows} from './beginner-translations.ts';
 export type Language='ko'|'en'|'ja';
 // Each row is Korean ¦ English ¦ Japanese. Source/code and commands are never translated.
 const rows=String.raw`
+카페가 문을 열었어요. 성취를 확인하거나 연습 의뢰에 도전해 보세요.¦The cafe is open. View your achievements or try a practice job.¦カフェがオープンしました。実績を確認したり、練習の依頼に挑戦したりしましょう。
+내 PC에서 카페 사이트 준비하기¦Prepare the cafe site in This PC¦PCでカフェのサイトを準備
+컴퓨터에서 프로젝트 복사 → 준비물 받기 → 미리보기 켜기를 차례로 누르세요.¦In This PC, click Copy project → Prepare tools → Start preview.¦PCで「プロジェクトをコピー」→「必要なものをそろえる」→「プレビューを起動」の順に押してください。
 바탕화면 바로가기¦Desktop shortcuts¦デスクトップのショートカット
 메시지¦Messages¦メッセージ
 수리 의뢰¦Repairs¦修理の依頼
@@ -613,7 +616,7 @@ PC에서도 메뉴 3개 표시¦Show all three items on desktop¦PCでも三つ�
 서버의 GET /api/menu → 200¦Server GET /api/menu → 200¦サーバーのGET /api/menu → 200
 주문 기록에 요청 데이터 보관¦Store request data in the order log¦注文履歴にリクエストを保存
 HTML의 큰 제목에 카페 이름이 표시돼요.¦The cafe name is visible in the heading.¦見出しにカフェ名が表示されています。
-index.html의 h1 태그 사이에 모노 카페를 넣어 주세요.¦Put 모노 카페 between the h1 tags in index.html.¦index.htmlのh1タグの間に모노 카페を入れてください。
+index.html의 h1 태그 사이에 모노 카페를 넣어 주세요.¦Put Mono Cafe between the h1 tags in index.html.¦index.htmlのh1タグの間にモノカフェを入れてください。
 PC에서 세 메뉴가 같은 줄에 있습니다.¦All three menu items share one row on desktop.¦PCで三つのメニューが同じ行にあります。
 PC에서는 메뉴를 세 열로 유지해 주세요.¦Keep three menu columns on desktop.¦PCではメニューを3列にしてください。
 선택한 버튼 색상¦Selected button color¦選択したボタンの色

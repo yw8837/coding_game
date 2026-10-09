@@ -31,6 +31,7 @@ export function MessagesView(props:GameProps){
  const {state,onAction,onOpen,onNavigate}=props,messages=gameMessages(state);
  const [selected,setSelected]=useState(()=>!state.completed.length?'welcome':messages.find(m=>m.id===('chapter-'+(state.mission===1?'two':'three')))?.id??messages.find(m=>!state.gameplay.readMessages.includes(m.id))?.id??messages.at(-1)!.id);
  const message=messages.find(m=>m.id===selected)??messages.at(-1)!;
+ useEffect(()=>{setSelected(['welcome','chapter-two','chapter-three'][state.mission]);},[state.mission]);
  useEffect(()=>{onAction({type:'read-message',id:message.id});},[message.id,onAction]);
  const perform=()=>{if(message.action==='accept'){onAction({type:'accept'});onNavigate('https://cathub.dev/mono/menu-site');}else if(message.action==='preview')onNavigate('http://localhost:5173');else if(message.action==='repair')props.onFollow();else onOpen(message.action);};
  const label=message.action==='accept'?(state.accepted?'프로젝트 열기':'의뢰 수락'):message.action==='repair'?'작업 시작하기':message.action==='workbench'?'보너스 과제 보기':message.action==='preview'?'그롬에서 화면 확인':'내 성취 보기';

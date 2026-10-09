@@ -1,0 +1,135 @@
+{
+  "source": "../../output/trailer/raw.webm",
+  "captureViewport": [
+    1600,
+    900
+  ],
+  "capture": "Real local gameplay; UI input only; no progress injection",
+  "shots": [
+    {
+      "id": "start",
+      "start": 0.136,
+      "end": 4.276,
+      "duration": 4,
+      "caption": {
+        "ko": "컴퓨터를 켜면, 이야기가 시작된다.",
+        "en": "Start your PC. Start a story.",
+        "ja": "パソコンを開くと、物語が始まる。"
+      }
+    },
+    {
+      "id": "request",
+      "start": 4.276,
+      "end": 8.448,
+      "duration": 4,
+      "caption": {
+        "ko": "도착한 메시지. 첫 번째 의뢰.",
+        "en": "A new message. Your first case.",
+        "ja": "届いたメッセージ。最初の依頼。"
+      }
+    },
+    {
+      "id": "setup",
+      "start": 8.448,
+      "end": 12.292,
+      "duration": 3,
+      "caption": {
+        "ko": "파일을 가져오고, 내 PC에서 실행.",
+        "en": "Get the files. Run them on your PC.",
+        "ja": "ファイルを受け取り、自分のPCで起動。"
+      }
+    },
+    {
+      "id": "inspect",
+      "start": 12.292,
+      "end": 16.167,
+      "duration": 4,
+      "caption": {
+        "ko": "어디가 고장 났는지, 직접 확인하고.",
+        "en": "See what is broken for yourself.",
+        "ja": "どこがおかしいのか、自分で確かめる。"
+      }
+    },
+    {
+      "id": "fix",
+      "start": 16.167,
+      "end": 20.355,
+      "duration": 5,
+      "caption": {
+        "ko": "작은 수정이 화면을 바꾼다.",
+        "en": "A small edit changes the screen.",
+        "ja": "小さな修正で、画面が変わる。"
+      }
+    },
+    {
+      "id": "terminal",
+      "start": 20.355,
+      "end": 22.526,
+      "duration": 3,
+      "caption": {
+        "ko": "자동완성과 안내를 따라, 한 단계씩.",
+        "en": "Autocomplete and clear steps guide you.",
+        "ja": "自動補完と案内で、一歩ずつ。"
+      }
+    },
+    {
+      "id": "reward",
+      "start": 22.526,
+      "end": 25.886,
+      "duration": 4,
+      "caption": {
+        "ko": "검사를 통과하고, 의뢰를 마무리.",
+        "en": "Pass the checks. Deliver the fix.",
+        "ja": "検査に合格。依頼を仕上げる。"
+      }
+    },
+    {
+      "id": "server",
+      "start": 33.933,
+      "end": 38.698,
+      "duration": 4,
+      "caption": {
+        "ko": "파일에서 서버까지. 세 사건을 연결하자.",
+        "en": "From files to a server. Three connected cases.",
+        "ja": "ファイルからサーバーへ。三つの事件をつなごう。"
+      }
+    },
+    {
+      "id": "ending",
+      "start": 41.308,
+      "end": 44.448,
+      "duration": 4,
+      "caption": {
+        "ko": "내가 고친 하루의 끝.",
+        "en": "The day you helped put right.",
+        "ja": "あなたが直した一日の終わり。"
+      }
+    },
+    {
+      "id": "practice",
+      "start": 44.542,
+      "end": 48.073,
+      "duration": 4,
+      "caption": {
+        "ko": "더 해보고 싶다면, 여섯 개의 연습 의뢰.",
+        "en": "Keep experimenting with six practice jobs.",
+        "ja": "もっと試したくなったら、六つの練習依頼。"
+      }
+    },
+    {
+      "id": "cta",
+      "start": 48.464,
+      "end": 51.48,
+      "duration": 3,
+      "caption": {
+        "ko": "CODE:SHIFT · 브라우저에서 플레이",
+        "en": "CODE:SHIFT · Play in your browser",
+        "ja": "CODE:SHIFT · ブラウザーでプレイ"
+      }
+    }
+  ],
+  "recorderCalibration": {
+    "wallClockOffsetSeconds": 0.958,
+    "method": "Remove recorder startup latency using capture stop and probed video duration, keep one-frame tail handle. Visually review cuts."
+  }
+}

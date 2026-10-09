@@ -1,3 +1,4 @@
+import {isCafeName} from './cafe-name.ts';
 import {calculateTotal,parseBackend,projectFiles,sourceHash,type GameState} from './engine.ts';
 import type {AssistAction} from './assisted.ts';
 import {MISSIONS} from './content.ts';
@@ -22,7 +23,7 @@ export function lessonFacts(s:GameState){
  try{const b=parseBackend(fs['server.py']??'');route=b.route==='/api/menu';keep=b.save;}catch{}
  const fresh=s.tests?.mission===s.mission&&s.tests.hash===sourceHash(fs);
  const trial=!!fresh&&s.tests!.checks.length===MISSIONS[s.mission].checkNames.length&&s.tests!.checks.every(c=>c.passed);
- return {sign:/<h1\b[^>]*>[^<]*모노 카페/.test(fs['index.html']??''),size:/\.menu-grid\s*\{[^}]*width:\s*100%/.test(fs['style.css']??''),rule,serve:rule&&s.gameplay.servedCustomers===3,route,keep,trial,deliver:s.completed.includes(s.mission),fresh:!!fresh};
+ return {sign:isCafeName(/<h1\b[^>]*>([^<]*)<\/h1>/i.exec(fs['index.html']??'')?.[1]??''),size:/\.menu-grid\s*\{[^}]*width:\s*100%/.test(fs['style.css']??''),rule,serve:rule&&s.gameplay.servedCustomers===3,route,keep,trial,deliver:s.completed.includes(s.mission),fresh:!!fresh};
 }
 export function resumeLesson(s:GameState):LessonStep{
  const facts=lessonFacts(s);

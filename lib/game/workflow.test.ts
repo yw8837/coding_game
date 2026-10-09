@@ -4,6 +4,7 @@ import {createGame,act,runCommand,projectFiles,sourceHash,runCodeChecks,apiReque
 import {currentTask,taskSelection,PHASES} from './workflow.ts';
 import {readSave} from './save.ts';
 import {translate} from './translations.ts';
+import {runSetupStep} from './setup.ts';
 
 test('desktop app objectives lead through all chapters without assisted solutions, including server commands',()=>{
  let s=createGame();const visited:string[]=[],copy=new Set(PHASES);
@@ -13,6 +14,7 @@ test('desktop app objectives lead through all chapters without assisted solution
   if(q.command){const result=runCommand(s,q.command);assert.equal(result.error,false,q.id+': '+result.output);s=result.state;}
   else if(q.id==='message'){s=act(s,{type:'read-message',id:['welcome','chapter-two','chapter-three'][s.mission]});s=act(s,{type:'accept'});}
   else if(q.id==='repo')s=act(s,{type:'discover',what:'repo'});
+  else if(q.id==='setup'){for(const id of ['copy','prepare','preview'] as const){const r=runSetupStep(s,id);assert.equal(r.error,false,r.output);s=r.state;}}
   else if(q.id==='inspect')s=act(s,{type:'inspect-preview',mobile:true,quantity:3});
   else if(replacements[q.id]){const source=projectFiles(s)[q.file!],selection=taskSelection(q,source);assert.ok(selection,q.id);s=act(s,{type:'edit',path:q.file!,content:source.slice(0,selection[0])+replacements[q.id]+source.slice(selection[1])});}
   else if(q.id==='server')s=act(s,{type:'install-server'});

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {writeSave} from './save.ts';
 import {createGame, runCommand, act, projectFiles, calculateTotal, sourceHash, apiRequest, isProjectServerRunning, missionSteps} from './engine.ts';
 
 function commands(lines: string[], state = createGame()) { for (const line of lines) state = runCommand(state,line).state; return state; }
@@ -109,4 +110,63 @@ test('a dev server started in another folder cannot satisfy the project runtime'
  assert.equal(missionSteps(s).find(step=>step.label==='의존성 설치 · 사이트 실행')!.done,false);
  s=commands(['pkill node','cd ../menu-site','npm run dev'],s);
  assert.equal(isProjectServerRunning(s),true);
+});
+
+test('terminal file and directory commands reject paths beyond the save limit before changing files',()=>{
+ const initial=createGame(),long='x'.repeat(300);
+ for(const command of ['touch '+long,'mkdir '+long,'mkdir short '+long,'mkdir -p '+long+'/nested']){
+  const result=runCommand(initial,command);
+  assert.equal(result.error,true,command.slice(0,30));
+  assert.match(result.output,/ENAMETOOLONG/);
+  assert.deepEqual(result.state.machines,initial.machines);
+  assert.doesNotThrow(()=>writeSave({setItem(){}},result.state));
+ }
+ const exact='x'.repeat(290),accepted=runCommand(initial,'touch '+exact);
+ assert.equal(accepted.error,false);
+ assert.ok(Object.hasOwn(accepted.state.machines.local.files,'/home/dev/'+exact));
+ assert.doesNotThrow(()=>writeSave({setItem(){}},accepted.state));
+});
+
+test('copy and move validate the final target including a filename appended to a directory',()=>{
+ const target='d'.repeat(280);
+ const s=commands(['mkdir '+target],createGame());
+ for(const command of ['cp welcome.txt '+target,'mv welcome.txt '+target,'cp welcome.txt '+ 'x'.repeat(300),'mv welcome.txt '+ 'x'.repeat(300)]){
+  const result=runCommand(s,command);
+  assert.equal(result.error,true);assert.match(result.output,/ENAMETOOLONG/);
+  assert.deepEqual(result.state.machines,s.machines);
+  assert.doesNotThrow(()=>writeSave({setItem(){}},result.state));
+ }
+});
+
+test('clone checks every generated file path before creating a repository or partial files',()=>{
+ for(const name of ['x'.repeat(300),'x'.repeat(280)]){
+  const s=createGame(),result=runCommand(s,'git clone https://cathub.dev/mono/menu-site.git '+name);
+  assert.equal(result.error,true);assert.match(result.output,/ENAMETOOLONG/);
+  assert.equal(result.state.repo,null);assert.deepEqual(result.state.machines,s.machines);
+  assert.doesNotThrow(()=>writeSave({setItem(){}},result.state));
+ }
+ const valid=runCommand(createGame(),'git clone https://cathub.dev/mono/menu-site.git '+ 'x'.repeat(272));
+ assert.equal(valid.error,false);assert.doesNotThrow(()=>writeSave({setItem(){}},valid.state));
+});
+
+test('copy and edit refuse oversized file values instead of creating another oversized file',()=>{
+ const s=createGame();s.machines.local.files['/home/dev/welcome.txt']='x'.repeat(60001);
+ const result=runCommand(s,'cp welcome.txt copy.txt');
+ assert.equal(result.error,true);assert.match(result.output,/EFBIG/);
+ assert.equal(result.state.machines.local.files['/home/dev/copy.txt'],undefined);
+ const p=setup(),original=projectFiles(p)['style.css'];
+ const edited=act(p,{type:'edit',path:'style.css',content:'x'.repeat(60001)});
+ assert.equal(projectFiles(edited)['style.css'],original);
+ assert.doesNotThrow(()=>writeSave({setItem(){}},edited));
+});
+
+test('server pull validates incoming paths before deleting the previous server files',()=>{
+ const s=setup();s.machine='server';
+ const server=s.machines.server;server.tools=['git'];server.cloned=true;server.cwd='/home/dev/menu-site';
+ server.files['/home/dev/menu-site/safe.txt']='previous server content';
+ s.repo!.remote.files['x'.repeat(281)]='incoming file';
+ const result=runCommand(s,'git pull');
+ assert.equal(result.error,true);assert.match(result.output,/ENAMETOOLONG/);
+ assert.deepEqual(result.state.machines.server.files,server.files);
+ assert.doesNotThrow(()=>writeSave({setItem(){}},result.state));
 });

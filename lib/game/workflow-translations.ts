@@ -36,7 +36,7 @@ npm run dev를 실행하면 브라우저에서 카페를 볼 수 있어요.¦Run
 360px 버튼을 눌러 휴대폰 화면을 보세요. 이름과 잘린 메뉴를 확인한 뒤 문제 확인 버튼을 누르세요.¦Select 360px to see the phone view. Check the name and clipped menu, then select Problem found.¦360pxを押してスマホの画面を見ましょう。名前と切れたメニューを確認し「問題を確認」を押します。
 수량의 + 버튼으로 3잔을 담아 보세요. 13,500원이 나오는지 확인하고 문제 확인 버튼을 누르세요.¦Use + to add three cups. Check whether the total is 13,500 KRW, then select Problem found.¦＋で3杯にしましょう。合計が13,500ウォンか確認し「問題を確認」を押します。
 index.html에서 카페 이름 바꾸기¦Change the name in index.html¦index.htmlで店名を変更
-고칠 글자 찾기를 누르세요. 선택된 글자를 모노 카페로 바꾸면 돼요. <h1>과 </h1>은 남겨 주세요.¦Select Find text to edit. Replace the selected text with 모노 카페. Keep the <h1> and </h1> tags.¦「直す文字を選ぶ」を押し、選択された文字をモノカフェの韓国語名「모노 카페」に変更します。<h1>と</h1>は残しましょう。
+고칠 글자 찾기를 누르세요. 선택된 글자를 모노 카페로 바꾸면 돼요. <h1>과 </h1>은 남겨 주세요.¦Select Find text to edit. Replace the selected text with Mono Cafe. Keep the <h1> and </h1> tags.¦「直す文字を選ぶ」を押し、選択された文字を「モノカフェ」に変更します。<h1>と</h1>は残しましょう。
 style.css에서 메뉴 너비 고치기¦Fix the menu width in style.css¦style.cssでメニューの幅を直す
 고칠 글자 찾기로 960px을 선택한 뒤 100%를 입력하세요. 화면 너비에 맞춘다는 뜻이에요.¦Select Find text to edit, then replace 960px with 100%. This fits the menu to the available width.¦「直す文字を選ぶ」で960pxを選び、100%に変更します。画面の幅に合わせる意味です。
 app.js에서 합계 계산 고치기¦Fix the total in app.js¦app.jsで合計計算を直す

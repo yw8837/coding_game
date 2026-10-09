@@ -1,6 +1,7 @@
 import {PRACTICE_CUSTOMERS} from './customers.ts';
 import {HOME, PROJECT, REPO_URL, INITIAL_FILES, MISSIONS} from './content.ts';
 import {createGameplay,COSMETICS,DESIGN_CHOICES,gameMessages,canClaimColor,type Gameplay,type DesignId} from './gameplay.ts';
+import {createPractice,evaluatePractice,practiceJob} from './practice.ts';
 
 export type Files = Record<string,string>;
 export type MachineId = 'local'|'server';
@@ -17,7 +18,7 @@ export type GameState = {
  orders:{id:number;item:string;quantity:number}[];localOrders:{id:number;item:string;quantity:number}[];apiEvidence:{menu:boolean;order:boolean};
  notice:string;logs:string[];history:{command:string;output:string;error:boolean;machine:MachineId;cwd:string}[];
 };
-export type Action = {type:'inspect-preview';mobile:boolean;quantity:number}|{type:'serve-customer';customer:number;quantity:number}|{type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
+export type Action = {type:'practice-submit'|'practice-draft';id:string;answer:string}|{type:'inspect-preview';mobile:boolean;quantity:number}|{type:'serve-customer';customer:number;quantity:number}|{type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
 export type CommandResult={state:GameState;output:string;error:boolean};
 
 function machine():Machine{return {cwd:HOME,tools:['git'],updated:false,files:{[HOME+'/welcome.txt']:'CODE:SHIFT 작업실에 오신 것을 환영합니다.\nhelp로 지원 명령을 확인하세요.\n'},dirs:['/','/home',HOME],dependencies:[],pythonDeps:[],processes:{frontend:false,backend:false},frontendRoot:null,backendRoot:null,backendSource:null,cloned:false};}
@@ -25,11 +26,16 @@ export function createGame():GameState{return {gameplay:createGameplay(),version
 export function clone<T>(data:T):T{return JSON.parse(JSON.stringify(data));}
 export function sourceHash(files:Files):string {const str=Object.keys(files).sort().map(k=>k+'\0'+files[k]).join('\0');let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16);}
 export function resolvePath(cwd:string,path:string):string {let p=path||HOME;if(p==='~'||p.startsWith('~/'))p=HOME+p.slice(1);if(!p.startsWith('/'))p=cwd+'/'+p;const out:string[]=[];for(const part of p.split('/')){if(!part||part==='.')continue;if(part==='..')out.pop();else out.push(part);}return '/'+out.join('/');}
+const MAX_STORED_PATH=300,MAX_STORED_FILE=60000;
+function storedPath(path:string):string{if(path.length>MAX_STORED_PATH)throw new Error('ENAMETOOLONG: Path exceeds 300 characters.');return path;}
+function storedFile(path:string,content:string):void{storedPath(path);if(content.length>MAX_STORED_FILE)throw new Error('EFBIG: File exceeds 60,000 characters.');}
+function commandPath(cwd:string,path:string):string{return storedPath(resolvePath(cwd,path));}
+function validateFiles(root:string,files:Files):void{storedPath(root);for(const [p,c] of Object.entries(files))storedFile(root+'/'+p,c);}
 export function filesAt(m:Machine,root:string):Files{const r:Files={};for(const [p,c] of Object.entries(m.files))if(p.startsWith(root+'/'))r[p.slice(root.length+1)]=c;return r;}
 export function projectFiles(state:GameState):Files{return state.repo?filesAt(state.machines.local,state.repo.root):{};}
 export function isProjectServerRunning(state:GameState):boolean{return !!state.repo&&state.machines.local.processes.frontend&&state.machines.local.frontendRoot===state.repo.root;}
 export function dirtyFiles(s:GameState):string[]{if(!s.repo)return [];const f=projectFiles(s),base=s.repo.commits.at(-1)!.files;return [...new Set([...Object.keys(f),...Object.keys(base)])].filter(k=>f[k]!==base[k]);}
-function putFiles(m:Machine,root:string,files:Files){m.dirs.push(...[root,...Object.keys(files).filter(f=>f.includes('/')).map(f=>root+'/'+f.slice(0,f.lastIndexOf('/')))].filter(x=>!m.dirs.includes(x)));for(const [p,c] of Object.entries(files))m.files[root+'/'+p]=c;}
+function putFiles(m:Machine,root:string,files:Files){validateFiles(root,files);m.dirs.push(...[root,...Object.keys(files).filter(f=>f.includes('/')).map(f=>root+'/'+f.slice(0,f.lastIndexOf('/')))].filter(x=>!m.dirs.includes(x)));for(const [p,c] of Object.entries(files))m.files[root+'/'+p]=c;}
 function log(s:GameState,line:string){s.logs.push(line);s.logs=s.logs.slice(-60);}
 function snapshot(files:Files,message:string,id:string,mission:number):Snapshot{return {id,message,files:clone(files),mission,hash:sourceHash(files)};}
 export function tokenize(input:string):string[]{const parts:string[]=[];let part='',quote='',active=false,escape=false;for(const c of input.trim()){if(escape){part+=c;escape=false;active=true;continue;}if(c==='\\'&&quote!=="'"){escape=true;continue;}if(quote){if(c===quote)quote='';else part+=c;active=true;continue;}if(c==='"'||c==="'"){quote=c;active=true;continue;}if(/\s/.test(c)){if(active){parts.push(part);part='';active=false;}}else{part+=c;active=true;}}if(quote||escape)throw new Error('따옴표 또는 역슬래시가 닫히지 않았어요.');if(active)parts.push(part);return parts;}
@@ -61,6 +67,18 @@ export function parseBackend(code:string):{route:string;save:boolean}{
 
 export function act(state:GameState,action:Action):GameState{
  const s=clone(state);s.notice='';
+ if(action.type==='practice-submit'||action.type==='practice-draft'){
+  const job=practiceJob(action.id);
+  if(!job||typeof action.answer!=='string'||action.answer.length>80)return s;
+  const practice=s.gameplay.practice??(s.gameplay.practice=createPractice());
+  practice.drafts[job.id]=action.answer;
+  if(action.type==='practice-draft'){delete practice.results[job.id];return s;}
+  const proof=evaluatePractice(job.id,action.answer);practice.results[job.id]=proof;
+  if(proof.passed&&!practice.completed.includes(job.id)){
+   practice.completed.push(job.id);s.credits+=job.credits;s.xp+=job.xp;
+  }
+  return s;
+ }
  if(action.type==='celebrate-opening'){if(MISSIONS.every((_,i)=>s.completed.includes(i))&&!s.gameplay.openingCelebrated){s.gameplay.openingCelebrated=true;if(!s.badges.includes('동네 해결사'))s.badges.push('동네 해결사');s.notice='모노 카페, 정식 오픈! 동네 해결사 배지를 받았어요.';}return s;}
  if(action.type==='serve-customer'){
   const order=PRACTICE_CUSTOMERS[s.gameplay.servedCustomers];
@@ -122,6 +140,7 @@ export function runCommand(state:GameState,input:string):CommandResult{
  const has=(t:string)=>m.tools.includes(t);
  const requireTool=(t:string)=>{if(!has(t)){fail(`${cmd}: command not found\n도구가 이 컴퓨터에 설치되어 있지 않습니다.`);return false;}return true;};
  const manifest=()=>{const raw=m.files[m.cwd+'/package.json'];if(!raw){fail(`npm ERR! code ENOENT\nnpm ERR! Could not read package.json: ${m.cwd}/package.json`);return null;}try{return JSON.parse(raw);}catch{fail('npm ERR! code EJSONPARSE\npackage.json must be valid JSON.');return null;}};
+ try{
  if(!cmd){}else if(cmd==='clear'){s.history=[];return {state:s,output:'',error:false};}
  else if(cmd==='help'||cmd==='man')output='LINUX  pwd · ls · cd <경로> · cat <파일> · mkdir <폴더> · cp · mv · touch · clear\nTOOLS  sudo apt update · sudo apt install nodejs npm git python3 python3-pip\nNODE   node --version · npm --version · npm install · npm run dev · npm test · npm run build\nGIT    git clone <주소> · status · diff · add <파일|.> · commit -m "설명" · push · pull · log\nSERVER ssh dev@mono-server · exit · pip install -r requirements.txt · python3 server.py\nCHECK  curl <가상 주소> · ps · pkill node · pkill python3\n\n지원하는 학습용 명령만 실행합니다. 실제 PC에 설치하거나 외부 인터넷에 접속하지 않습니다.';
  else if(cmd==='pwd')output=m.cwd;
@@ -131,9 +150,9 @@ export function runCommand(state:GameState,input:string):CommandResult{
  else if(cmd==='ls'){const path=resolvePath(m.cwd,a.find(x=>!x.startsWith('-'))||'.');if(!m.dirs.includes(path)){if(m.files[path]!==undefined)output=path.split('/').at(-1)!;else fail(`ls: cannot access '${path}': No such file or directory`);}else{const prefix=path==='/'?'/':path+'/';output=[...new Set([...m.dirs.filter(d=>d.startsWith(prefix)&&d!==path).map(d=>d.slice(prefix.length).split('/')[0]+'/'),...Object.keys(m.files).filter(p=>p.startsWith(prefix)).map(p=>p.slice(prefix.length).split('/')[0])])].join('  ')||'(빈 폴더)';}}
  else if(cmd==='cd'){const path=resolvePath(m.cwd,a[0]||'~');if(!m.dirs.includes(path))fail(`bash: cd: ${a[0]}: No such file or directory`);else m.cwd=path;}
  else if(cmd==='cat'){if(!a.length)fail('사용법: cat <파일>');else{const content=m.files[resolvePath(m.cwd,a[0])];if(content===undefined)fail(`cat: ${a[0]}: No such file or directory`);else output=content;}}
- else if(cmd==='mkdir'){const paths=a.filter(x=>!x.startsWith('-'));if(!paths.length)fail('mkdir: missing operand');for(const name of paths){const p=resolvePath(m.cwd,name);if(m.dirs.includes(p)&&!a.includes('-p')){fail(`mkdir: cannot create directory '${name}': File exists`);break;}const parent=p.slice(0,p.lastIndexOf('/'))||'/';if(!m.dirs.includes(parent)&&!a.includes('-p')){fail(`mkdir: cannot create directory '${name}': No such file or directory`);break;}const parts=p.split('/').filter(Boolean);parts.forEach((_,i)=>{const d='/'+parts.slice(0,i+1).join('/');if(!m.dirs.includes(d))m.dirs.push(d);});}}
- else if(cmd==='touch'){if(!a[0])fail('touch: missing file operand');else{const p=resolvePath(m.cwd,a[0]),parent=p.slice(0,p.lastIndexOf('/'));if(!m.dirs.includes(parent))fail(`touch: cannot touch '${a[0]}': No such file or directory`);else m.files[p]??='';}}
- else if(cmd==='cp'||cmd==='mv'){if(a.length!==2)fail(`사용법: ${cmd} <원본 파일> <대상 파일>`);else{const from=resolvePath(m.cwd,a[0]);let to=resolvePath(m.cwd,a[1]);if(m.dirs.includes(to))to+='/'+from.split('/').at(-1);if(from===to)fail(`${cmd}: '${a[0]}' and '${a[1]}' are the same file`);else if(m.files[from]===undefined)fail(`${cmd}: cannot stat '${a[0]}': No such file or directory`);else if(!m.dirs.includes(to.slice(0,to.lastIndexOf('/'))))fail(`${cmd}: target directory does not exist`);else{m.files[to]=m.files[from];if(cmd==='mv')delete m.files[from];}}}
+ else if(cmd==='mkdir'){const paths=a.filter(x=>!x.startsWith('-')).map(name=>({name,path:commandPath(m.cwd,name)}));if(!paths.length)fail('mkdir: missing operand');for(const {name,path:p} of paths){if(m.dirs.includes(p)&&!a.includes('-p')){fail(`mkdir: cannot create directory '${name}': File exists`);break;}const parent=p.slice(0,p.lastIndexOf('/'))||'/';if(!m.dirs.includes(parent)&&!a.includes('-p')){fail(`mkdir: cannot create directory '${name}': No such file or directory`);break;}const parts=p.split('/').filter(Boolean);parts.forEach((_,i)=>{const d='/'+parts.slice(0,i+1).join('/');if(!m.dirs.includes(d))m.dirs.push(d);});}}
+ else if(cmd==='touch'){if(!a[0])fail('touch: missing file operand');else{const p=commandPath(m.cwd,a[0]),parent=p.slice(0,p.lastIndexOf('/'));if(!m.dirs.includes(parent))fail(`touch: cannot touch '${a[0]}': No such file or directory`);else m.files[p]??='';}}
+ else if(cmd==='cp'||cmd==='mv'){if(a.length!==2)fail(`사용법: ${cmd} <원본 파일> <대상 파일>`);else{const from=commandPath(m.cwd,a[0]);let to=commandPath(m.cwd,a[1]);if(m.dirs.includes(to))to=storedPath(to+'/'+from.split('/').at(-1));if(from===to)fail(`${cmd}: '${a[0]}' and '${a[1]}' are the same file`);else if(m.files[from]===undefined)fail(`${cmd}: cannot stat '${a[0]}': No such file or directory`);else if(!m.dirs.includes(to.slice(0,to.lastIndexOf('/'))))fail(`${cmd}: target directory does not exist`);else{storedFile(to,m.files[from]);m.files[to]=m.files[from];if(cmd==='mv')delete m.files[from];}}}
  else if(cmd==='sudo'||cmd==='apt'){
   const apt=cmd==='sudo'?a[0]==='apt':true;const sub=cmd==='sudo'?a[1]:a[0],names=cmd==='sudo'?a.slice(2):a.slice(1);
   if(!apt)fail('이 실습의 sudo는 apt 명령을 지원합니다.');
@@ -154,9 +173,9 @@ export function runCommand(state:GameState,input:string):CommandResult{
  else if(cmd==='git'){
   if(requireTool('git')){if(a[0]==='--version')output='git version 2.43.0 [simulated]';else if(a[0]==='clone'){
    const url=a[1]?.replace(/\/$/,'');if(url!==REPO_URL&&url!==REPO_URL.replace(/\.git$/,''))fail(`fatal: repository '${a[1]??''}' not found\nCatHub 저장소의 복제 주소를 확인하세요.`);
-   else{const path=resolvePath(m.cwd,a[2]||'menu-site');if(m.dirs.includes(path))fail(`fatal: destination path '${path}' already exists and is not an empty directory.`);else if(s.machine==='server'&&path!==PROJECT)fail('이 서버 실습은 ~/menu-site 경로를 사용합니다. cd ~ 후 복제해 주세요.');else if(s.machine==='local'&&s.repo)fail('이 첫 버전은 하나의 작업 저장소를 지원합니다. 기존 프로젝트를 사용하세요.');else{const fs=s.repo?.remote.files??INITIAL_FILES;putFiles(m,path,fs);m.cloned=true;if(s.machine==='local'){const first=snapshot(INITIAL_FILES,'Initial cafe menu','c0000',0);s.repo={root:path,staged:{},commits:[first],remote:clone(first),merged:clone(first),deployed:clone(first),pr:null};}output=`Cloning into '${path.split('/').at(-1)}'...\nReceiving objects: 100% (8/8), done.\n이제 cd ${path.split('/').at(-1)} 로 폴더에 들어가세요.`;}}
+   else{const path=commandPath(m.cwd,a[2]||'menu-site');if(m.dirs.includes(path))fail(`fatal: destination path '${path}' already exists and is not an empty directory.`);else if(s.machine==='server'&&path!==PROJECT)fail('이 서버 실습은 ~/menu-site 경로를 사용합니다. cd ~ 후 복제해 주세요.');else if(s.machine==='local'&&s.repo)fail('이 첫 버전은 하나의 작업 저장소를 지원합니다. 기존 프로젝트를 사용하세요.');else{const fs=s.repo?.remote.files??INITIAL_FILES;putFiles(m,path,fs);m.cloned=true;if(s.machine==='local'){const first=snapshot(INITIAL_FILES,'Initial cafe menu','c0000',0);s.repo={root:path,staged:{},commits:[first],remote:clone(first),merged:clone(first),deployed:clone(first),pr:null};}output=`Cloning into '${path.split('/').at(-1)}'...\nReceiving objects: 100% (8/8), done.\n이제 cd ${path.split('/').at(-1)} 로 폴더에 들어가세요.`;}}
   }else if(!inProject()||!m.cloned)fail('fatal: not a git repository (or any of the parent directories): .git');
-  else if(s.machine==='server'){if(a[0]==='pull'){if(s.repo){for(const p of Object.keys(m.files))if(p.startsWith(PROJECT+'/'))delete m.files[p];putFiles(m,PROJECT,s.repo.remote.files);output=`Updating to ${s.repo.remote.id}\nFast-forward\n실행 중인 Python 프로세스는 재시작해야 수정본을 읽습니다.`;}}else if(a[0]==='status')output='On branch main\n서버 사본은 git pull로 갱신합니다.';else fail('서버 사본에서는 git pull / status를 지원합니다. 수정·커밋은 내 PC에서 진행하세요.');}
+  else if(s.machine==='server'){if(a[0]==='pull'){if(s.repo){validateFiles(PROJECT,s.repo.remote.files);for(const p of Object.keys(m.files))if(p.startsWith(PROJECT+'/'))delete m.files[p];putFiles(m,PROJECT,s.repo.remote.files);output=`Updating to ${s.repo.remote.id}\nFast-forward\n실행 중인 Python 프로세스는 재시작해야 수정본을 읽습니다.`;}}else if(a[0]==='status')output='On branch main\n서버 사본은 git pull로 갱신합니다.';else fail('서버 사본에서는 git pull / status를 지원합니다. 수정·커밋은 내 PC에서 진행하세요.');}
   else if(s.repo){const r=s.repo,working=projectFiles(s),head=r.commits.at(-1)!;
    if(a[0]==='status'){const staged=Object.keys(r.staged),dirty=dirtyFiles(s);output='On branch main\n'+(staged.length?'Changes to be committed:\n'+staged.map(k=>'  modified: '+k).join('\n')+'\n':'')+(dirty.filter(k=>working[k]!==r.staged[k]).length?'Changes not staged for commit:\n'+dirty.filter(k=>working[k]!==r.staged[k]).map(k=>'  modified: '+k).join('\n'):'')+(!dirty.length&&!staged.length?'nothing to commit, working tree clean':'');if(head.id!==r.remote.id)output+='\nYour branch is ahead of origin/main.';}
    else if(a[0]==='add'){if(!a[1])fail('Nothing specified, nothing added.');else{const paths=a.slice(1);const scope=m.cwd===r.root?'':m.cwd.slice(r.root.length+1)+'/';const selected=paths.includes('.')?[...new Set([...Object.keys(working),...Object.keys(head.files),...Object.keys(r.staged)])].filter(k=>k.startsWith(scope)):paths.map(p=>resolvePath(m.cwd,p).slice(r.root.length+1));if(selected.some(p=>working[p]===undefined&&head.files[p]===undefined&&!Object.hasOwn(r.staged,p)))fail('fatal: pathspec did not match any existing file');else{selected.forEach(k=>{if(working[k]!==head.files[k])r.staged[k]=working[k]??null;else delete r.staged[k];});output=`${Object.keys(r.staged).length} file(s) staged.`;}}}
@@ -176,6 +195,7 @@ export function runCommand(state:GameState,input:string):CommandResult{
  else if(cmd==='pkill'){if(a[0]==='node'){m.processes.frontend=false;output='node process stopped. Port 5173 released.';}else if(a[0]==='python3'){m.processes.backend=false;m.backendSource=null;if(s.machine==='server'){s.orders=[];s.apiEvidence={menu:false,order:false};}else s.localOrders=[];output='python3 process stopped. Port 8000 released.';}else fail('지원 명령: pkill node / pkill python3');}
  else if(cmd==='curl'){const url=a.find(x=>x.startsWith('http'));if(!url)fail('사용법: curl http://mono-server:8000/api/menu');else{const result=apiRequest(s,'GET',url,'');s=result.state;output=`HTTP ${result.status||'CONNECTION ERROR'}\n`+JSON.stringify(result.data,null,2);error=result.status===0||result.status>=400;}}
  else fail(`${cmd}: command not found\n이 첫 버전에서 지원하는 명령은 help로 확인하세요.`);
+ }catch(e){s=clone(state);s.notice='';fail((e as Error).message);}
  if(!error&&origin==='local'&&s.repo){
   if(cmd==='pwd'&&cwd===s.repo.root)s.gameplay.exploration.pwd=true;
   if(cmd==='ls'&&resolvePath(cwd,a.find(x=>!x.startsWith('-'))||'.')===s.repo.root)s.gameplay.exploration.ls=true;

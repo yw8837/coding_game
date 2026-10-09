@@ -1,3 +1,4 @@
+import {isCafeName} from './cafe-name';
 import type {Check,Files} from './engine.ts';
 import {MISSIONS} from './content.ts';
 import {translate,type Language} from './translations.ts';
@@ -31,7 +32,7 @@ function measure(files:Files,width:number):Promise<Measurement>{return new Promi
   const visible=(el:Element)=>{const r=el.getBoundingClientRect(),st=win.getComputedStyle(el);return r.width>=43.5&&r.height>=19.5&&r.left>=-1&&r.right<=width+1&&st.display!=='none'&&st.visibility!=='hidden'&&Number(st.opacity)>0;};
   const boxes=cards.map(el=>el.getBoundingClientRect());const scrollWidth=Math.max(doc.documentElement.scrollWidth,doc.body.scrollWidth);
   const heading=doc.querySelector('h1');
-  finish({colors:buttons.map(el=>win.getComputedStyle(el).backgroundColor),title:!!heading&&visible(heading)&&!!heading.textContent?.includes('모노 카페'),overflow:scrollWidth>width+1,scrollWidth,cards:cards.length,visible:cards.length===3&&buttons.length===3&&cards.every(visible)&&buttons.every(el=>visible(el)&&el.getBoundingClientRect().height>=43.5)&&['아메리카노','카페 라테','바닐라 라테'].every(name=>doc.body.textContent?.includes(name)),row:boxes.length===3&&boxes.every(b=>Math.abs(b.top-boxes[0].top)<2)&&boxes.every(b=>b.width>=149.5)});
+  finish({colors:buttons.map(el=>win.getComputedStyle(el).backgroundColor),title:!!heading&&visible(heading)&&isCafeName(heading.textContent??''),overflow:scrollWidth>width+1,scrollWidth,cards:cards.length,visible:cards.length===3&&buttons.length===3&&cards.every(visible)&&buttons.every(el=>visible(el)&&el.getBoundingClientRect().height>=43.5)&&['아메리카노','카페 라테','바닐라 라테'].every(name=>doc.body.textContent?.includes(name)),row:boxes.length===3&&boxes.every(b=>Math.abs(b.top-boxes[0].top)<2)&&boxes.every(b=>b.width>=149.5)});
  }catch(e){finish(undefined,e as Error);}};
  frame.srcdoc=previewDocument(files);document.body.appendChild(frame);
 });}

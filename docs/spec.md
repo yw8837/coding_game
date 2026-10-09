@@ -1,38 +1,39 @@
-# CODE:SHIFT — introductory demo 0.3
+# CODE:SHIFT — browser edition 0.7 specification
 
-The user's latest instruction is to make a simple, quick beginner demo only. It replaces the planned full-campaign expansion for this delivery.
+This is the current specification for three story chapters, a saved ending and six optional practice jobs. The 0.3 one-task introductory demo and earlier 0.6 interaction model are historical scopes. CODE:SHIFT remains a working title.
 
-## One complete task
+## Player route and interaction
 
-Accept a Mono Cafe request; search COOCLE; open CatHub; prepare the simulated project; change the HTML h1 to include the cafe name; change the CSS menu width from 960px to 100%; inspect rendered results; stage, commit and push; obtain review; merge and deploy; receive the first-deployment badge and a definite demo ending.
+Start or Continue opens a desktop with no app already open. The player opens apps from shortcuts, the taskbar or the searchable Start menu, accepts an authored message, prepares the project, observes its failure, edits simulated files, checks results and delivers through Git and CatHub. Three completed chapters unlock OPEN and a saved ending. Practice, bonuses and personalization are optional.
 
-The mobile one-column layout is already supplied. The user edits two simple places, with direct editor buttons for each. A closable guide chooses the next command from machine installation state, current folder, dependencies, process root, files, test evidence and Git snapshots. Suggested commands are inserted into the terminal, then executed by the player's Enter key. No hidden auto-completion.
+The shell resembles Windows; the terminal simulates Linux development. Commands, files, repositories, processes, servers and API requests share game state and never execute on the player's host. NPC guidance is authored and uses no external LLM.
 
-The desktop exposes browser, editor, terminal, mission, message, bonus/workstation and achievement apps. The earlier server/API lessons remain internal source but are not part of this demo or presented as unfinished player tasks. The one-mission ending replaces all next-chapter prompts.
+- Independent windows support overlap, focus, movement, resizing, snap left/right, maximize, minimize, close and reopen. Bounds keep controls reachable; narrow screens show the focused app.
+- The current quest stays outside app windows, with a compact ribbon and expandable detail. App opening alone cannot satisfy an edit/check/delivery requirement.
+- This PC lists project files and offers Copy project, Prepare tools and Start preview. These buttons execute validated setup commands; manual terminal setup remains available.
+- Players edit campaign source and practice rules. The token helper selects the edit location. Fresh source and execution evidence determine success; edits invalidate stale checks.
+- Editor completion, undo/redo and recovery, terminal Tab/history/draft restoration, notepad, sound settings and KO/EN/JA UI/system guidance are provided. No countdown, failure charge or hint penalty is required.
+- Six practice jobs start with incorrect rules, show multiple cases and reveal concrete counterexamples. Restricted evaluation never runs arbitrary user JavaScript. First success pays once; replay does not pay again.
+- Three external information pages provide metadata, robots/sitemap and a 42-second actual-gameplay trailer with language variants. Promotion stays outside the desktop.
 
-All installs, shell commands and network/repository operations are game state. The established render isolation, snapshot semantics, evidence checks and one-time reward rules remain. NPC guidance is authored; no local LLM is loaded for this quick demo.
+## Content and rewards
 
-## Save isolation
+| Chapter | Required correction and evidence | Reward |
+| --- | --- | --- |
+| 내 첫 홈페이지 | Cafe h1, CSS 960px → 100%; actual iframe checks at 360px/1024px | 350 cr / 120 XP / 첫 배포 |
+| 주문에 숫자를 더하다 | Inspect three-cup error, + → * in `app.js`; 4500×3, 5000×2, zero/one-cup checks | 500 cr / 180 XP / 버그 헌터 |
+| 내 컴퓨터 밖으로 | `/api/menu`, `SAVE_ORDERS=True`; push and simulated server setup/run; GET 200, POST 201 and storage | 750 cr / 260 XP / 서버 온라인 |
 
-The introductory demo uses `codeshift-intro-demo-v1`. Prior version progress at `codeshift-save-v1` is left untouched. Saves remain local to the browser and are validated before replacement.
+With 120 starting credits, campaign-only completion is 1,720 cr / 560 XP. OPEN saves the single ending and 동네 해결사 badge without repeat payout. Cafe names accept supported scripts rather than requiring Korean.
 
-## Acceptance
+Practice covers multiplication, discount boundaries, stock comparison, delivery arithmetic, route matching and percentage width. Combined first-success rewards are 140 cr / 68 XP. Explorer (40 cr / 20 XP), color (60 cr / 30 XP) and cosmetic spending are separate. The color helper may apply a selected color; campaign and practice edits remain direct player actions.
 
-- A beginner can finish from the initial screen using the visible guide, without guessing setup commands.
-- Correct CSS alone does not pass the HTML-title check.
-- Both requested changes pass actual 360px and 1024px rendered checks.
-- The guide distinguishes add, commit and push and opens the PR tab directly.
-- Deployment finishes at one completed mission, one badge, 470 total credits and 120 XP.
-- A clear completion screen links to the player's published cafe.
+## Persistence, acceptance and limits
 
-## Gameplay and close controls update
+The active key remains `codeshift-intro-demo-v1`; absent new fields get defaults. The older `codeshift-save-v1` is separate, with no automatic migration contract. Limits are 4,000,000 save characters, 60,000 per file and 300 per stored full file path. Commands validate before mutation; malformed saves report an error without silent overwrite before the next action. Practice drafts/results/completed IDs use `gameplay.practice`. Notepad storage is separate and capped at 12,000 characters. Closing/minimizing retains drafts during the session; window placement and every temporary input are not promised across refresh. There is no cloud synchronization.
 
-The requested update makes the existing Site public, fixes difficult-to-close windows, and strengthens game feel while retaining one beginner mission.
+Preview sanitization, a script-free sandbox and CSP bound rendered content. Supported JavaScript expressions and Python template settings are simulations, not general runtimes. Player saves and QA artifacts are excluded from packaging.
 
-- A desktop home receives minimized/closed apps. App X and Escape return there; the dock and resume button reopen apps. Guide, mission sidebar and terminal drawer have independent close controls. Mobile sidebar has a backdrop and internal X. Escape follows front-surface priority and is forwarded from the cafe preview iframe. Settings and reward dialogs close independently; Shift+Tab leaves terminal/editor inputs.
-- NPC inbox contains authored messages unlocked by the contract and project milestones. Replying accepts the same optional starting request; no separate mandatory message gate is introduced.
-- Explorer bonus: successful project `pwd`, `ls`, and `cat README.md` evidence persists independently of terminal history. One claim awards 40 cr, 20 XP and a badge.
-- Color practice: choose amber or blue, change actual button CSS, and pass the existing three layout checks plus a separate computed-style color check. Hash and selected color bind the evidence; one claim awards 60 cr, 30 XP and a badge. This is local practice, including after the main release, and does not claim a new deployment.
-- Cosmetics: mint is initially owned; amber and violet each cost 90 simulated credits. Owned themes can be switched free, duplicate purchase cannot charge twice, and insufficient balance is rejected.
-- Reward dialogs only present a reducer-earned reward. Showing/dismissing dialogs cannot pay again. Completed main progress remains complete when exploring after delivery.
-- Version-1 saves missing the new `gameplay` object receive defaults without losing prior credits, XP, files, badges or completion. No player saves enter the source or deployment archive.
+Acceptance requires the empty-desktop start, usable app/quest/setup flow, three chapters and OPEN, six optional jobs, one-time rewards, localization, fresh evidence and recovery within these limits. Current checks are 55 passing unit tests, final TypeScript exit 0, successful campaign/ending and targeted language/adversarial/media smoke reports. See [QA-0.7.md](QA-0.7.md) and [gameplay-verification.md](gameplay-verification.md) for evidence scope. Public build/deployment is recorded by the main task at `D:/코딩게임/출시자료/0.7/verification/release-receipt.json`.
+
+The design targets novices around age 15; it is not official age certification or a completed usability study. Browser delivery does not establish Steam/mobile-store packaging, approval, broad accessibility/security certification or every-device performance. [Reference research](reference-research.md) documents sampled observations and license triage, not a heavy engine migration.

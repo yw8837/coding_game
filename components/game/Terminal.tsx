@@ -1,10 +1,12 @@
 'use client';
-import {localizeUI} from '@/lib/game/i18n';
+import {localizeUI,useLanguage} from '@/lib/game/i18n';
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {ChevronRight,TerminalSquare,CornerDownLeft} from 'lucide-react';
 import {commandCompletions} from '@/lib/game/input-tools';
+import {translateTerminalOutput} from '@/lib/game/terminal-translations';
 import type {GameProps} from './types';
 export function TerminalView({state,onCommand,queued,onQueued,compact=false}:GameProps&{queued:string;onQueued:()=>void;compact?:boolean}){
+ const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='en'?en:ja;
  const [input,setInput]=useState(''),[index,setIndex]=useState(-1),[suggestions,setSuggestions]=useState<string[]>([]),[selected,setSelected]=useState(-1);
  const draft=useRef(''),scroll=useRef<HTMLDivElement>(null),field=useRef<HTMLInputElement>(null),m=state.machines[state.machine];
  const close=()=>{setSuggestions([]);setSelected(-1);};
@@ -14,7 +16,7 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false}:Gam
  const send=()=>{if(!input.trim())return;onCommand(input);change('');field.current?.focus();};
  const complete=()=>{const options=suggestions.length?suggestions:commandCompletions(state,input);if(!options.length)return;const next=(selected+1)%options.length;setSuggestions(options);setSelected(next);setInput(options[next]);};
  return localizeUI(<div className={'terminal-body '+(compact?'compact':'')}>
-  <div className="terminal-output" ref={scroll} aria-live="polite" aria-label="터미널 출력"><div className="terminal-welcome"><TerminalSquare size={18}/><span>SHIFT SHELL <b>1.1</b><br/><span>실제 컴퓨터에는 영향을 주지 않아요. <em>help</em>로 명령어를 확인하세요.</span></span></div>{state.history.map((h,i)=><div className="terminal-entry" key={i}><div className="terminal-prompt"><span>dev@{h.machine==='local'?'workstation':'mono-server'}</span><span className="path">{h.cwd.replace('/home/dev','~')}</span><span>$</span><strong>{h.command}</strong></div>{h.output&&<pre className={h.error?'terminal-error':''}>{h.output}</pre>}</div>)}</div>
+  <div className="terminal-output" ref={scroll} aria-live="polite" aria-label="터미널 출력"><div className="terminal-welcome"><TerminalSquare size={18}/><span>SHIFT SHELL<br/><span data-no-translate>{tr('Linux 개발 터미널','Linux development terminal','Linux開発ターミナル')}</span><br/><span>실제 컴퓨터에는 영향을 주지 않아요. <em>help</em>로 명령어를 확인하세요.</span></span></div>{state.history.map((h,i)=><div className="terminal-entry" key={i}><div className="terminal-prompt"><span>dev@{h.machine==='local'?'workstation':'mono-server'}</span><span className="path">{h.cwd.replace('/home/dev','~')}</span><span>$</span><strong data-no-translate>{h.command}</strong></div>{h.output&&<pre className={h.error?'terminal-error':''}>{translateTerminalOutput(h.command,h.output,language)}</pre>}</div>)}</div>
   {!!suggestions.length&&<div className="terminal-completions" aria-label="명령어 자동완성 후보">{suggestions.map((c,i)=><button type="button" className={i===selected?'selected':''} key={c} onClick={()=>{change(c);field.current?.focus();}}>{c}</button>)}</div>}
   <form className="terminal-form" onSubmit={e=>{e.preventDefault();send();}}><label htmlFor={compact?'terminal-dock':'terminal-main'}><span>dev@{state.machine==='local'?'workstation':'mono-server'}</span><b>{m.cwd.replace('/home/dev','~')}</b><ChevronRight size={16}/></label><input id={compact?'terminal-dock':'terminal-main'} ref={field} value={input} onChange={e=>change(e.target.value)} autoComplete="off" autoCapitalize="off" spellCheck={false} placeholder="명령어 입력 · Tab으로 완성" aria-label="가상 터미널 명령어" onKeyDown={e=>{
    if(e.nativeEvent.isComposing||e.keyCode===229)return;
