@@ -4,6 +4,7 @@ import {Monitor,Globe,Code2,TerminalSquare,MessageCircle,FolderOpen,FileText,Set
 import {useLanguage,t} from '@/lib/game/i18n';
 import {gameMessages} from '@/lib/game/gameplay';
 import {openWindow,focusedWindow,type WindowState,type Bounds} from '@/lib/game/windows';
+import {CharacterPortrait} from './StoryArt';
 import {DesktopWindow} from './DesktopWindow';
 import {QuestTracker,QuestRibbon} from './QuestTracker';
 import type {AppId,GameProps} from './types';
@@ -59,7 +60,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
      {available.filter(a=>['computer','messages','browser','editor','terminal','notes','challenges','career'].includes(a.id)).map(a=><button key={a.id} aria-label={label(a)} className={'pc-shortcut '+(a.id==='messages'&&!props.state.accepted?'first-message':'')} onClick={()=>open(a.id)}><span className={'pc-app-icon '+a.color}><a.icon size={28}/>{a.id==='messages'&&unread>0&&<i>{unread}</i>}</span><span>{label(a)}</span></button>)}
     </nav>
     <div className="pc-desktop-caption"><span>{props.state.gameplay.career.upgrades.includes('studio-sign')?tr('나의 독립 작업실','Independent studio','自分の作業場'):'SHIFT OS'}</span><small>{tr('개인용 컴퓨터','Personal computer','パーソナルコンピューター')}</small></div>
-    {manager.app==='desktop'&&!props.state.accepted&&<button className="pc-mail-toast" onClick={()=>open('messages')}><span className="pc-app-icon green"><MessageCircle size={24}/></span><span><small>{tr('지우 · 새 메시지','Jiwoo · New message','ジウ · 新着メッセージ')}</small><strong>{tr('메뉴판이 이상해요. 한번 봐줄래요?','The menu is broken. Can you take a look?','メニューがおかしいんです。見てもらえますか？')}</strong><em>{tr('눌러서 읽기','Click to read','クリックして読む')} →</em></span></button>}
+    {manager.app==='desktop'&&!props.state.accepted&&<button className="pc-mail-toast" onClick={()=>open('messages')}><CharacterPortrait name="지우"/><span><small>{tr('지우 · 새 메시지','Jiwoo · New message','ジウ · 新着メッセージ')}</small><strong>{tr('메뉴판이 이상해요. 한번 봐줄래요?','The menu is broken. Can you take a look?','メニューがおかしいんです。見てもらえますか？')}</strong><em>{tr('눌러서 읽기','Click to read','クリックして読む')} →</em></span></button>}
     {manager.windows.map(w=>{const a=DESKTOP_APPS.find(a=>a.id===w.id);return <DesktopWindow key={w.id} window={w} bounds={manager.bounds} compact={manager.compact} active={manager.app===w.id} title={a?label(a):t('의뢰함')} icon={a?<a.icon size={16}/>:<Monitor size={16}/>} onFocus={()=>manager.focus(w.id)} onChange={manager.change} onClose={()=>manager.close(w.id)}>{renderApp(w.id as AppId)}</DesktopWindow>;})}
    </div></div>
    {sidebarOpen&&<><button className="pc-quest-backdrop" onClick={onSidebar} aria-label={tr('퀘스트 접기','Close quest','クエストを閉じる')}/><QuestTracker {...props} onClose={onSidebar}/></>}

@@ -7,6 +7,7 @@ import "./workflow.css";
 import "./pc.css";
 import "./practice.css";
 import "./career.css";
+import "./game-art.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://codeshift-lab.bsfire1237.chatgpt.site"),

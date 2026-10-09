@@ -8,6 +8,7 @@ import '../../app/workflow.css';
 import '../../app/pc.css';
 import '../../app/practice.css';
 import '../../app/career.css';
+import '../../app/game-art.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Game root is missing');

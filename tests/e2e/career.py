@@ -59,7 +59,7 @@ with sync_playwright() as pw:
    p.screenshot(path=str(out/f'{lang}-ending.png'))
    ending_save=state(p)
    # Buy all three functioning upgrades; duplicate purchase remains disabled.
-   active(p).locator('.career-list-footer button').nth(0).click()
+   active(p).get_by_test_id('career-tools-button').click()
    for upgrade in ['recovery-kit','second-screen','studio-sign']:
     button=active(p).get_by_test_id('career-upgrade-'+upgrade);button.click();expect(button).to_be_disabled()
    assert state(p)['credits']==seed['credits']+6600-1750

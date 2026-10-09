@@ -98,3 +98,14 @@ python media/trailer/render.py --edl media/trailer/edl-0.8.json --output output/
 The 0.8 clips include the title, empty desktop, request, setup, visible repair and check, delivery, cafe OPEN, new clients, customer reply, upgrades and career conclusion. Captions are localized; recorded UI is Korean. The working-title caption does not imply an available Steam store listing. Output timing and media checks are recorded in `output/trailer-0.8/verification.json`.
 
 The 2026-10-09 review inspected a contact sheet covering all 42 seconds, a full-resolution Japanese sample, and browser playback/seeking for all three landscape exports. Full-file decode and encoded loudness checks passed for all four exports. No human headphone/speaker listening session was performed. Source capture and EDL are retained so timing and wording can be revised without inventing gameplay footage.
+
+## 0.9 RC recording
+
+`capture-art.py` records the same UI-only campaign with the new title environment, portraits, cafe art, selectable neighborhood map, delivery feedback and studio scene. It uses stable tools/record button identifiers after the new map entry was added. The old captures and EDL files remain historical records.
+
+```powershell
+python media/trailer/capture-art.py
+python media/trailer/render.py --edl media/trailer/edl-0.9.json --output output/trailer-0.9 --languages ko en ja --vertical-languages ko
+```
+
+All four exports pass complete decoding, duration/frame count and encoded loudness checks in `output/trailer-0.9/verification.json`. Visual review and its limits are recorded in [0.9 QA](../../docs/QA-0.9-RC.md). Built-in image generation produced the environment/portrait images visible in the recorded game; [the prompts and asset paths](../game-art-prompts.json) are retained. No generated video substitutes for gameplay.

@@ -1,13 +1,14 @@
-import {localizeUI} from '@/lib/game/i18n';
-import {Check,Coffee} from 'lucide-react';
-import {CHAPTERS} from '@/lib/game/story';
-
-/** A small in-world storefront. Each completed quest visibly restores one part. */
+'use client';
+import {useLanguage} from '@/lib/game/i18n';
+import {Check,Lock,Coffee} from 'lucide-react';
+/** Authored storefront art; overlays reflect real saved progress. */
 export function CafeScene({completed,opened=false}:{completed:number[];opened?:boolean}){
- return localizeUI(<div className={'cafe-scene '+(opened?'is-open':'')} role="img" aria-label={`모노 카페. ${completed.length}/3 오픈 준비 완료. ${opened?'OPEN 간판에 불이 켜지고 손님들이 찾아왔어요.':'아직 오픈 준비 중이에요.'}`}>
-  <div className="scene-sky"><i/><i/><span>{opened?'좋은 아침, 우리 동네.':'작은 변화가 모이는 곳.'}</span></div>
-  <div className="scene-store"><div className="store-sign"><Coffee size={23}/>{completed.includes(0)?'MONO CAFE':'MONO ?'}</div><div className="store-awning"/><div className="store-interior"><div className="store-window"><span>{completed.includes(0)?'COFFEE\n4,500':'메뉴 준비 중'}</span>{completed.includes(1)&&<b>계산대 ✓</b>}</div><div className="store-door"><span className={opened?'lit':''}>{opened?'OPEN':'준비 중'}</span><i/></div><div className="store-window"><Coffee size={36}/><small>{completed.includes(2)?'주문 도착 ✓':'주문함 대기 중'}</small></div></div></div>
-  <div className="scene-street"><span className="scene-plant">✦</span>{opened&&<div className="scene-guests"><span>지우</span><span>민서</span><span>나</span></div>}<span className="scene-bench"/></div>
-  <div className="scene-stamps">{CHAPTERS.map((c,i)=><span key={c.stamp} className={completed.includes(i)?'ready':''}>{completed.includes(i)?<Check size={13}/>:<i/>}{c.stamp}</span>)}</div>
- </div>);
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const labels=[tr('메뉴판','Menu','メニュー'),tr('계산대','Checkout','レジ'),tr('주문함','Orders','注文箱')];
+ return <div className={'cafe-art-scene '+(opened?'is-open':'')} aria-label={tr(`모노 카페. ${completed.length}/3 오픈 준비 완료.`,`Mono Cafe. ${completed.length}/3 preparations complete.`,`モノカフェ。開店準備 ${completed.length}/3 完了。`)}>
+  <img src="/game-art/mono-cafe.png" alt="" width={1672} height={941}/>
+  <div className="cafe-art-sign"><Coffee size={20}/><span>MONO CAFE</span></div>
+  <div className={'cafe-open-sign '+(opened?'lit':'')}>{opened?'OPEN':tr('오픈 준비 중','OPENING SOON','開店準備中')}</div>
+  <div className="cafe-art-progress">{labels.map((label,i)=><span className={completed.includes(i)?'ready':''} key={i}>{completed.includes(i)?<Check size={15}/>:<Lock size={13}/>} {label}</span>)}</div>
+ </div>;
 }

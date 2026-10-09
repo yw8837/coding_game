@@ -11,7 +11,7 @@ with sync_playwright() as pw:
   p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.evaluate('(s)=>localStorage.setItem("codeshift-intro-demo-v1",JSON.stringify(s))',seed);p.reload(wait_until='networkidle');p.locator('.pc-play').click();p.locator('.quest-next button').click()
   w=p.locator('.pc-window[data-active="true"]');w.locator('.pc-window-buttons button').nth(3).click()
   w.get_by_test_id('career-accept').click();w.get_by_test_id('career-inspect').click()
-  w.locator('.career-list-footer button').nth(0).click()
+  w.get_by_test_id('career-tools-button').click()
   for item in ['recovery-kit','second-screen']:w.get_by_test_id('career-upgrade-'+item).click()
   # Following the persistent quest also restores the work view from the shop.
   p.locator('.quest-next button').click();expect(w.locator('.career-editor')).to_be_visible()

@@ -1,0 +1,364 @@
+{
+  "source": "../../output/trailer-0.9/raw.webm",
+  "captureViewport": [
+    1600,
+    900
+  ],
+  "capture": "Real local gameplay; UI input only; optional example answers used; no progress injection",
+  "captureTiming": {
+    "method": "two full-frame magenta markers; constant host-to-decoded-PTS offset",
+    "sourceDuration": 73.4,
+    "sourceFps": 25.0,
+    "offsetSeconds": 0.5295000000059338,
+    "offsetUncertaintySeconds": 0.037500000000003364,
+    "captureDelayAllowanceFrames": 2,
+    "endSafetyFrames": 1,
+    "anchors": [
+      {
+        "label": "start",
+        "wallBefore": 2.0310000000026776,
+        "wallAfterPaint": 2.047000000005937,
+        "firstPts": 1.56,
+        "lastPts": 2.24,
+        "frames": 18,
+        "offsetBounds": [
+          0.4710000000026775,
+          0.5670000000059371
+        ]
+      },
+      {
+        "label": "end",
+        "wallBefore": 71.17200000000594,
+        "wallAfterPaint": 71.18700000000536,
+        "firstPts": 70.68,
+        "lastPts": 71.36,
+        "frames": 18,
+        "offsetBounds": [
+          0.49200000000593036,
+          0.5870000000053482
+        ]
+      }
+    ],
+    "wallShots": [
+      {
+        "id": "start",
+        "start": 3.031,
+        "end": 7.172,
+        "duration": 3,
+        "caption": {
+          "ko": "컴퓨터를 켜면, 이야기가 시작된다.",
+          "en": "Start your PC. Start a story.",
+          "ja": "パソコンを開くと、物語が始まる。"
+        }
+      },
+      {
+        "id": "request",
+        "start": 7.172,
+        "end": 11.312,
+        "duration": 3,
+        "caption": {
+          "ko": "도착한 메시지. 첫 번째 의뢰.",
+          "en": "A new message. Your first case.",
+          "ja": "届いたメッセージ。最初の依頼。"
+        }
+      },
+      {
+        "id": "setup",
+        "start": 11.312,
+        "end": 15.141,
+        "duration": 2,
+        "caption": {
+          "ko": "파일을 가져오고, 내 PC에서 실행.",
+          "en": "Get the files. Run them on your PC.",
+          "ja": "ファイルを受け取り、自分のPCで起動。"
+        }
+      },
+      {
+        "id": "inspect",
+        "start": 15.141,
+        "end": 18.937,
+        "duration": 3,
+        "caption": {
+          "ko": "어디가 고장 났는지, 직접 확인하고.",
+          "en": "See what is broken for yourself.",
+          "ja": "どこがおかしいのか、自分で確かめる。"
+        }
+      },
+      {
+        "id": "fix",
+        "start": 18.937,
+        "end": 23.047,
+        "duration": 4,
+        "caption": {
+          "ko": "작은 수정이 화면을 바꾼다.",
+          "en": "A small edit changes the screen.",
+          "ja": "小さな修正で、画面が変わる。"
+        }
+      },
+      {
+        "id": "terminal",
+        "start": 23.047,
+        "end": 25.078,
+        "duration": 2,
+        "caption": {
+          "ko": "자동완성과 안내를 따라, 한 단계씩.",
+          "en": "Autocomplete and clear steps guide you.",
+          "ja": "自動補完と案内で、一歩ずつ。"
+        }
+      },
+      {
+        "id": "reward",
+        "start": 25.078,
+        "end": 28.344,
+        "duration": 3,
+        "caption": {
+          "ko": "검사를 통과하고, 의뢰를 마무리.",
+          "en": "Pass the checks. Deliver the fix.",
+          "ja": "検査に合格。依頼を仕上げる。"
+        }
+      },
+      {
+        "id": "server",
+        "start": 35.5,
+        "end": 40.016,
+        "duration": 3,
+        "caption": {
+          "ko": "파일에서 서버까지. 세 사건을 연결하자.",
+          "en": "From files to a server. Three connected cases.",
+          "ja": "ファイルからサーバーへ。三つの事件をつなごう。"
+        }
+      },
+      {
+        "id": "cafe-open",
+        "start": 42.422,
+        "end": 45.531,
+        "duration": 2,
+        "caption": {
+          "ko": "내 손으로 켠 첫 OPEN.",
+          "en": "Your first OPEN sign.",
+          "ja": "自分の手で点けた最初のOPEN。"
+        }
+      },
+      {
+        "id": "contracts",
+        "start": 45.578,
+        "end": 49.047,
+        "duration": 4,
+        "caption": {
+          "ko": "지도에서 고르는, 동네의 18개 의뢰.",
+          "en": "Pick your next job on the neighborhood map.",
+          "ja": "地図で選ぶ、まちの18件の依頼。"
+        }
+      },
+      {
+        "id": "client-reply",
+        "start": 49.25,
+        "end": 51.531,
+        "duration": 4,
+        "caption": {
+          "ko": "파일을 고치고, 고객에게 직접 답한다.",
+          "en": "Fix the files. Send your own reply.",
+          "ja": "ファイルを直し、自分の言葉で返事する。"
+        }
+      },
+      {
+        "id": "studio-tools",
+        "start": 60.984,
+        "end": 64.484,
+        "duration": 3,
+        "caption": {
+          "ko": "번 크레딧으로 내 작업실을 채우자.",
+          "en": "Put your earnings back into your studio.",
+          "ja": "稼いだクレジットで作業場を整える。"
+        }
+      },
+      {
+        "id": "career-ending",
+        "start": 64.516,
+        "end": 67.594,
+        "duration": 3,
+        "caption": {
+          "ko": "쌓아 온 선택이 남긴 마지막 편지.",
+          "en": "A final letter shaped by your choices.",
+          "ja": "積み重ねた選択が残す、最後の手紙。"
+        }
+      },
+      {
+        "id": "cta",
+        "start": 67.906,
+        "end": 70.922,
+        "duration": 3,
+        "caption": {
+          "ko": "CODE:SHIFT · 개발 중인 작업명",
+          "en": "CODE:SHIFT · Working title",
+          "ja": "CODE:SHIFT · 開発中の仮タイトル"
+        }
+      }
+    ],
+    "reviewRequired": "Watch cut boundaries; compositor delay is bounded by assumption, not measured independently."
+  },
+  "shots": [
+    {
+      "id": "start",
+      "start": 2.501,
+      "end": 6.642,
+      "duration": 3,
+      "caption": {
+        "ko": "컴퓨터를 켜면, 이야기가 시작된다.",
+        "en": "Start your PC. Start a story.",
+        "ja": "パソコンを開くと、物語が始まる。"
+      }
+    },
+    {
+      "id": "request",
+      "start": 6.642,
+      "end": 10.782,
+      "duration": 3,
+      "caption": {
+        "ko": "도착한 메시지. 첫 번째 의뢰.",
+        "en": "A new message. Your first case.",
+        "ja": "届いたメッセージ。最初の依頼。"
+      }
+    },
+    {
+      "id": "setup",
+      "start": 10.782,
+      "end": 14.611,
+      "duration": 2,
+      "caption": {
+        "ko": "파일을 가져오고, 내 PC에서 실행.",
+        "en": "Get the files. Run them on your PC.",
+        "ja": "ファイルを受け取り、自分のPCで起動。"
+      }
+    },
+    {
+      "id": "inspect",
+      "start": 14.611,
+      "end": 18.407,
+      "duration": 3,
+      "caption": {
+        "ko": "어디가 고장 났는지, 직접 확인하고.",
+        "en": "See what is broken for yourself.",
+        "ja": "どこがおかしいのか、自分で確かめる。"
+      }
+    },
+    {
+      "id": "fix",
+      "start": 18.407,
+      "end": 22.517,
+      "duration": 4,
+      "caption": {
+        "ko": "작은 수정이 화면을 바꾼다.",
+        "en": "A small edit changes the screen.",
+        "ja": "小さな修正で、画面が変わる。"
+      }
+    },
+    {
+      "id": "terminal",
+      "start": 22.517,
+      "end": 24.548,
+      "duration": 2,
+      "caption": {
+        "ko": "자동완성과 안내를 따라, 한 단계씩.",
+        "en": "Autocomplete and clear steps guide you.",
+        "ja": "自動補完と案内で、一歩ずつ。"
+      }
+    },
+    {
+      "id": "reward",
+      "start": 24.548,
+      "end": 27.814,
+      "duration": 3,
+      "caption": {
+        "ko": "검사를 통과하고, 의뢰를 마무리.",
+        "en": "Pass the checks. Deliver the fix.",
+        "ja": "検査に合格。依頼を仕上げる。"
+      }
+    },
+    {
+      "id": "server",
+      "start": 34.97,
+      "end": 39.486,
+      "duration": 3,
+      "caption": {
+        "ko": "파일에서 서버까지. 세 사건을 연결하자.",
+        "en": "From files to a server. Three connected cases.",
+        "ja": "ファイルからサーバーへ。三つの事件をつなごう。"
+      }
+    },
+    {
+      "id": "cafe-open",
+      "start": 41.892,
+      "end": 45.001,
+      "duration": 2,
+      "caption": {
+        "ko": "내 손으로 켠 첫 OPEN.",
+        "en": "Your first OPEN sign.",
+        "ja": "自分の手で点けた最初のOPEN。"
+      }
+    },
+    {
+      "id": "contracts",
+      "start": 45.048,
+      "end": 48.517,
+      "duration": 4,
+      "caption": {
+        "ko": "지도에서 고르는, 동네의 18개 의뢰.",
+        "en": "Pick your next job on the neighborhood map.",
+        "ja": "地図で選ぶ、まちの18件の依頼。"
+      }
+    },
+    {
+      "id": "client-reply",
+      "start": 48.72,
+      "end": 51.001,
+      "duration": 4,
+      "caption": {
+        "ko": "파일을 고치고, 고객에게 직접 답한다.",
+        "en": "Fix the files. Send your own reply.",
+        "ja": "ファイルを直し、自分の言葉で返事する。"
+      }
+    },
+    {
+      "id": "studio-tools",
+      "start": 60.454,
+      "end": 63.954,
+      "duration": 3,
+      "caption": {
+        "ko": "번 크레딧으로 내 작업실을 채우자.",
+        "en": "Put your earnings back into your studio.",
+        "ja": "稼いだクレジットで作業場を整える。"
+      }
+    },
+    {
+      "id": "career-ending",
+      "start": 63.986,
+      "end": 67.064,
+      "duration": 3,
+      "caption": {
+        "ko": "쌓아 온 선택이 남긴 마지막 편지.",
+        "en": "A final letter shaped by your choices.",
+        "ja": "積み重ねた選択が残す、最後の手紙。"
+      }
+    },
+    {
+      "id": "cta",
+      "start": 67.95,
+      "end": 70.392,
+      "duration": 3,
+      "caption": {
+        "ko": "CODE:SHIFT · 개발 중인 작업명",
+        "en": "CODE:SHIFT · Working title",
+        "ja": "CODE:SHIFT · 開発中の仮タイトル"
+      }
+    }
+  ],
+  "editorialAdjustments": [
+    {
+      "reason": "Trim settings-dialog close transition before the final title card. Duration remains 3 seconds; retained source frames are slowed slightly.",
+      "finalStart": 67.95,
+      "originalAlignedStart": 67.376,
+      "shot": "cta"
+    }
+  ]
+}

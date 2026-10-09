@@ -18,6 +18,7 @@ async function read(){return JSON.parse(await fs.readFile(save,'utf8'));}
 async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){try{if(await fn()===value)return;}catch{}await new Promise(r=>setTimeout(r,50));}assert.equal(await fn(),value);}
 (async()=>{
  await fs.mkdir(out,{recursive:true});await launch();
+ assert.equal(await page.locator('.title-environment').evaluate(el=>el.complete&&el.naturalWidth>0),true);
  const info=await page.evaluate(()=>window.desktopBridge.getPlatformInfo());assert.equal(info.runtime,'desktop');assert.equal(info.steamAvailable,false);report.platform=info;
  const isolation=await page.evaluate(()=>({node:typeof window.require,process:typeof window.process,bridge:Object.keys(window.desktopBridge)}));assert.equal(isolation.node,'undefined');assert.equal(isolation.process,'undefined');report.isolation=isolation;
  assert.equal(await page.evaluate(async()=>{try{await fetch('https://example.com');return false;}catch{return true;}}),true);
