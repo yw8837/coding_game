@@ -1,0 +1,105 @@
+{
+  "product": [
+    {
+      "item": "자동 검사로 카페·의뢰·엔딩·저장 복원을 확인",
+      "status": "done",
+      "weight": 3
+    },
+    {
+      "item": "독립 초보자 3~5명 실제 플레이 관찰",
+      "status": "not_started",
+      "weight": 3
+    },
+    {
+      "item": "코딩 경험자 실제 자유 풀이 관찰",
+      "status": "not_started",
+      "weight": 2
+    },
+    {
+      "item": "별도 Windows PC 및 최소 사양 확인",
+      "status": "not_started",
+      "weight": 3
+    },
+    {
+      "item": "KO/EN/JA UI 구현·자동 검사 및 원어민 감수",
+      "status": "partial",
+      "weight": 2
+    }
+  ],
+  "owned_channels": [
+    {
+      "item": "HTTPS 게임·소개 페이지 code.yeolmaeapps.kr 운영",
+      "status": "done",
+      "weight": 2
+    },
+    {
+      "item": "실제 Steam 페이지와 위시리스트 링크 연결",
+      "status": "not_started",
+      "weight": 3
+    },
+    {
+      "item": "출시 전 웹 전체판 유지·판매 시작 후 데모 전환 계획",
+      "status": "done",
+      "weight": 1
+    },
+    {
+      "item": "지원 연락처와 개발자 표시 확정",
+      "status": "not_started",
+      "weight": 2
+    }
+  ],
+  "assets": [
+    {
+      "item": "KO/EN/JA 상점 문구 초안",
+      "status": "done",
+      "weight": 2
+    },
+    {
+      "item": "1920x1080 실제 게임 스크린샷 7장",
+      "status": "done",
+      "weight": 2
+    },
+    {
+      "item": "30초 KO/EN/JA 홍보영상·음악 출처",
+      "status": "done",
+      "weight": 2
+    },
+    {
+      "item": "최종 게임명·할인율 확정",
+      "status": "partial",
+      "weight": 2
+    },
+    {
+      "item": "Steam 캡슐·라이브러리 아트 최종 제작",
+      "status": "not_started",
+      "weight": 3
+    },
+    {
+      "item": "AI 공개·콘텐츠 설문 초안과 실제 설문 대조",
+      "status": "partial",
+      "weight": 2
+    }
+  ],
+  "steam": [
+    {
+      "item": "이 게임의 AppID·depot·패키지 발급",
+      "status": "not_started",
+      "weight": 3
+    },
+    {
+      "item": "국가별 가격 등록·승인",
+      "status": "not_started",
+      "weight": 2
+    },
+    {
+      "item": "상점 심사 승인 및 Coming Soon 최소 14일",
+      "status": "not_started",
+      "weight": 3
+    },
+    {
+      "item": "실제 Steam 설치·실행 및 빌드 심사 승인",
+      "status": "not_started",
+      "weight": 3
+    }
+  ]
+}

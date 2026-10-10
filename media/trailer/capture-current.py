@@ -1,8 +1,11 @@
 """Record current UI: a real repair, earned reward, useful purchase and personal release."""
 from pathlib import Path
-import ast, hashlib, importlib.util, json, shutil, subprocess, time
+import ast, hashlib, importlib.util, json, os, shutil, subprocess, time
 
-ROOT=Path(__file__).resolve().parents[2];OUT=ROOT/'output/trailer-current'
+ROOT=Path(__file__).resolve().parents[2]
+STORE_CAPTURE=os.environ.get('CODESHIFT_CAPTURE_MODE')=='store'
+OUT=ROOT/('output/steam-launch-20261010/capture' if STORE_CAPTURE else 'output/trailer-current')
+WIDTH,HEIGHT=(1920,1080) if STORE_CAPTURE else (1600,900)
 SEED=ROOT/'output/0.13.1-qa/ko-cafe-save.json'
 spec=importlib.util.spec_from_file_location('capture_clock',Path(__file__).with_name('capture-art.py'))
 clock=importlib.util.module_from_spec(spec);spec.loader.exec_module(clock)
@@ -17,7 +20,7 @@ def main():
  shots=[];events=[];errors=[];anchors=[]
  with sync_playwright() as pw:
   browser=pw.chromium.launch(channel='chrome',headless=True)
-  c=browser.new_context(viewport={'width':1600,'height':900},locale='ko-KR',record_video_dir=str(OUT/'recording'),record_video_size={'width':1600,'height':900})
+  c=browser.new_context(viewport={'width':WIDTH,'height':HEIGHT},locale='ko-KR',record_video_dir=str(OUT/'recording'),record_video_size={'width':WIDTH,'height':HEIGHT})
   t0=time.monotonic();p=c.new_page();p.set_default_timeout(15000);p.on('pageerror',lambda e:errors.append(str(e)))
   def click(id):p.get_by_test_id(id).click()
   def state():return p.evaluate('JSON.parse(localStorage.getItem("codeshift-intro-demo-v1"))')
@@ -25,11 +28,11 @@ def main():
   def pause(s):p.wait_for_timeout(round(s*1000))
   def start():return now()
   def end(id,t,focus=None):
-   box=p.locator(focus).first.bounding_box() if focus else {'x':0,'y':0,'width':1600,'height':900}
+   box=p.locator(focus).first.bounding_box() if focus else {'x':0,'y':0,'width':WIDTH,'height':HEIGHT}
    shots.append({'id':id,'start':round(t,3),'end':round(now(),3),'focus':box});p.screenshot(path=str(OUT/'screenshots'/f'{id}.png'));print('captured '+id,flush=True)
   def maximize():
    active=p.locator('.pc-window[data-active="true"]')
-   if active.bounding_box()['width']<1500:active.get_by_role('button',name='창 최대화 또는 복원',exact=True).click()
+   if active.bounding_box()['width']<WIDTH-100:active.get_by_role('button',name='창 최대화 또는 복원',exact=True).click()
   try:
    p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.get_by_role('combobox',name='Language').select_option('ko')
    anchors.append(clock.record_marker(p,t0,'start'));p.locator('.pc-play').click();s=start();pause(2.2);end('desktop',s)
@@ -91,7 +94,7 @@ def main():
    assert not errors,errors;pause(.2);anchors.append(clock.record_marker(p,t0,'end'))
    video=p.video;c.close();raw=Path(video.path());media=clock.inspect_recording(raw,clock.media_binary('ffmpeg'),clock.media_binary('ffprobe'));aligned,timing=clock.align_shots(shots,anchors,media);shutil.copy2(raw,OUT/'raw.webm')
    sha=lambda data:hashlib.sha256(data).hexdigest()
-   evidence={'version':json.loads((ROOT/'package.json').read_text())['version'],'gameCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'workingTreeDiffSha256':sha(subprocess.check_output(['git','diff','HEAD'],cwd=ROOT)),'gameSourceSha256':{name:sha((ROOT/name).read_bytes()) for name in ['components/game/CareerView.tsx','app/career.css','components/game/GameShell.tsx']},'viewport':[1600,900],'capture':'Actual Korean game UI with automated input; prior UI-earned cafe save imported visibly; all 12 career jobs and own project solved on this recording; selected shots form a retimed montage, not a continuous playthrough. No completion-state injection.','saveImport':{'path':str(SEED.relative_to(ROOT)),'sha256':sha(SEED.read_bytes()),'careerJobsAtImport':0},'timing':timing,'events':events,'pageErrors':errors,'shots':aligned,'rawSha256':sha((OUT/'raw.webm').read_bytes())}
+   evidence={'version':json.loads((ROOT/'package.json').read_text())['version'],'gameCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'workingTreeDiffSha256':sha(subprocess.check_output(['git','diff','HEAD'],cwd=ROOT)),'gameSourceSha256':{name:sha((ROOT/name).read_bytes()) for name in ['components/game/CareerView.tsx','app/career.css','components/game/GameShell.tsx']},'viewport':[WIDTH,HEIGHT],'capture':'Actual Korean game UI with automated input; prior UI-earned cafe save imported visibly; all 12 career jobs and own project solved on this recording; selected shots form a retimed montage, not a continuous playthrough. No completion-state injection.','saveImport':{'path':str(SEED.relative_to(ROOT)),'sha256':sha(SEED.read_bytes()),'careerJobsAtImport':0},'timing':timing,'events':events,'pageErrors':errors,'shots':aligned,'rawSha256':sha((OUT/'raw.webm').read_bytes())}
    (OUT/'capture-evidence.json').write_text(json.dumps(evidence,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps({'shots':len(aligned),'seconds':media['duration'],'errors':errors}),flush=True)
   except Exception:
    if not p.is_closed():p.screenshot(path=str(OUT/'capture-failure.png'));(OUT/'capture-failure.txt').write_text(p.locator('body').inner_text(),encoding='utf-8')

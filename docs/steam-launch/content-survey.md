@@ -8,11 +8,11 @@
 
 ## 생성형 AI
 
-**Pre-Generated: Yes. Live-Generated: No.** 현재 플레이어가 소비하는 사전 생성 아트, 게임 문구/서사, 번역에 AI 도구를 사용했다. 실행 중 AI 서비스를 호출하거나 플레이어의 입력을 외부 AI에 보내는 기능은 없다. 코드 작성 지원만 언급하고 실제 아트·문구·번역 사용을 누락하지 않는다. 원래 음악은 프로젝트의 수학적 합성이며 다운로드한 샘플이나 AI 음성은 없다.
+**Pre-Generated: Yes. Live-Generated: No.** 현재 플레이어가 소비하는 사전 생성 아트, 게임 문구/서사, 번역에 AI 도구를 사용했다. 실행 중 AI 서비스를 호출하거나 플레이어의 입력을 외부 AI에 보내는 기능은 없다. 코드 작성 지원만 언급하고 실제 아트·문구·번역 사용을 누락하지 않는다. 게임 효과음은 Web Audio 코드 합성이다. AI Tech Studio의 합성·믹서 기술 참고와 MIT 고지를 보존한다. 홍보영상에는 별도로 Kevin MacLeod의 Voxel Revolution(CC BY 4.0)을 편집해 사용하며 저작자·라이선스·변경 고지를 동봉한다. AI 생성 음성이나 플레이 중 생성 오디오는 없다.
 
 설문 영문 상세 후보:
 
-> During development, AI tools were used to create pre-generated environment and portrait artwork and to assist with in-game text, narrative and Korean, English and Japanese localization. These assets and texts are included as fixed content in the game. The game does not generate AI content during play and does not connect to a generative AI service. Its customer messages and endings use authored, fixed game content. Music is original mathematical synthesis rather than an AI-generated recording. We will review the final shipped content and its rights before submission.
+> During development, AI tools were used to create pre-generated environment and portrait artwork and to assist with in-game text, narrative and Korean, English and Japanese localization. These assets and texts are included as fixed content in the game. The game does not generate AI content during play and does not connect to a generative AI service. Its customer messages and endings use authored, fixed game content. In-game sound effects are synthesized in code with Web Audio. The promotional trailer separately uses an edited, attributed CC BY 4.0 recording of Voxel Revolution by Kevin MacLeod. No AI-generated voice or live-generated audio is used. We will review the final shipped content and its rights before submission.
 
 플레이어에게 표시될 공개 설명 후보:
 
