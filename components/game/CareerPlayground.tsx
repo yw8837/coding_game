@@ -3,6 +3,7 @@ import {useId,useRef,useState,type ReactNode} from 'react';
 import {Play,Check,RotateCcw,ReceiptText,DoorOpen,ListChecks,Clock,Monitor,Radio,Smartphone,Tablet,Sun,Moon,TriangleAlert} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
 import {careerScenarios} from '@/lib/game/career-playground';
+import {careerDayLabel,careerDisplayValue} from '@/lib/game/career-display';
 import type {CareerJob} from '@/lib/game/career-content';
 import type {CareerCheck} from '@/lib/game/career-evaluation';
 
@@ -132,12 +133,13 @@ function ZoneClock({hour,ghost=null,title,city,dayText,tr}:{hour:number;ghost?:n
  </figure>;
 }
 const UTC_HOURS=[23,2,18];
-function ZoneStage({cases,index,tr,shell,json}:StageProps&{json:string}){
+function ZoneStage({cases,index,tr,lang,shell,json}:StageProps&{json:string}){
  const [scrub,setScrub]=useState<{index:number;hour:number}|null>(null),slider=useId();
  const rule=zone(json),base=UTC_HOURS[index]??0,hour=scrub?.index===index?scrub.hour:base,onCase=hour===base;
  const actual=onCase?stamp(cases[index]?.actual??''):rule?shift(hour,rule):null,expected=onCase?stamp(cases[index]?.expected??''):null;
  if(!rule||!actual)return null;
- const dayName=(d:number)=>d===0?tr('같은 날','same day','同じ日'):d===1?tr('다음 날','next day','翌日'):d===-1?tr('전날','previous day','前日'):tr(`${d>0?'+':''}${d}일`,`day ${d>0?'+':''}${d}`,`${d>0?'+':''}${d}日`);
+ // Same words as the result ticket; English is lowercased because it sits mid-sentence here.
+ const dayName=(d:number)=>{const label=careerDayLabel(d,lang);return lang==='en'?label.toLowerCase():label;};
  const shown=`${dayName(actual.day)} ${pad2(actual.hour)}:00`,wanted=expected?`${dayName(expected.day)} ${pad2(expected.hour)}:00`:'';
  const missed=!!expected&&(expected.day!==actual.day||expected.hour!==actual.hour);
  return <StageShell className="zone-stage" shell={shell}>
@@ -162,7 +164,7 @@ export function CareerPlayground({job,files,completed=false,compact=false}:{job:
  const index=Math.min(selected,scene.cases.length-1),check=scene.cases[index];if(!check)return null;
  const source=JSON.stringify(files),fresh=run?.source===source&&run.selected===index;
  const Icon=({receipt:ReceiptText,access:DoorOpen,list:ListChecks,schedule:Clock,screen:Monitor,network:Radio})[scene.scene];
- const value=(raw:string)=>raw==='true'?tr('예','Yes','はい'):raw==='false'?tr('아니요','No','いいえ'):raw==='missing'?tr('목록에 없음','Not in list','一覧にありません'):raw==='unavailable'?tr('접수 불가','Unavailable','受付不可'):/^-?\d+$/.test(raw)?Number(raw).toLocaleString(lang):raw;
+ const value=(raw:string)=>raw==='true'?tr('예','Yes','はい'):raw==='false'?tr('아니요','No','いいえ'):raw==='missing'?tr('목록에 없음','Not in list','一覧にありません'):raw==='unavailable'?tr('접수 불가','Unavailable','受付不可'):/^-?\d+$/.test(raw)?Number(raw).toLocaleString(lang):careerDisplayValue(raw,lang,check.expected);
  const stageProps:StageProps={cases:scene.cases,index,onSelect:setSelected,tr,lang,shell:{verdict:fresh?(run!.passed?'matched':'mismatched'):null,runs}};
  const stage=scene.unavailable?null:job.id==='museum-layout'?<MuseumStage {...stageProps} css={files['gallery.css']??''}/>:job.id==='clinic-form'?<ClinicStage key={runs} {...stageProps} html={files['booking.html']??''} play={fresh}/>:job.id==='workshop-slots'?<WorkshopStage {...stageProps} csv={files['schedule.csv']??''}/>:job.id==='tutor-timezone'?<ZoneStage {...stageProps} json={files['timezone.json']??''}/>:null;
  return <section className={'career-playground scene-'+scene.scene} data-testid="career-playground" aria-label={scene.title[lang]}>

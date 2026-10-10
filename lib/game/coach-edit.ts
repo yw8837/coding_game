@@ -28,3 +28,11 @@ export function coachEdit(state:GameState,key:CoachEdit,value:string):Extract<Ac
  if(!['True','False'].includes(value))return null;
  return replace('server.py',/^SAVE_ORDERS\s*=.*$/m,()=>`SAVE_ORDERS = ${value}`);
 }
+export type CoachEditIssue='multiply-sign'|'route-slash';
+/** Names the most common beginner slip behind a rejected value. It explains; it never rewrites the value. */
+export function coachEditIssue(key:CoachEdit,value:string):CoachEditIssue|null {
+ const typed=value.trim();
+ if(key==='rule'&&['×','x','X','✕'].includes(typed))return 'multiply-sign';
+ if(key==='route'&&typed&&!typed.startsWith('/'))return 'route-slash';
+ return null;
+}

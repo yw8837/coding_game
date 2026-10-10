@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {act,createGame,projectFiles,calculateTotal} from './engine.ts';
 import {assist} from './assisted.ts';
-import {coachEdit,type CoachEdit} from './coach-edit.ts';
+import {coachEdit,coachEditIssue,type CoachEdit} from './coach-edit.ts';
 import {coachStage} from './coach.ts';
 
 test('novice edits write typed values to actual files without granting completion or replacing other work',()=>{
@@ -41,4 +41,18 @@ test('a candidate rejected by the engine preserves the original file and cannot 
  assert.equal(projectFiles(next)['index.html'],original);
  assert.notEqual(projectFiles(next)[candidate.path],candidate.content);
  assert.match(next.notice,/60,000/);assert.deepEqual(next.completed,[]);
+});
+
+test('math-class multiply signs and a missing leading slash get a named reason but are never auto-corrected',()=>{
+ let s=assist(createGame(),'prepare');s.mission=1;
+ const app=projectFiles(s)['app.js'];
+ for(const sign of ['×','x','X','✕',' x ']){assert.equal(coachEdit(s,'rule',sign),null);assert.equal(coachEditIssue('rule',sign),'multiply-sign');}
+ assert.equal(projectFiles(s)['app.js'],app);
+ for(const value of ['*','+','-','/','%','÷',''])assert.equal(coachEditIssue('rule',value),null);
+ s=assist(createGame(),'prepare');s.mission=2;
+ const server=projectFiles(s)['server.py'];
+ for(const value of ['api/menu','menu','http://mono-server:8000/api/menu']){assert.equal(coachEdit(s,'route',value),null);assert.equal(coachEditIssue('route',value),'route-slash');}
+ assert.equal(projectFiles(s)['server.py'],server);
+ for(const value of ['/api/menu','/api menu','',' '])assert.equal(coachEditIssue('route',value),null);
+ for(const [key,value] of [['sign','x'],['size','x'],['keep','x']] as [CoachEdit,string][])assert.equal(coachEditIssue(key,value),null);
 });
