@@ -52,9 +52,9 @@
   "human_playtime_fun_learning_native_speaker_low_spec_validation": "not performed or not verified",
   "publication": "No upload, fee payment, app registration or publishing performed",
   "limits": "Document consistency/source checks; not Steam approval, human review, or a rerun of browser/native/package/media QA",
-  "promo_media_directory": "output/trailer-current/final",
-  "promo_capture_evidence": "output/trailer-current/capture-evidence.json",
-  "promo_raw_source": "output/trailer-current/raw.webm",
+  "promo_media_directory": "output/trailer-polish/final",
+  "promo_capture_evidence": "output/trailer-polish/capture-evidence.json",
+  "promo_raw_source": "output/trailer-polish/raw.webm",
   "promo_montage_scope": "Visible import of UI-earned cafe save, chosen 12-job route and personal portfolio 1.0.0 in-game release; retimed montage, not continuous gameplay; no Code Lab footage",
-  "qa_reference": "docs/QA-0.13.2-RC.md and associated receipts govern final browser/native/package/media results"
+  "qa_reference": "docs/QA-0.13.2-RC.md governs gameplay/native/package results; docs/QA-trailer-polish-2026-10-10.md and its receipts govern the current media and about-page revision"
 }

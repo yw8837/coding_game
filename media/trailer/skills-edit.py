@@ -16,7 +16,7 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-OUT = ROOT / 'output/trailer-current'
+OUT = ROOT / 'output/trailer-polish'
 EDIT = OUT / 'edit'
 FINAL = OUT / 'final'
 FPS = 30
@@ -28,14 +28,17 @@ spec = importlib.util.spec_from_file_location('codeshift_historical_editor', HER
 base = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(base)
 base.OUT, base.EDIT, base.FINAL = OUT, EDIT, FINAL
+# Muted desktop palette; the captured UI stays unchanged.
+CANVAS = '0x101c28'
+base.COLORS = {'ink': 'f4eee7', 'blue': 'ebba86', 'red': '9299ef', 'green': 'bad681', 'gold': '8ec8e8', 'muted': 'bead98'}
 
 # Pin accepted assets. Never silently replace an existing current audio file.
 AUDIO_HASHES = {
-    'realizer-bright-30s-128bpm.wav': 'be4f1163deb5360d4d202424aa4b7656f78f0f5ab39a415d83c1f47ece43b0e2',
+    'Voxel Revolution.mp3': '9977d93c698abacc29e5da7ff0bccee2b8f6de47ed7e567cb0f1ed9b7564f74e',
     'editorial-click.wav': '0e6a3b61314d7115ce3215236bb333059847301d3535274cae687553d3acb4c8',
     'editorial-impact.wav': '4ce31450aff82e6ed8fba8676d32339be353f2488a1dad0ed78b59dab3b92c28',
     'editorial-success.wav': '0470d45337b84865d5121d36ffbd6b68caa44559afb9b5151361fa0368116483',
-    'ATTRIBUTION.txt': '4d5a35afac5b9a4e67774d9935ae258b70e9b815b52481e8304aea3ac695e84f',
+    'ATTRIBUTION.txt': 'df482da4adcf3135867988fc78beb6a700718906d619340c8cb75f4e1c061c34',
 }
 
 
@@ -54,19 +57,19 @@ def copy(ko, en, ja):
 # Cumulative 128 BPM boundaries; per-shot lengths are never rounded separately.
 # The recording includes intervening actions. Cuts deliberately omit those gaps.
 PLAN = [
-    ('broken', 0, 1.5, 'split', 'red', copy('빵 여섯 개. / 금액은 엉뚱.', 'SIX BUNS. / WRONG TOTAL.', 'パン6個。 / 金額がおかしい。'), copy('6개 주문 · 기대 10,000원 / 현재 12,600원', '6 buns · Expected ₩10,000 / Actual ₩12,600', '6個の注文 · 正しくは10,000 / 表示は12,600ウォン')),
-    ('desktop', 1.5, 2, 'wide', 'blue', copy('동네의 코딩 해결사.', 'THE LOCAL CODE FIXER.', '街のコード修理屋。'), copy('작업실에서 시작하는 동네 의뢰', 'Neighborhood jobs, from your desktop', '自分の作業場から、街の依頼へ')),
-    ('code', 2, 3.5, 'wide', 'blue', copy('내 손으로 / 고친 코드.', 'YOUR HANDS. / YOUR CODE.', '自分の手で / コードを直す。'), copy('실제 편집기에 입력하고 실행', 'Type in the real editor. Run it.', '本物のエディターで入力して実行')),
-    ('fixed', 3.5, 5, 'wide', 'green', copy('계산이 맞았다. / 다른 주문도 정확!', 'TOTAL FIXED. / NEXT ORDER? RIGHT.', '計算が合った。 / 別の注文も正しい！'), copy('실제 재검증 · 6개 10,000원 / 8개 13,600원', 'Retested · 6 = ₩10,000 / 8 = ₩13,600', '再検証 · 6個10,000 / 8個13,600ウォン')),
-    ('delivery', 5, 6, 'wide', 'gold', copy('고쳤다. / 보상이 왔다.', 'FIXED IT. / GOT PAID.', '直せた。 / 報酬が来た。'), copy('빵집 의뢰 완료 · +200 cr · +80 XP', 'Bakery job complete · +200 cr · +80 XP', 'パン屋の依頼完了 · +200 cr · +80 XP')),
-    ('monitor', 6, 6.5, 'wide', 'gold', copy('600 cr, 작업실에 투자.', '600 cr. UPGRADE TIME.', '600 crで、作業場を強化。'), copy('실제로 구매하는 보조 모니터', 'Buy the second monitor in game', 'ゲーム内でサブモニターを購入')),
-    ('monitor-use', 6.5, 7.5, 'wide', 'gold', copy('이제, 나란히 비교.', 'NOW, SIDE BY SIDE.', '今度は、並べて比較。'), copy('보조 모니터로 코드와 결과를 한 화면에서', 'Your code and its results, on one screen', 'サブモニターでコードと結果を同じ画面に')),
-    ('map', 7.5, 8.5, 'wide', 'blue', copy('여섯 의뢰. 어디부터?', 'SIX JOBS. WHERE FIRST?', '6つの依頼。どこから？'), copy('구역마다 6개 중 4개 선택 · 최종 프로젝트 조건 12개', 'Choose 4 of 6 jobs per district · Final project needs 12', '各エリア6依頼から4件選択 · 最終プロジェクトの条件は12件')),
-    ('district', 8.5, 9.5, 'wide', 'green', copy('네 번째 해결. 다음 동네!', 'FOUR FIXES. NEXT DISTRICT!', '4件解決。次のエリアへ！'), copy('완료한 의뢰로 실제 새 구역 해금', 'Completed jobs unlock the next district', '依頼を完了して、次のエリアを解放')),
-    ('project', 9.5, 11, 'showcase', 'blue', copy('내가 만든 / 도구함.', 'YOUR OWN / TOOLBOX.', '自分で作った / 道具箱。'), copy('내 작업을 소개하는 포트폴리오', 'A portfolio of the tools you repaired', 'パン屋・工房・図書館の貸出を紹介する作品集')),
-    ('project-filter', 11, 12, 'showcase', 'blue', copy('눌러보면, / 진짜로 바뀐다.', 'CLICK IT. / IT REALLY WORKS.', 'クリックすると、 / ちゃんと変わる。'), copy('실제 앱에서 작동하는 프로젝트 필터', 'Working project filters in the actual app', '実際のアプリで動く作品フィルター')),
-    ('release', 12, 14, 'wide', 'green', copy('버전 1.0.0, 출시 완료!', 'VERSION 1.0.0. SHIPPED!', 'バージョン1.0.0、公開完了！'), copy('게임 속 내가 만든 앱의 첫 출시', 'Your first app release inside the game', 'ゲームの中で、自分のアプリを初公開')),
-    ('end', 14, 16, 'end', 'blue', copy('고치고. 벌고. / 내 것을 출시하고.', 'FIX IT. EARN IT. / SHIP YOUR OWN.', '直して、稼いで。 / 自分の作品を公開。'), copy('브라우저에서 지금 플레이', 'Play now in your browser', '今すぐブラウザーでプレイ')),
+    ('broken', 0, 1.5, 'split', 'gold', copy('고장 난 계산대. / 해결 보상 200 cr.', 'BROKEN TILL. / REWARD: 200 cr.', 'レジが故障。 / 報酬は200 cr。'), copy('6개 주문 · 정상 10,000원 / 현재 12,600원', '6 buns · Expected ₩10,000 / Actual ₩12,600', '6個の注文 · 正しくは10,000 / 表示は12,600ウォン')),
+    ('desktop', 1.5, 2, 'wide', 'blue', copy('내 작업실.', 'YOUR WORKSPACE.', '自分の作業場。'), copy('', '', '')),
+    ('code', 2, 3.5, 'wide', 'blue', copy('직접 고치고.', 'FIX IT YOURSELF.', '自分で直す。'), copy('코드를 입력하고 실행', 'Type your code. Run it.', 'コードを入力して実行')),
+    ('fixed', 3.5, 5, 'wide', 'green', copy('됐다.', 'IT WORKS.', 'できた。'), copy('6개 10,000원 · 8개 13,600원', '6 = ₩10,000 · 8 = ₩13,600', '6個10,000 · 8個13,600ウォン')),
+    ('delivery', 5, 6, 'wide', 'gold', copy('+200 cr.', '+200 cr.', '+200 cr.'), copy('납품 완료 · +80 XP', 'Job delivered · +80 XP', '納品完了 · +80 XP')),
+    ('monitor', 6, 6.5, 'wide', 'gold', copy('번 돈은 장비로.', 'EARN IT. UPGRADE.', '稼いで、道具を買う。'), copy('보조 모니터 · 600 cr', 'Second monitor · 600 cr', 'サブモニター · 600 cr')),
+    ('monitor-use', 6.5, 7.5, 'wide', 'blue', copy('바로 써먹는다.', 'PUT IT TO WORK.', 'さっそく使おう。'), copy('코드와 결과를 나란히', 'Code and results, side by side', 'コードと結果を並べて比較')),
+    ('map', 7.5, 8.5, 'wide', 'blue', copy('다음 일은 내가 고른다.', 'CHOOSE YOUR NEXT JOB.', '次の仕事は、自分で選ぶ。'), copy('구역마다 6개 중 4개 선택', 'Choose 4 of 6 jobs per district', '各エリア6依頼から4件選択')),
+    ('district', 8.5, 9.5, 'wide', 'green', copy('새 동네가 열린다.', 'A NEW DISTRICT OPENS.', '新しいエリアが開く。'), copy('', '', '')),
+    ('project', 9.5, 11, 'showcase', 'blue', copy('이번엔 / 내 앱.', 'NOW, / YOUR OWN APP.', '今度は、 / 自分のアプリ。'), copy('내 작업을 소개하는 포트폴리오', 'A portfolio of your work', '自分の仕事を紹介する作品集')),
+    ('project-filter', 11, 12, 'showcase', 'blue', copy('내가 만든 대로 / 움직인다.', 'YOUR CODE. / WORKING.', '自分のコードで、 / 動き出す。'), copy('직접 만든 검색과 분류', 'Your search. Your categories.', '自分で作った検索と分類')),
+    ('release', 12, 14, 'wide', 'green', copy('v1.0.0 / 배포 완료.', 'v1.0.0 / RELEASED.', 'v1.0.0 / 公開完了。'), copy('게임 속 내가 만든 앱의 첫 출시', 'Your app\u2019s first release inside the game', 'ゲームの中で、自分のアプリを初公開')),
+    ('end', 14, 16, 'end', 'gold', copy('내 첫 / 출시.', 'YOUR FIRST / RELEASE.', 'はじめての / リリース。'), copy('첫 의뢰 시작하기', 'Start your first job', '最初の依頼を始めよう')),
 ]
 
 # Calibrated against the accepted 1600x900 raw capture screenshots. These are
@@ -87,13 +90,15 @@ REVIEWED_CROPS = {
 
 
 def footage_box(layout, vertical):
+    if layout == 'end':
+        return [110, 610, 860, 1020] if vertical else [1040, 110, 720, 820]
     if vertical:
-        return [40, 740 if layout == 'split' else 570, 1000, 900 if layout == 'split' else 1100]
+        return [40, 650 if layout == 'split' else 500, 1000, 990 if layout == 'split' else 1160]
     if layout == 'split':
         return [850, 210, 1030, 790]
     if layout == 'showcase':
         return [890, 170, 940, 840]
-    return [40, 225, 1840, 775]
+    return [28, 160, 1864, 842]
 
 
 def safe_crop(focus, overview=False):
@@ -127,7 +132,9 @@ def make_edl(check_media=True):
         a, b = (math.floor(bar * 1.875 * FPS + .5) for bar in (b0, b1))
         shot = dict(id=ident, fromFrame=a, frames=b-a, layout=layout, color=color, copy=title, detail=detail)
         if ident == 'end':
-            shot.update(start=0, end=0, crop=None)
+            take = by_id['project']
+            start, end = take['end']-.6, take['end']
+            shot.update(start=start, end=end, speed=1, source='raw.webm', recordedFocus=take['focus'], crop=[716,278,388,488], portraitCrop=[716,278,388,488], footageBox=footage_box('end',False), portraitFootageBox=footage_box('end',True), holdLastFrame=True, cropReason='Hold the real authored app; do not replace the payoff with a blank text card')
         else:
             if ident not in by_id:
                 raise ValueError(f'Missing recorded shot: {ident}')
@@ -168,7 +175,7 @@ def make_edl(check_media=True):
         'captureTiming': evidence.get('timing'), 'sourceEvents': evidence.get('events', []),
         'saveImport': evidence.get('saveImport'),
         'capture': 'Actual Korean UI; automated inputs; visible import of UI-earned cafe save; omitted intervening actions; retimed montage; editorial typography and SFX',
-        'audioAssets': AUDIO_HASHES, 'maxSpeed': MAX_SPEED, 'layoutVersion': 'current-readable-v2', 'shots': shots,
+        'audioAssets': AUDIO_HASHES, 'maxSpeed': MAX_SPEED, 'layoutVersion': 'desktop-hook-v3', 'shots': shots,
     }
     if not edl['gameCommit']:
         raise ValueError('Capture evidence needs its gameCommit')
@@ -204,11 +211,8 @@ def prepare_audio():
             shutil.copy2(src, dst)
         if digest(dst) != expected:
             raise ValueError(f'Current audio changed; refusing overwrite: {dst}')
-    # Preserve official-source evidence alongside the accepted mix inputs.
-    for name in ('soundtrack-provenance.json', 'beat-grid.json'):
-        src, dst = original / name, target / name
-        if src.is_file() and not dst.exists():
-            shutil.copy2(src, dst)
+    # Voxel's original source and license evidence already live in this target.
+    # Never inherit the previous soundtrack's provenance or beat grid.
 
 
 def render_shots(edl, vertical):
@@ -230,8 +234,8 @@ def render_shots(edl, vertical):
             continue
         duration = shot['frames']/FPS
         args = [base.FF, '-y', '-v', 'error', '-threads', '4', '-filter_complex_threads', '1']
-        if shot['layout'] == 'end':
-            args += ['-f', 'lavfi', '-i', f'color=c={base.CREAM}:s={w}x{h}:r=30:d={duration}']
+        if shot.get('source') is None:
+            args += ['-f', 'lavfi', '-i', f'color=c={CANVAS}:s={w}x{h}:r=30:d={duration}']
         else:
             vx, vy, vw, vh = shot['portraitFootageBox'] if vertical else shot['footageBox']
             x, y, cw, ch = shot['portraitCrop'] if vertical else shot['crop']
@@ -244,8 +248,8 @@ def render_shots(edl, vertical):
             filt = (f'[0:v]trim=duration={shot["end"]-shot["start"]:.6f},'
                     f'setpts=(PTS-STARTPTS)/{shot["speed"]:.8f},fps=30,'
                     f'crop={cw}:{ch}:{x}:{y},scale={sw}:{sh}:flags=lanczos,'
-                    f'tpad=stop_mode=clone:stop_duration=1,trim=end_frame={shot["frames"]},'
-                    f'pad={w}:{h}:{vx+(vw-sw)//2}:{vy+(vh-sh)//2}:color={base.CREAM},setsar=1[v]')
+                    f'tpad=stop_mode=clone:stop_duration={duration},trim=end_frame={shot["frames"]},'
+                    f'pad={w}:{h}:{vx+(vw-sw)//2}:{vy+(vh-sh)//2}:color={CANVAS},setsar=1[v]')
             args += ['-ss', str(shot['start']), '-i', str(OUT/'raw.webm'), '-filter_complex', filt, '-map', '[v]']
         base.run(args+['-frames:v', str(shot['frames']), '-an', '-c:v', 'libx264', '-threads', '4', '-preset', 'fast', '-crf', '18', '-pix_fmt', 'yuv420p', str(dst)], cwd=ROOT, timeout=180)
         sig.write_text(signature)
@@ -277,6 +281,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             return
         lines.append(f'Dialogue: {layer},{base.timestamp(a,ass=True)},{base.timestamp(b,ass=True)},Type,,0,0,0,,{{{tags}}}{text}\n')
     def text(a, b, value, x, y, size, color='ink', delay=0, animate=True, maxw=None):
+        if not value:
+            return
         maxw = min(maxw or w-x-60, w-x-60)
         value = value.replace('\\', '＼').replace('{', '｛').replace('}', '｝')
         size = base.textsize(value, size, maxw, lang)
@@ -290,23 +296,17 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     for shot in edl['shots']:
         a, b = shot['fromFrame']/FPS, (shot['fromFrame']+shot['frames'])/FPS
         color, layout, ident = shot['color'], shot['layout'], shot['id']
-        stage = 1 if a < 9.375 else 2 if a < 14.0625 else 3 if a < 17.8125 else 4
-        labels = {'ko': ('고치고', '벌고 쓰고', '동네를 넓히고', '내 것을 출시하고'), 'en': ('FIX IT', 'EARN & UPGRADE', 'GO FURTHER', 'SHIP YOUR OWN'), 'ja': ('直す', '稼いで強化', '街を広げる', '自分の作品を公開')}
-        rect(a, b, 60, 146 if vertical else 90, 8, 58, color)
-        text(a, b, f'0{stage} / {labels[lang][stage-1]}', 88, 151 if vertical else 93, 29, color, animate=False)
         title = shot['copy'][lang].split(' / ')
         if layout == 'end':
             for i, line in enumerate(title):
-                text(a, b, line, 80, (460+i*215) if vertical else (325+i*220), 130 if vertical else 162, color if i else 'ink', delay=i*.16, maxw=w-160)
-            text(a+.45, b, shot['detail'][lang], 84, 1100 if vertical else 800, 50, 'green', maxw=w-160)
-            text(a+.62, b, 'CODE:SHIFT', 84, 1340 if vertical else 914, 66, maxw=w-160)
-            label = copy('가제 · 코딩을 몰라도 첫 의뢰부터', 'Working title · Start with your first job', '仮タイトル · 最初の依頼から始めよう')[lang]
-            text(a+.62, b, label, 84 if vertical else 620, 1450 if vertical else 950, 28, animate=False, maxw=930 if vertical else 1220)
-            text(a+.75, b, 'codeshift-lab.bsfire1237.chatgpt.site', 84, 1580 if vertical else 1010, 30 if vertical else 25, 'blue', animate=False)
+                text(a, b, line, 84, (210+i*155) if vertical else (240+i*170), 122 if vertical else 138, color if i else 'ink', delay=i*.10, maxw=910 if vertical else 860)
+            text(a+.3, b, 'CODE:SHIFT', 84, 1720 if vertical else 760, 50, 'ink', maxw=900)
+            text(a+.4, b, shot['detail'][lang]+'  →', 84, 1810 if vertical else 855, 42, 'gold', maxw=900 if vertical else 870)
+            text(a+.4, b, copy('게임 속, 직접 만든 앱의 1.0.0', 'Your own app, version 1.0.0 in game', 'ゲーム内で作った、自分のアプリ1.0.0')[lang], 84, 530 if vertical else 630, 29, 'muted', animate=False, maxw=900 if vertical else 850)
         elif layout in ('split', 'showcase'):
             maxw = 930 if vertical else (730 if layout == 'showcase' else 680)
             for i, line in enumerate(title):
-                text(a, b, line, 80, (250+i*146) if vertical else (315+i*160), 110 if vertical else 116, color if i else 'ink', delay=i*.12, maxw=maxw)
+                text(a, b, line, 80, (140+i*146) if vertical else (250+i*160), 110 if vertical else 116, color if i else 'ink', delay=i*.12, maxw=maxw)
             if ident == 'broken':
                 text(a+.15, b, copy('기대 10,000원', 'EXPECTED ₩10,000', '正しくは10,000ウォン')[lang], 84, 520 if vertical else 680, 56 if vertical else 45, 'green', maxw=maxw)
                 text(a+.28, b, copy('현재 12,600원!', 'ACTUAL ₩12,600!', '表示は12,600ウォン！')[lang], 84, 610 if vertical else 755, 56 if vertical else 45, 'red', maxw=maxw)
@@ -317,11 +317,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         else:
             if vertical and len(title) > 1:
                 for i, line in enumerate(title):
-                    text(a, b, line, 80, 250+i*146, 105, color if i else 'ink', delay=i*.1, maxw=w-160)
+                    text(a, b, line, 80, 130+i*146, 105, color if i else 'ink', delay=i*.1, maxw=w-160)
             else:
                 # Panoramic evidence gets the frame width. Both beats of split
                 # copy remain visible in one short headline above the footage.
-                text(a, b, ' '.join(title), 80, 136 if not vertical else 275, 84 if not vertical else 105, color, maxw=w-160)
+                text(a, b, ' '.join(title), 80, 54 if not vertical else 175, 84 if not vertical else 105, color, maxw=w-160)
             detail = shot['detail'][lang]
             # Two legible detail lines in portrait, instead of shrinking long UI context.
             if vertical and ident == 'fixed':
@@ -335,7 +335,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 text(a+.08, b, line, 84, (1710+i*90) if emphasis else (1740+i*50) if vertical else 1016, 49 if emphasis else 31 if vertical else 32, maxw=w-170)
         event(a, min(b, a+.2), rf'\an7\pos(0,0)\p1\c&H{base.COLORS[color]}&\fscx3\t(0,170,\fscx100)', f'm 0 0 l {w} 0 l {w} 12 l 0 12', 3)
     note = copy('실제 게임 화면 · 자동 조작·장면 생략·속도 편집', 'Actual Korean gameplay · automated input · cuts & retiming', '実際の韓国語版プレイ · 自動操作・場面省略・速度編集')[lang]
-    text(0, 26.25, note, 88, 86 if vertical else 42, 19, animate=False, maxw=w-170)
+    text(0, 2.8, note, 84, 50 if vertical else 32, 19, 'muted', animate=False, maxw=w-170)
     out.write_text(''.join(lines), encoding='utf-8-sig')
     return out
 
@@ -345,7 +345,14 @@ def mix_audio():
     args = [base.FF, '-y', '-v', 'error', '-threads', '2', '-filter_complex_threads', '1']
     for name in assets:
         args += ['-i', str(OUT/'audio'/name)]
-    filters = ["[0:a]volume=0.63,volume=0.38:enable='between(t,6.38,6.56)',afade=t=in:d=0.025,afade=t=out:st=29.4:d=0.6[m]"]
+    # Begin on the stronger eight-bar section; retime without changing pitch.
+    # A short dip sets off the repair, then the music grows into the app release.
+    # Finish across the final bar instead of abruptly truncating the ongoing song.
+    filters = ["[0:a]atrim=start=15.7577:end=47.23310983606557,asetpts=PTS-STARTPTS,"
+               "atempo=1.0491803278688525,apad,atrim=duration=30,volume=0.72,"
+               "volume=0.55:enable='between(t,6.38,6.56)',"
+               "volume=1.12:enable='gte(t,17.8125)',"
+               "afade=t=in:d=0.012,afade=t=out:st=28.125:d=1.875:curve=qsin[m]"]
     # Editorial cues follow actual cuts/results, not fabricated in-game sounds.
     hits = {1: [2.8125, 3.75, 11.25, 12.1875, 14.0625, 20.625], 2: [0, 6.5625, 17.8125, 26.25], 3: [9.375, 15.9375, 22.5]}
     names = ['[m]']
@@ -353,7 +360,7 @@ def mix_audio():
         filters.append(f'[{source}:a]asplit={len(times)}'+''.join(f'[s{source}_{i}]' for i in range(len(times))))
         for i, seconds in enumerate(times):
             label = f'e{source}_{i}'
-            filters.append(f'[s{source}_{i}]volume=0.4,adelay={round(seconds*1000)}:all=1[{label}]')
+            filters.append(f'[s{source}_{i}]volume={0.22 if source == 2 else 0.32},adelay={round(seconds*1000)}:all=1[{label}]')
             names.append(f'[{label}]')
     filters.append(''.join(names)+f'amix=inputs={len(names)}:normalize=0,atrim=duration=30,loudnorm=I=-16:TP=-1.8:LRA=9,aresample=48000[a]')
     dst = EDIT/'mix.wav'

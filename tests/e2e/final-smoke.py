@@ -1,8 +1,8 @@
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
-import json
+import json, os
 
-out=Path('output/pc-qa');out.mkdir(parents=True,exist_ok=True);results=[];errors=[]
+out=Path(os.environ.get('CODESHIFT_QA_DIR','output/pc-qa'));out.mkdir(parents=True,exist_ok=True);results=[];errors=[]
 with sync_playwright() as pw:
     browser=pw.chromium.launch(channel='chrome',headless=True)
     try:
@@ -13,6 +13,15 @@ with sync_playwright() as pw:
             response=page.goto('http://127.0.0.1:5173'+route,wait_until='networkidle')
             assert response.status==200
             video=page.locator('video')
+            poster=video.evaluate("""async v => {
+                const img = new Image(); img.src = v.poster; await img.decode();
+                return {width:img.naturalWidth,height:img.naturalHeight};
+            }""")
+            assert poster == {'width':1280,'height':720},poster
+            assert '/media/codeshift-'+lang+'.mp4' in video.locator('source').get_attribute('src')
+            expect(page.locator('a[href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000025"]')).to_be_visible()
+            credit=page.request.get('http://127.0.0.1:5173/media/ATTRIBUTION.txt')
+            assert credit.ok and 'Voxel Revolution' in credit.text() and '122 to 128 BPM' in credit.text()
             video.evaluate('(v)=>{v.muted=true;v.load();return v.play()}')
             page.wait_for_function("document.querySelector('video').currentTime>0.3")
             media=video.evaluate('(v)=>({width:v.videoWidth,height:v.videoHeight,duration:v.duration,error:v.error,currentTime:v.currentTime})')
@@ -20,7 +29,7 @@ with sync_playwright() as pw:
             video.evaluate('(v)=>{v.pause();v.currentTime=16}')
             page.wait_for_function("!document.querySelector('video').seeking")
             page.screenshot(path=str(out/f'about-video-{lang}.png'),animations='disabled')
-            results.append({'language':lang,'video':media,'metadata':page.locator('link[rel="canonical"]').get_attribute('href')})
+            results.append({'language':lang,'poster':poster,'credit':'Voxel Revolution / CC BY 4.0','video':media,'metadata':page.locator('link[rel="canonical"]').get_attribute('href')})
             page.goto('http://127.0.0.1:5173/',wait_until='networkidle')
             page.evaluate('(lang)=>localStorage.setItem("codeshift-language",lang)',lang)
             page.reload(wait_until='networkidle');page.locator('.pc-play').click()

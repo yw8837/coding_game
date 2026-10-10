@@ -54,3 +54,6 @@ next-env.d.ts
 # Python harness caches
 __pycache__/
 *.pyc
+
+# Local code-navigation state
+.serena/

@@ -35,7 +35,7 @@ export const aboutCopy: Record<AboutLanguage, AboutCopy> = {
       { title: '원할 때 풀어 보는 연습 6개', problem: '계산, 할인 경계값, 재고 비교, 배달비, 경로, 화면 너비를 더 연습할 수 있습니다.', action: '잘못된 규칙을 바꾸고 여러 예시의 결과를 비교하세요. 이 연습은 선택이며 카페나 경력 의뢰 완료에 필요하지 않습니다.', code: 'stock > requested → stock >= requested' },
     ],
     howTitle: '읽고, 고치고, 확인하고, 전달하기',
-    how: "기본 함께 배우기는 간판 이름 직접 입력 → 너비 슬라이더 → 계산 연산자 직접 입력 → 메뉴 주소 입력 → 주문 보관 설정으로 이어집니다. 카페의 준비와 전송은 민서가 돕습니다. 직접 작업 모드에서는 앱과 터미널을 사용하고, 후속 의뢰와 최종 프로젝트는 전체 코드 편집으로 시작합니다. 한 부분씩 고치기로 전환할 수도 있습니다. 18개 의뢰 뒤에는 내 프로그램을 수정·검사하고 1.0.0으로 배포해야 마지막 편지가 열립니다.",
+    how: "기본 함께 배우기는 간판 이름 직접 입력 → 너비 슬라이더 → 계산 연산자 직접 입력 → 메뉴 주소 입력 → 주문 보관 설정으로 이어집니다. 카페의 준비와 전송은 민서가 돕습니다. 직접 작업 모드에서는 앱과 터미널을 사용하고, 후속 의뢰와 최종 프로젝트는 전체 코드 편집으로 시작합니다. 한 부분씩 고치기로 전환할 수도 있습니다. 각 구역에서 6개 중 4개씩, 총 12개 의뢰를 마치면 내 프로그램을 수정·검사하고 1.0.0으로 배포해야 마지막 편지가 열립니다.",
     helpTitle: '다음 행동은 화면에 남아 있습니다',
     help: "한 번에 한 부분을 고치고 결과를 봅니다. 힌트는 필요할 때 직접 열며 보상 차감이 없습니다. 후속 의뢰의 도움에서 예시를 고르면 입력 초안만 채워지며, 적용·검사·전달은 직접 해야 합니다. 전체 코드로 언제든 전환할 수 있고 자동완성·실행 취소·터미널 기록을 사용할 수 있습니다. 두 방식은 같은 파일을 바꾸며 검사와 배포 조건도 같습니다.",
     controlsTitle: '주요 조작', controls: [
@@ -84,7 +84,7 @@ export const aboutCopy: Record<AboutLanguage, AboutCopy> = {
       { title: '6 optional exercises', problem: 'Practice totals, discount boundaries, stock checks, delivery fees, routes, and screen width.', action: 'Change an incorrect rule and compare results across several cases. These exercises are optional and do not gate café or career completion.', code: 'stock > requested → stock >= requested' },
     ],
     howTitle: 'Read, repair, check, and deliver',
-    how: "Learn together starts with typing the sign, moving a width slider, typing an operator and menu address, and setting order storage. Minseo helps with cafe setup and delivery. Work directly uses the apps and terminal, and starts later jobs and the final project in full code editing. You can switch to editing one part at a time. After 18 jobs, edit and check your own app, build version 1.0.0, and release it to open the final letter.",
+    how: "Learn together starts with typing the sign, moving a width slider, typing an operator and menu address, and setting order storage. Minseo helps with cafe setup and delivery. Work directly uses the apps and terminal, and starts later jobs and the final project in full code editing. You can switch to editing one part at a time. After choosing and completing four of six jobs in each district (12 total), edit and check your own app, build version 1.0.0, and release it to open the final letter.",
     helpTitle: 'Your next action stays on screen',
     help: "Change one part at a time and see its result. Open hints when you need them; they never reduce rewards. In later jobs, examples chosen through Help only fill an input draft. Apply, check and deliver it yourself. Switch to full code at any time, with autocomplete, undo and terminal history. Both play styles change the same files and follow the same checks and release rules.",
     controlsTitle: 'Main controls', controls: [
@@ -133,7 +133,7 @@ export const aboutCopy: Record<AboutLanguage, AboutCopy> = {
       { title: '任意の練習6問', problem: '計算、割引の境界、在庫比較、配達料、パス、画面幅を練習できます。', action: '間違ったルールを変えて複数の例の結果を比べます。この練習は任意で、カフェや仕事の完了には必要ありません。', code: 'stock > requested → stock >= requested' },
     ],
     howTitle: '読んで、直して、確かめて、届ける',
-    how: "いっしょに学ぶでは、看板を入力→幅スライダー→演算子を入力→メニューのアドレスを入力→注文保存の設定と進みます。カフェの準備と提出はミンソがお手伝い。直接作業ではアプリとターミナルを使い、後半の依頼と最後の作品はコード全体の編集から始まります。部分修正にも切り替えられます。18件の依頼の後、自分のアプリを修正・検査し、1.0.0として公開すると最後の手紙が開きます。",
+    how: "いっしょに学ぶでは、看板を入力→幅スライダー→演算子を入力→メニューのアドレスを入力→注文保存の設定と進みます。カフェの準備と提出はミンソがお手伝い。直接作業ではアプリとターミナルを使い、後半の依頼と最後の作品はコード全体の編集から始まります。部分修正にも切り替えられます。各エリアの6件から4件ずつ、計12件の依頼を終えたら、自分のアプリを修正・検査し、1.0.0として公開すると最後の手紙が開きます。",
     helpTitle: '次の操作は画面に残ります',
     help: "1つずつ直して結果を見ます。ヒントは必要なとき自分で開けます。使っても報酬は減りません。後半の依頼でヒントの例を選ぶと入力欄の下書きだけが埋まり、適用・検査・提出は自分で行います。いつでもコード全体に切り替え、補完・取り消し・コマンド履歴を使えます。どちらの方法でも同じファイルと検査・公開条件を使います。",
     controlsTitle: '主な操作', controls: [

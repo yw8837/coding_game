@@ -35,7 +35,7 @@
     "Real Steam app execution, achievements and Cloud unverified"
   ],
   "promo_media": {
-    "directory": "output/trailer-current/final",
+    "directory": "output/trailer-polish/final",
     "duration_seconds": 30,
     "files": [
       "codeshift-ko.mp4",
@@ -52,30 +52,30 @@
     "capture": "Actual Korean 0.13.2 game UI with automated input; visibly imports a prior UI-earned cafe save with zero career jobs, then solves 12 chosen jobs and creates a personal portfolio with an in-game 1.0.0 release. Retimed montage omits intervening actions; editorial KO/EN/JA typography and SFX are not localized game UI or continuous playtime evidence.",
     "code_lab_included": false,
     "music": {
-      "title": "Realizer",
+      "title": "Voxel Revolution",
       "creator": "Kevin MacLeod (incompetech.com)",
       "license": "CC BY 4.0",
-      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024",
-      "attribution_file": "output/trailer-current/final/ATTRIBUTION.txt",
-      "changes": "Excerpt trimmed; tempo adjusted from 125 to 128 BPM with pitch preserved; mixed for the trailer"
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000025",
+      "attribution_file": "output/trailer-polish/final/ATTRIBUTION.txt",
+      "changes": "Excerpt trimmed; tempo adjusted from 122 to 128 BPM with pitch preserved; mixed for the trailer"
     },
     "archive_directory": "output/archive/trailers-before-rebuild-20261009/trailer-0.10",
     "human_listening": "not performed",
     "recorded_game_version": "0.13.2-rc.0",
     "includes_0_12_client_situations": false,
     "includes_0_12_first_six_direct_inputs": false,
-    "status": "current RC capture; final media QA and release checks governed by docs/QA-0.13.2-RC.md and receipts, not asserted by this document",
+    "status": "Current 0.13.2 capture with October 10 hook, navy layout, artwork and Voxel music revision; media and about-page QA governed by docs/QA-trailer-polish-2026-10-10.md and receipts",
     "represents_current_build": true,
     "includes_0_13_chosen_route": true,
     "includes_0_13_five_javascript_contracts": false,
     "includes_0_13_personal_project": true,
-    "source_raw": "output/trailer-current/raw.webm",
-    "capture_evidence": "output/trailer-current/capture-evidence.json",
-    "edit_decision_list": "output/trailer-current/edit/edl-current.json",
+    "source_raw": "output/trailer-polish/raw.webm",
+    "capture_evidence": "output/trailer-polish/capture-evidence.json",
+    "edit_decision_list": "output/trailer-polish/edit/edl-current.json",
     "historical_0_11_1_directory": "output/trailer-rebuild/final",
     "language_scope": "Korean captured game UI; KO/EN/JA editorial type, not three localized UI recordings",
     "montage_not_continuous_playthrough": true,
-    "verification_reference": "docs/QA-0.13.2-RC.md and associated receipts"
+    "verification_reference": "docs/QA-trailer-polish-2026-10-10.md and associated receipts; existing gameplay/native/package checks remain in docs/QA-0.13.2-RC.md"
   },
   "korea_launch_discount_proposal": {
     "percent": 20,

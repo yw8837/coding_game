@@ -1,5 +1,5 @@
-"Realizer" Kevin MacLeod (incompetech.com)
+"Voxel Revolution" Kevin MacLeod (incompetech.com)
 Licensed under Creative Commons: By Attribution 4.0 License
 https://creativecommons.org/licenses/by/4.0/
-Source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024
-Changes: excerpt trimmed, tempo adjusted from 125 to 128 BPM (+2.4%, pitch preserved), and mixed for the CODE:SHIFT trailer.
+Source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000025
+Changes: excerpt selected from 15.7577 to 47.2331098 seconds, trimmed, tempo adjusted from 122 to 128 BPM with pitch preserved, and mixed with editorial sound effects for the CODE:SHIFT trailer.
