@@ -13,16 +13,17 @@ reports=[]
 with sync_playwright() as pw:
  browser=pw.chromium.launch(channel='chrome',headless=True)
  try:
-  for region, browser_locale, expected in [('ko','en-US','ko'),('ja','en-US','ja'),('en','ko-KR','en'),(None,'ja-JP','ja')]:
+  for region, edge_country, browser_locale, expected in [('ko',None,'en-US','ko'),('ja',None,'en-US','ja'),('en',None,'ko-KR','en'),(None,None,'ja-JP','ja'),(None,'KR','en-US','ko'),(None,'JP','en-US','ja')]:
    context=browser.new_context(locale=browser_locale,viewport={'width':1280,'height':720})
    page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
    page.route('**/api/locale',lambda route:route.fulfill(json={'language':region}))
+   page.route('**/cdn-cgi/trace',lambda route:route.fulfill(content_type='text/plain',body='loc='+edge_country+'\n' if edge_country else ''))
    page.goto(base,wait_until='networkidle');expect(page.locator('html')).to_have_attribute('lang',expected)
    page.get_by_role('combobox',name='Language').select_option('en')
    page.reload(wait_until='networkidle');expect(page.locator('html')).to_have_attribute('lang','en')
    assert page.evaluate("localStorage.getItem('codeshift-language')")=='en'
    assert not errors,errors
-   reports.append({'mockRegionLanguage':region,'browser':browser_locale,'detected':expected,'manualChoiceSurvivesReload':True})
+   reports.append({'mockRegionLanguage':region,'mockEdgeCountry':edge_country,'browser':browser_locale,'detected':expected,'manualChoiceSurvivesReload':True})
    context.close()
 
   context=browser.new_context(locale='en-US',viewport={'width':1366,'height':768},accept_downloads=True)

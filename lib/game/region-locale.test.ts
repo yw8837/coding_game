@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {countryLanguage,regionLocaleResponse,fetchRegionLanguage} from './region-locale.ts';
+import {countryLanguage,regionLocaleResponse,fetchRegionLanguage,traceLanguage} from './region-locale.ts';
 import {createLocaleStore,type LanguagePreference} from './locale.ts';
 
 test('only valid country metadata chooses Korean, Japanese or English',()=>{
@@ -55,6 +55,16 @@ test('region timeout aborts fetch and completes even if network ignores abort',a
  let signal:AbortSignal|undefined;
  assert.equal(await fetchRegionLanguage(async(_u,o)=>{signal=o.signal as AbortSignal;return new Promise<Response>(()=>{});},new AbortController().signal,5),null);assert.equal(signal?.aborted,true);
  const aborted=new AbortController();aborted.abort();let called=false;assert.equal(await fetchRegionLanguage(async()=>{called=true;return Response.json({language:'ko'});},aborted.signal),null);assert.equal(called,false);
+});
+test('hosting without request.cf uses visitor edge country without returning diagnostics',async()=>{
+ for(const [country,expected] of [['KR','ko'],['JP','ja'],['US','en']] as const){
+  const urls:string[]=[];
+  const result=await fetchRegionLanguage(async url=>{urls.push(url);return url==='/api/locale'?Response.json({language:null}):new Response('h=example.com\nip=198.51.100.2\nloc='+country+'\n');},new AbortController().signal);
+  assert.equal(result,expected);assert.deepEqual(urls,['/api/locale','/cdn-cgi/trace']);
+ }
+ for(const body of ['loc=XX\n','loc=KR\nloc=JP\n','<p>loc=KR</p>','x'.repeat(4097)])assert.equal(traceLanguage(body),null);
+ assert.equal(traceLanguage('loc=JP\r\n'),'ja');
+ assert.equal(await fetchRegionLanguage(async url=>url==='/api/locale'?Response.json({language:null}):new Response('loc=KR',{headers:{'Content-Type':'text/html'}}),new AbortController().signal),null);
 });
 test('desktop never calls region endpoint, retaining Steam then OS then browser order',async()=>{
  for(const [platform,expected] of [[{steamLanguage:'koreana',osLanguages:['ja-JP']},'ko'],[{steamLanguage:'french',osLanguages:['ja-JP']},'ja'],[null,'en']] as const){

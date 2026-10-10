@@ -19,6 +19,13 @@ export function regionLocaleResponse(request:Request):Response{
 
 type FetchLocale=(url:string,init:RequestInit)=>Promise<Response>;
 export const REGION_LOCALE_TIMEOUT_MS=1200;
+/** Cloudflare owns this same-origin diagnostic path. Read only the country field;
+ * never persist or return its diagnostic body (which can also contain an IP). */
+export function traceLanguage(body:string):Language|null{
+ if(body.length>4096)return null;
+ const countries=[...body.matchAll(/^loc=([A-Z]{2})\r?$/gm)];
+ return countries.length===1?countryLanguage(countries[0][1]):null;
+}
 /** Same-origin lookup. Timeout/abort resolve to browser fallback even if fetch ignores abort. */
 export async function fetchRegionLanguage(fetchLocale:FetchLocale,signal:AbortSignal,timeoutMs=REGION_LOCALE_TIMEOUT_MS):Promise<Language|null>{
  if(signal.aborted)return null;
@@ -29,12 +36,19 @@ export async function fetchRegionLanguage(fetchLocale:FetchLocale,signal:AbortSi
  const timer=setTimeout(cancel,timeoutMs);
  try{
   const result=await Promise.race([stopped,(async()=>{
-   const response=await fetchLocale('/api/locale',{method:'GET',cache:'no-store',credentials:'same-origin',redirect:'error',signal:controller.signal});
-   if(!response.ok)return null;
-   const value:unknown=await response.json();
-   if(!value||typeof value!=='object'||Array.isArray(value))return null;
-   const language=(value as {language?:unknown}).language;
-   return language==='ko'||language==='en'||language==='ja'?language:null;
+   const init:RequestInit={method:'GET',cache:'no-store',credentials:'same-origin',redirect:'error',signal:controller.signal};
+   try{
+    const response=await fetchLocale('/api/locale',init);
+    if(response.ok){
+     const value:unknown=await response.json();
+     const language=value&&typeof value==='object'&&!Array.isArray(value)?(value as {language?:unknown}).language:null;
+     if(language==='ko'||language==='en'||language==='ja')return language;
+    }
+   }catch{/* Some hosting proxies omit request.cf. Use the visitor's edge below. */}
+   if(controller.signal.aborted)return null;
+   // Fetch in the browser: a server-side trace would locate the server instead.
+   const edge=await fetchLocale('/cdn-cgi/trace',init);
+   return edge.ok&&edge.headers.get('Content-Type')?.startsWith('text/plain')?traceLanguage(await edge.text()):null;
   })()]);
   return signal.aborted?null:result;
  }catch{return null;}finally{clearTimeout(timer);signal.removeEventListener('abort',cancel);}
