@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://codeshift-lab.bsfire1237.chatgpt.site/sitemap.xml
+Sitemap: https://code.yeolmaeapps.kr/sitemap.xml

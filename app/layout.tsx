@@ -18,7 +18,7 @@ import "./challenges-hub.css";
 import "./workstation-shell.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://codeshift-lab.bsfire1237.chatgpt.site"),
+  metadataBase: new URL("https://code.yeolmaeapps.kr"),
   title: "CODE:SHIFT — 컴퓨터 속 작은 사건들",
   description: "바탕화면에서 메시지를 열고, 화면과 코드를 직접 고쳐 손님 주문을 해결하세요. 카페 3장과 선택하는 동네 의뢰를 거쳐 내 첫 작품을 출시하는 코딩 시뮬레이터. 한국어·영어·일본어를 지원합니다.",
   alternates: { canonical: "/" },

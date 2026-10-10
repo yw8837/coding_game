@@ -18,6 +18,12 @@ with sync_playwright() as pw:
                 return {width:img.naturalWidth,height:img.naturalHeight};
             }""")
             assert poster == {'width':1280,'height':720},poster
+            expected_poster='first-release-poster'+('-en' if lang=='en' else '')+'.jpg'
+            assert expected_poster in video.get_attribute('poster')
+            canonical='https://code.yeolmaeapps.kr'+route
+            assert page.locator('link[rel="canonical"]').get_attribute('href')==canonical
+            assert page.locator('meta[property="og:image"]').get_attribute('content')=='https://code.yeolmaeapps.kr/media/'+expected_poster
+            assert page.locator('meta[name="twitter:card"]').get_attribute('content')=='summary_large_image'
             assert '/media/codeshift-'+lang+'.mp4' in video.locator('source').get_attribute('src')
             expect(page.locator('a[href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000025"]')).to_be_visible()
             credit=page.request.get('http://127.0.0.1:5173/media/ATTRIBUTION.txt')

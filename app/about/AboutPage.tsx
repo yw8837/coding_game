@@ -42,7 +42,7 @@ export default function AboutPage({ language }: { language: AboutLanguage }) {
         </section>
 
         <section className={styles.trailer} aria-label={language==='ko'?'실제 플레이 영상':language==='en'?'Gameplay trailer':'ゲームプレイ映像'}>
-          <video controls playsInline preload="none" poster="/media/first-release-poster.jpg?v=polish-20261010" aria-label={language==='ko'?'30초 내 첫 출시 게임 영상':language==='en'?'30-second My First Release gameplay trailer':'30秒のはじめてのリリース紹介映像'}>
+          <video controls playsInline preload="none" poster={'/media/first-release-poster'+(language==='en'?'-en':'')+'.jpg?v=desktop-20261010'} aria-label={language==='ko'?'30초 내 첫 출시 게임 영상':language==='en'?'30-second My First Release gameplay trailer':'30秒のはじめてのリリース紹介映像'}>
             <source src={'/media/codeshift-'+language+'.mp4?v=polish-20261010'} type="video/mp4"/>
           </video>
           <p>{language==='ko'?'빵집 계산을 고치고, 보상으로 도구를 사고, 내 포트폴리오 1.0을 배포하기까지.':language==='en'?'Fix a bakery till, buy tools with your rewards, and release version 1.0 of your own portfolio.':'パン屋の計算を直し、報酬で道具を買い、自分のポートフォリオ1.0を公開するまで。'}</p>

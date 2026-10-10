@@ -1,6 +1,6 @@
 # Product Marketing Context
 
-**Document version:** v1
+**Document version:** v2
 **Last updated:** 2026-10-10
 **Status:** Source-based initial draft for CODE:SHIFT 0.13.2 RC. Prepared from the current project and supplied conversation without an additional interview. Intended audience and value propositions are design hypotheses, not measured customer findings.
 
@@ -130,8 +130,9 @@ B2B 구매 역할은 적용하지 않는다. 초보자/경험자는 메시지와
 
 **Current metrics:** 미제공. 후속 사람 대상 관찰과 실제 배포 후 지표로 평가한다.
 
-**Chosen trailer copy:** 시작 `고장 난 계산대.` / `해결 보상 200 cr.`. 마지막 `내 첫 출시.`와 실제 개인 앱 및 게임 속 1.0.0 배포 화면. 썸네일 `버그 고치고` / `내 앱 출시`. 캐릭터는 게임 캐릭터이며 실제 사용자·개발자 초상이나 추천사가 아니다.
+**Chosen trailer copy:** 시작 `고장 난 계산대.` / `해결 보상 200 cr.`. 마지막 `내 첫 출시.`와 실제 개인 앱 및 게임 속 1.0.0 배포 화면. 썸네일은 인물 없이 게임 바탕화면·코드 창·개인 앱·배포 완료를 중심에 둔다. 한국어 `버그 고치고` / `내 앱 출시`, 영어 `FIX BUGS.` / `SHIP YOUR APP.`. 실제 게임 화면을 참고해 재구성한 홍보 아트이며 원본 게임 스크린샷은 아니다. 사용자가 인물 없는 구성을 선호한다고 확인했다.
 
 ## Changelog
 
+- v2 (2026-10-10) — Replaced the person-led poster after user feedback with desktop/code/app-focused artwork; added English headline and localized poster selection.
 - v1 (2026-10-10) — Initial source-based context for 0.13.2; documented novice/programmer audiences, repair–reward–tool–personal-release positioning, factual limits and the user's trailer revision direction.

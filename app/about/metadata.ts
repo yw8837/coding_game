@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import { aboutCopy, type AboutLanguage } from './content';
 
-export const SITE_ORIGIN = 'https://codeshift-lab.bsfire1237.chatgpt.site';
+export const SITE_ORIGIN = 'https://code.yeolmaeapps.kr';
 export const aboutPaths: Record<AboutLanguage, string> = { ko: '/about', en: '/about/en', ja: '/about/ja' };
 
 export function aboutMetadata(language: AboutLanguage): Metadata {
   const copy = aboutCopy[language];
   const url = SITE_ORIGIN + aboutPaths[language];
+  const poster = SITE_ORIGIN + '/media/first-release-poster' + (language === 'en' ? '-en' : '') + '.jpg';
   const locales = { ko: 'ko_KR', en: 'en_US', ja: 'ja_JP' };
   return {
     title: copy.title,
@@ -24,9 +25,10 @@ export function aboutMetadata(language: AboutLanguage): Metadata {
     openGraph: {
       type: 'website', title: copy.title, description: copy.description,
       url, siteName: 'CODE:SHIFT', locale: locales[language],
+      images: [{ url: poster, width: 1280, height: 720, alt: copy.title }],
       alternateLocale: Object.entries(locales).filter(([key]) => key !== language).map(([, value]) => value),
     },
-    twitter: { card: 'summary', title: copy.title, description: copy.description },
+    twitter: { card: 'summary_large_image', title: copy.title, description: copy.description, images: [poster] },
     other: { 'content-language': language, 'game-version': '0.13.2 RC' },
   };
 }

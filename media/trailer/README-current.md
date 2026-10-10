@@ -32,11 +32,15 @@ not the first job. Reward follows successful checking and delivery.
 The navy canvas #101c28 aligns with the game UI, with restrained amber,
 blue and mint typography. Actual captured pixels remain unchanged.
 
-The new 1280×720 poster reads “버그 고치고 / 내 앱 출시” and uses an AI-generated
-illustration of the existing fictional character and cosy studio. It is
-promotional artwork, not a gameplay screenshot or Steam capsule. Original,
-full-size and 320px review exports are retained alongside the new media.
-The game remains 0.13.2; no new gameplay or Windows package is implied.
+The current 1280×720 posters remove people and make the desktop, code editor,
+personal app and completed release the focal subject. Korean reads “버그 고치고 /
+내 앱 출시”; English reads “FIX BUGS. / SHIP YOUR APP.”. The English about page
+uses its English poster; KO and JA use the Korean poster. These are AI-generated
+promotional compositions referencing actual UI, not unedited gameplay screenshots
+or Steam capsules. The original renders, prompts and 320px review exports live
+in `output/thumbnail-desktop-v3/`; the previous character poster remains in the
+historical delivery. The game remains 0.13.2; no new gameplay or Windows package
+is implied.
 
 ## Source and editable decisions
 
