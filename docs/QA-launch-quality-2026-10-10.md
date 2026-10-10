@@ -13,8 +13,10 @@ are synthetic data in local SQLite, not production visitors.
 - The existing evening room remains the background. The monitor now shows a dark
   editor, file tree and terminal, projected onto the original screen. The bright
   café card and illustrated cup were removed. Monitor light, glass reflection,
-  rain, coffee steam and small mouse parallax share the room's geometry. Reduced
-  motion and open dialogs pause decorative motion; the menu does not move.
+  rain, coffee steam and small mouse parallax share the room's geometry. The title
+  ambience now plays automatically, without a title on/off control, per the
+  user's latest direction. Settings dialogs and hidden tabs pause it; gameplay
+  motion preferences stay separate and the menu does not move.
 - `/admin` and its API require the configured owner's authenticated ChatGPT
   identity. Public demo play remains available without logging in. Anonymous
   statistics are off by default; players can opt in and turn them off in Settings.
@@ -45,6 +47,38 @@ an early body rejection. A minimal sequence reproduced alternating 400/503
 responses on a reused connection. Reading request bodies with the same 6,000-byte
 stream limit before validating origin/type resolved the issue; the complete
 dashboard E2E then passed. Origin checks and allowed payload fields remain strict.
+
+## Continuous title motion follow-up
+
+Baseline: `521a3f5`. The public browser reported OS reduced motion enabled,
+which previously suppressed rain, steam and editor animation even though the
+in-game setting was off. The user explicitly requested automatic, continuous
+title ambience with no title-specific on/off control.
+
+- The scoped title scene now animates after hydration regardless of OS/game
+  reduced-motion settings. Gameplay's existing reduced-motion behavior remains
+  active. Settings dialogs and hidden tabs pause the decorative scene.
+- HTML, CSS and JavaScript files cycle with typing, automatic code scrolling and
+  a bounded terminal log. A missing grid/flex minimum-height constraint caused
+  the editor to expand instead of scroll; this was fixed.
+- Quality gate passed again: lint 295 files with 0 errors/warnings, typecheck,
+  installed mitigation check, 273 game tests and 33 desktop tests.
+- Web and offline desktop renderer builds passed.
+- `tests/e2e/title-motion.py` passed with system reduced motion enabled:
+  changing rain/steam transforms, code typing/scroll/file switching, terminal
+  updates, fixed menu during parallax, Settings pause/resume, automatic replay
+  after reload, KO/EN/JA and no game save created or page errors.
+- `tests/e2e/title-screen.py` passed again: all three languages and seven sizes,
+  keyboard focus, new-game confirmation cancellation and continue/save safety.
+- `tests/e2e/title-motion-native.cjs` passed in actual Windows Electron with an
+  isolated QA profile: automatic title motion, terminal updates, reload,
+  Settings pause/resume and no page errors. This is title-scope native evidence,
+  not a new packaged full-campaign or Steam-runtime test.
+
+Evidence: `output/launch-quality-20261010/title-motion/web-report.json`,
+`native-report.json`, `animated.png`, `windows-animated.png`, and the
+browser recording in `recordings/`. Build logs and the updated layout report
+are in `output/launch-quality-20261010/title/`.
 
 ## Earlier results in this pass
 

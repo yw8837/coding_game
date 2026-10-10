@@ -26,31 +26,41 @@
 .title-monitor-top{height:28px;min-height:28px;display:flex;align-items:center;gap:9px;padding:0 13px;background:#253545;font-size:11px;color:#d7e4e9}
 .title-monitor-controls{margin-left:auto;color:#8599ac}
 .title-monitor-content{display:grid;grid-template-columns:140px 1fr;flex:1;min-height:0;overflow:hidden}
-.title-monitor-editor{min-width:0;background:#25313f;display:flex;flex-direction:column;border-right:1px solid #485262}
+.title-monitor-editor{min-width:0;min-height:0;background:#25313f;display:flex;flex-direction:column;border-right:1px solid #485262}
 .title-editor-tab{height:27px;width:120px;display:flex;justify-content:space-between;align-items:center;padding:0 12px;background:#20313d;color:#edc38d;font-size:11px;border-top:2px solid #d5ad76}
-.title-editor-code{display:flex;gap:16px;overflow:hidden;padding:12px 8px;font:12px/19px var(--mono)}
-.title-line-numbers{display:flex;flex-direction:column;align-items:flex-end;min-width:22px;color:#708191}
-.title-editor-code pre{margin:0;white-space:pre;font:inherit;color:#9bd6c0;overflow:hidden}.title-editor-code code{font:inherit}
+.title-editor-code{display:flex;flex:1;min-height:0;gap:16px;overflow:hidden;padding:12px 8px;font:12px/19px var(--mono)}
+.title-line-numbers{align-self:flex-start;display:flex;flex-direction:column;align-items:flex-end;min-width:22px;color:#708191}
+.title-editor-code pre{margin:0;white-space:pre;font:inherit;color:#9bd6c0;overflow:visible;align-self:flex-start}.title-editor-code code{font:inherit}
 .title-code-caret{display:inline-block;width:6px;height:13px;background:#d9c8a5;vertical-align:middle;animation:title-caret 1.2s steps(1) infinite}
-.title-monitor-files{display:flex;flex-direction:column;gap:12px;padding:15px 10px;background:#1a242e;border-right:1px solid #34414d;font:11px/1.4 var(--mono);color:#9ba9b4}.title-monitor-files>span:first-child{font-size:9px;letter-spacing:1px;color:#8494a2;margin-bottom:10px}.title-monitor-files b{font-weight:400;color:#b0bdc6}.title-file-active{color:#cbd0ca;background:#2c3942;padding:5px 2px;margin:-5px -2px}
+.title-monitor-files{display:flex;flex-direction:column;gap:12px;padding:15px 10px;background:#1a242e;border-right:1px solid #34414d;font:11px/1.4 var(--mono);color:#9ba9b4}.title-monitor-files>span:first-child{font-size:9px;letter-spacing:1px;color:#8494a2;margin-bottom:10px}.title-monitor-files b{font-weight:400;color:#b0bdc6}.title-monitor-workspace[data-file="index.html"] [data-file-name="index.html"],.title-monitor-workspace[data-file="style.css"] [data-file-name="style.css"],.title-monitor-workspace[data-file="app.js"] [data-file-name="app.js"]{color:#cbd0ca;background:#2c3942;padding:5px 2px;margin:-5px -2px}
 .title-monitor-terminal{height:112px;min-height:112px;border-top:1px solid #38495a;background:#1c2835;font-size:10px;line-height:17px;overflow:hidden}
 .title-monitor-terminal>div:first-child{height:24px;display:flex;align-items:center;gap:7px;padding:0 13px;font-size:9px;color:#98aaba;background:#182734}
-.title-terminal-scroll{padding:5px 16px}.title-terminal-scroll p{margin:0;color:#b6c8d3;line-height:17px;font-size:10px}.title-terminal-scroll b{color:#99ceac;font-weight:400}
-.title-monitor-terminal[data-phase="0"] .title-terminal-log,.title-monitor-terminal[data-phase="1"] :is(.log-two,.log-three),.title-monitor-terminal[data-phase="2"] .log-three{display:none}
-.title-monitor-terminal[data-phase="3"] .title-terminal-scroll{transform:translateY(-10px);transition:transform .6s ease}
+.title-terminal-scroll{padding:5px 16px;height:88px;overflow:hidden}.title-terminal-log-entry{animation:title-log-arrive .22s ease-out}.title-terminal-scroll p{margin:0;color:#b6c8d3;line-height:17px;font-size:10px}.title-terminal-scroll b{color:#99ceac;font-weight:400}
 .title-monitor-taskbar{height:25px;min-height:25px;display:flex;gap:18px;align-items:center;padding:0 13px;background:#2a3c4f;color:#b7cee1;font-size:9px;z-index:1}.title-monitor-taskbar>span{margin-left:auto}
-.title-rain line{stroke:#b1c9e1;stroke-width:1.2;opacity:.28;animation:title-rain-fall 3s linear infinite}
-.title-coffee-steam path{fill:none;stroke:#f7edda;stroke-width:3;stroke-linecap:round;filter:blur(2px);opacity:0;animation:title-steam-rise 5.4s ease-out infinite;transform-origin:1453px 603px}.title-coffee-steam path:nth-child(2){animation-delay:-1.8s}.title-coffee-steam path:nth-child(3){animation-delay:-3.6s}
+.title-rain line{stroke:#b1c9e1;stroke-width:1.4;opacity:.42;animation:title-rain-fall 3s linear infinite}
+.title-coffee-steam path{fill:none;stroke:#f7edda;stroke-width:7;stroke-linecap:round;filter:blur(3px);opacity:0;animation:title-steam-rise 5.4s ease-out infinite;transform-origin:1453px 603px}.title-coffee-steam path:nth-child(2){animation-delay:-1.8s}.title-coffee-steam path:nth-child(3){animation-delay:-3.6s}
 @keyframes title-caret{50%{opacity:0}}
 @keyframes title-rain-fall{to{transform:translate(-28px,560px)}}
-@keyframes title-steam-rise{0%{opacity:0;transform:translateY(5px) scaleX(.7)}25%{opacity:.2}70%{opacity:.12}100%{opacity:0;transform:translateY(-38px) scaleX(1.25)}}
+@keyframes title-steam-rise{0%{opacity:0;transform:translateY(5px) scaleX(.7)}25%{opacity:.32}70%{opacity:.19}100%{opacity:0;transform:translateY(-38px) scaleX(1.25)}}
 .title-home[data-paused="true"] :is(.title-rain line,.title-coffee-steam path,.title-code-caret){animation-play-state:paused}
 .title-home[data-paused="true"] .title-scene-art{transform:translate(-50%,-50%) scale(1.035)}
 @media(min-aspect-ratio:21/9){.title-home-content{padding-left:11vw}}
 @media(max-width:760px){.title-home-content{width:100%;padding:48px 28px;justify-content:flex-end;min-height:100dvh;max-width:480px}.title-home-logo{font-size:clamp(62px,16vw,84px)}.title-home-logo>span{display:inline}.title-home-logo>span+span{display:block}.title-home-description{font-size:14px;max-width:270px;margin:21px 0 27px}.title-home-edition{margin-bottom:15px;font-size:10px}.title-home-menu{width:100%;max-width:320px}.title-room:after{background:linear-gradient(90deg,#071019d6 0%,#08131c99 42%,#08131c14 100%),linear-gradient(0deg,#071019d9,transparent 72%)}.title-scene-art{left:18%}.title-home-menu>button{min-height:54px}}
 @media(max-height:600px) and (min-width:761px){.title-home-content{padding-block:24px}.title-home-logo{font-size:62px}.title-home-edition{margin-bottom:13px}.title-home-description{margin:16px 0 20px;font-size:14px}.title-home-menu>button{min-height:46px;padding-block:9px}}
-@media(prefers-reduced-motion:reduce){.title-scene-art{transform:translate(-50%,-50%) scale(1.035)!important;transition:none!important;will-change:auto}.title-rain line,.title-coffee-steam path,.title-code-caret{animation:none!important}.title-coffee-steam path{opacity:.12}.title-code-caret{opacity:1}.title-terminal-scroll{transition:none!important}}
-html[data-game-reduced-motion="true"] .title-scene-art{transform:translate(-50%,-50%) scale(1.035)!important;transition:none!important;will-change:auto}
-html[data-game-reduced-motion="true"] :is(.title-rain line,.title-coffee-steam path,.title-code-caret){animation:none!important}
-html[data-game-reduced-motion="true"] .title-coffee-steam path{opacity:.12}
-html[data-game-reduced-motion="true"] .title-terminal-scroll{transition:none!important}
+.title-home[data-motion="still"] .title-scene-art{transform:translate(-50%,-50%) scale(1.035)!important;transition:none!important;will-change:auto}
+.title-home[data-motion="still"] :is(.title-rain line,.title-coffee-steam path,.title-code-caret,.title-terminal-log-entry){animation:none!important}
+.title-home[data-motion="still"] .title-coffee-steam path{opacity:.12}
+.title-home[data-motion="still"] .title-code-caret{opacity:1}
+.title-scene-art[data-suspended="true"] :is(.title-rain line,.title-coffee-steam path,.title-code-caret,.title-terminal-log-entry){animation-play-state:paused}
+
+/* The title ambient loop always runs while visible, as requested.
+   These scoped rules leave gameplay motion reduction intact. */
+.pc-shell .title-home[data-motion="animated"] .title-scene-art{transition:transform .65s cubic-bezier(.16,1,.3,1)!important}
+.pc-shell .title-home[data-motion="animated"] .title-rain line{animation:title-rain-fall var(--rain-duration,3s) linear infinite!important;animation-delay:var(--rain-delay,0s)!important}
+.pc-shell .title-home[data-motion="animated"] .title-coffee-steam path{animation:title-steam-rise 5.4s ease-out infinite!important;animation-delay:var(--steam-delay,0s)!important}
+.title-coffee-steam path:nth-child(2){--steam-delay:-1.8s}.title-coffee-steam path:nth-child(3){--steam-delay:-3.6s}
+.pc-shell .title-home[data-motion="animated"] .title-code-caret{animation:title-caret 1.2s steps(1) infinite!important}
+.pc-shell .title-home[data-motion="animated"] .title-terminal-log-entry{animation:title-log-arrive .22s ease-out!important}
+.pc-shell .title-home[data-motion="animated"] :is(.title-rain line,.title-coffee-steam path,.title-code-caret,.title-terminal-log-entry){animation-play-state:var(--scene-play-state,running)!important}
+.title-home[data-paused="true"],.title-scene-art[data-suspended="true"]{--scene-play-state:paused}
+@keyframes title-log-arrive{from{opacity:.35;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}

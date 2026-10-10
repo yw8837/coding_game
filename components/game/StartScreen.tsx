@@ -6,6 +6,8 @@ import {TitleWorkspace} from './TitleWorkspace';
 import '@/app/title-screen.css';
 export function TitleScreen({hasSave,language,onStart,onSettings,onNew,loading=false,unavailable=false,paused=false,edition='full'}:{hasSave:boolean;language:Language;onStart:()=>void;onSettings:()=>void;onNew:()=>void;loading?:boolean;unavailable?:boolean;paused?:boolean;edition?:import('@/lib/game/edition').GameEdition}){
  const [ready,setReady]=useState(false);
+ // The title is a continuous ambient scene; gameplay motion preferences stay separate.
+ const animate=ready;
  const start=useRef<HTMLButtonElement>(null),resume=useRef<HTMLButtonElement>(null),room=useRef<HTMLDivElement>(null);
  const frame=useRef(0);
  const tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[language];
@@ -31,12 +33,12 @@ export function TitleScreen({hasSave,language,onStart,onSettings,onNew,loading=f
   event.preventDefault();buttons[next]?.focus();
  };
  const blocked=!ready||loading||unavailable;
- return <section className="pc-title-screen title-home" data-no-translate data-paused={paused} aria-label={tr('타이틀 화면','Title screen','タイトル画面')} onPointerMove={event=>{
-  if(paused||event.pointerType!=='mouse'||document.documentElement.dataset.gameReducedMotion==='true'||window.matchMedia('(prefers-reduced-motion: reduce), (pointer: coarse)').matches)return;
+ return <section className="pc-title-screen title-home" data-no-translate data-paused={paused} data-motion={animate?'animated':'still'} aria-label={tr('타이틀 화면','Title screen','タイトル画面')} onPointerMove={event=>{
+  if(!animate||paused||event.pointerType!=='mouse'||window.matchMedia('(pointer: coarse)').matches)return;
   const bounds=event.currentTarget.getBoundingClientRect();
   moveRoom((event.clientX/bounds.width-.5)*-16,(event.clientY/bounds.height-.5)*-10);
  }} onPointerLeave={()=>moveRoom(0,0)}>
-  <div ref={room} className="title-room"><TitleWorkspace paused={paused}/></div>
+  <div ref={room} className="title-room"><TitleWorkspace paused={paused||!animate}/></div>
   <div className="title-home-content">
    <span className="title-home-edition">{edition==='demo'?tr('무료 데모','FREE DEMO','無料体験版'):tr('개발자 시뮬레이터','A CODING SIMULATOR','開発者シミュレーター')}</span>
    <h1 className="title-home-logo" aria-label="CODE:SHIFT"><span>CODE<em>:</em></span><span>SHIFT</span></h1>
