@@ -9,6 +9,7 @@ import {unreadWelcome,visibleQuestApps} from '@/lib/game/quest-guidance';
 import {CharacterPortrait} from './StoryArt';
 import {BrowserIcon} from './BrowserIcon';
 import {DesktopWindow} from './DesktopWindow';
+import {CreditReadout} from './CreditReadout';
 import {QuestTracker,QuestRibbon} from './QuestTracker';
 import type {AppId,GameProps} from './types';
 
@@ -39,7 +40,7 @@ export function useDesktopManager(){
 }
 type Manager=ReturnType<typeof useDesktopManager>;
 export function Wallpaper(){return <div className="pc-wallpaper" aria-hidden="true"><div className="wallpaper-fold fold-one"/><div className="wallpaper-fold fold-two"/><div className="wallpaper-fold fold-three"/><div className="wallpaper-fold fold-four"/><div className="wallpaper-light"/></div>;}
-export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSound,saved,sidebarOpen,onSidebar,advanced}:{manager:Manager;props:GameProps;renderApp:(id:AppId)=>ReactNode;onSettings:()=>void;onTitle:()=>void;sound:boolean;onSound:()=>void;saved:boolean;sidebarOpen:boolean;onSidebar:()=>void;advanced:boolean}){
+export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSound,saved,sidebarOpen,onSidebar,advanced,onWindowClose}:{manager:Manager;props:GameProps;renderApp:(id:AppId)=>ReactNode;onSettings:()=>void;onTitle:()=>void;sound:boolean;onSound:()=>void;saved:boolean;sidebarOpen:boolean;onSidebar:()=>void;advanced:boolean;onWindowClose:()=>void}){
  const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>lang==='ko'?ko:lang==='en'?en:ja;
  const [panel,setPanel]=useState<'start'|'calendar'|null>(null),[query,setQuery]=useState(''),[now,setNow]=useState<Date|null>(null),[month,setMonth]=useState<Date|null>(null);
  const start=panel==='start',calendar=panel==='calendar',locale=DESKTOP_LOCALES[lang];
@@ -67,7 +68,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
  const visibleApps=visibleQuestApps(manager.windows,manager.bounds,manager.compact);
  const toggleTask=(id:AppId)=>{const w=manager.windows.find(w=>w.id===id);if(w&&manager.app===id)manager.change({...w,minimized:true});else open(id);};
  return <>
-  <div className="pc-topbar"><span className="pc-session"><Monitor size={14}/> CODE:SHIFT <span>/</span> {tr('내 작업실','My workspace','マイデスク')}</span><div><span className="pc-save" role="status"><Check size={13}/>{saved?tr('저장됨','Saved','保存済み'):tr('저장 실패 · 설정에서 백업','Save failed · Back up in Settings','保存失敗 · 設定でバックアップ')}</span><button className="pc-wallet" data-testid="open-wallet" onClick={()=>props.onOpen('workbench')} title={tr('크레딧 사용 · 작업실 상점','Spend credits · Workspace shop','クレジットを使う · 作業場ショップ')}><b>{props.state.credits.toLocaleString()} cr</b></button><button onClick={onSidebar} aria-expanded={sidebarOpen} aria-label={tr('퀘스트 열기 또는 접기','Toggle quest','クエストを開閉')}><Flag size={15}/>{tr('의뢰','Quest','依頼')}</button></div></div>
+  <div className="pc-topbar"><span className="pc-session"><Monitor size={14}/> CODE:SHIFT <span>/</span> {tr('내 작업실','My workspace','マイデスク')}</span><div><span className="pc-save" role="status"><Check size={13}/>{saved?tr('저장됨','Saved','保存済み'):tr('저장 실패 · 설정에서 백업','Save failed · Back up in Settings','保存失敗 · 設定でバックアップ')}</span><button className="pc-wallet" data-testid="open-wallet" onClick={()=>props.onOpen('workbench')} title={tr('크레딧 사용 · 작업실 상점','Spend credits · Workspace shop','クレジットを使う · 作業場ショップ')}><CreditReadout amount={props.state.credits}/></button><button onClick={onSidebar} aria-expanded={sidebarOpen} aria-label={tr('퀘스트 열기 또는 접기','Toggle quest','クエストを開閉')}><Flag size={15}/>{tr('의뢰','Quest','依頼')}</button></div></div>
   <div className="pc-main">
    <div className="pc-workarea"><div className="pc-compact-quest"><QuestRibbon {...props} visibleApps={visibleApps}/></div><div className="pc-stage" ref={stage}>
     <Wallpaper/>
@@ -76,7 +77,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
     </nav>
     <div className="pc-desktop-caption"><span>{props.state.gameplay.career.upgrades.includes('studio-sign')?tr('나의 독립 작업실','Independent studio','自分の作業場'):'SHIFT OS'}</span><small>{tr('개인용 컴퓨터','Personal computer','パーソナルコンピューター')}</small></div>
     {manager.app==='desktop'&&welcomeUnread&&<button className="pc-mail-toast" onClick={()=>open('messages')}><CharacterPortrait name="지우"/><span><small>{tr('지우 · 새 메시지','Jiwoo · New message','ジウ · 新着メッセージ')}</small><strong>{tr('메뉴판이 이상해요. 한번 봐줄래요?','The menu is broken. Can you take a look?','メニューがおかしいんです。見てもらえますか？')}</strong><em>{tr('눌러서 읽기','Click to read','クリックして読む')} →</em></span></button>}
-    {manager.windows.map(w=>{const a=DESKTOP_APPS.find(a=>a.id===w.id);return <DesktopWindow key={w.id} window={w} bounds={manager.bounds} compact={manager.compact} active={manager.app===w.id} title={a?label(a):t('의뢰함')} icon={a?<a.icon size={16}/>:<Monitor size={16}/>} onFocus={()=>manager.focus(w.id)} onChange={manager.change} onClose={()=>manager.close(w.id)}>{renderApp(w.id as AppId)}</DesktopWindow>;})}
+    {manager.windows.map(w=>{const a=DESKTOP_APPS.find(a=>a.id===w.id);return <DesktopWindow key={w.id} window={w} bounds={manager.bounds} compact={manager.compact} active={manager.app===w.id} title={a?label(a):t('의뢰함')} icon={a?<a.icon size={16}/>:<Monitor size={16}/>} onFocus={()=>manager.focus(w.id)} onChange={manager.change} onClose={()=>{manager.close(w.id);onWindowClose();}}>{renderApp(w.id as AppId)}</DesktopWindow>;})}
    </div></div>
    {sidebarOpen&&<><button className="pc-quest-backdrop" onClick={onSidebar} aria-label={tr('퀘스트 접기','Close quest','クエストを閉じる')}/><QuestTracker {...props} visibleApps={visibleApps} onClose={onSidebar}/></>}
   </div>

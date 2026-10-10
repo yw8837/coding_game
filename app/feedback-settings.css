@@ -1,0 +1,24 @@
+.settings-dialog .language-setting{align-items:stretch;flex-direction:column;gap:10px}
+.settings-dialog .language-setting select{max-width:none;width:100%}
+.feedback-settings{border-bottom:1px solid #ffffff13;padding-bottom:12px}
+.feedback-mixer{display:grid;gap:14px;margin:12px 0 18px}
+.feedback-mixer label{display:grid;gap:7px;font-size:13px;color:#dce5ef}
+.feedback-mixer label>span{display:flex;justify-content:space-between;gap:16px}
+.feedback-mixer output{font-variant-numeric:tabular-nums;color:#8fc8ef}
+.feedback-mixer input{width:100%;accent-color:#92ccde;min-height:24px;cursor:pointer}
+.feedback-previews{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px}
+.feedback-previews>span{margin-right:4px;color:#a6b7c7}
+.feedback-previews button{padding:7px 11px;font-size:12px}
+.feedback-previews button:disabled{opacity:.4;cursor:not-allowed}
+.credit-readout{position:relative;display:inline-flex;align-items:center;white-space:nowrap}
+.credit-readout b{font-variant-numeric:tabular-nums}
+.credit-change{position:absolute;z-index:65;right:0;top:calc(100% + 10px);padding:7px 10px;background:#163b30;border:1px solid #84cbaa;color:#c1f4d2;box-shadow:0 4px 15px #0004;border-radius:5px;font:700 12px var(--mono);pointer-events:none}
+.credit-change[data-kind=spent]{color:#f3d6a3;background:#403225;border-color:#b3935f}
+@media(prefers-reduced-motion:no-preference){
+ .credit-change{animation:credit-earned 1.8s cubic-bezier(.2,.8,.25,1) both}
+ .credit-change[data-kind=spent]{animation-name:credit-spent}
+ @keyframes credit-earned{0%{opacity:0;transform:translateY(7px) scale(.86)}14%{opacity:1;transform:translateY(-2px) scale(1.06)}24%,74%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-7px)}}
+ @keyframes credit-spent{0%{opacity:0;transform:translateY(-4px)}16%,74%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(8px)}}
+}
+html[data-game-reduced-motion=true] *,html[data-game-reduced-motion=true] *::before,html[data-game-reduced-motion=true] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+@media(prefers-reduced-motion:reduce){.pc-shell *,.pc-shell *::before,.pc-shell *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

@@ -24,7 +24,10 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  assert.equal(await page.evaluate(async()=>{try{await fetch('https://example.com');return false;}catch{return true;}}),true);
  await page.getByRole('combobox',{name:'Language'}).selectOption('ko');await page.locator('.pc-play').click();
  assert.equal(await page.locator('.pc-window:visible').count(),0);
- await page.locator('.pc-language').click();const guided=page.getByTestId('guided-mode-toggle');if(await guided.getAttribute('aria-pressed')==='true')await guided.click();await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
+ await page.locator('.pc-language').click();
+ const audioSettings=page.getByTestId('audio-settings');await audioSettings.getByRole('slider',{name:'전체 음량',exact:true}).fill('64');await audioSettings.getByRole('slider',{name:'조작음',exact:true}).fill('30');await audioSettings.getByTestId('reduce-motion').click();await audioSettings.getByRole('button',{name:'보상',exact:true}).click();
+ assert.equal(await page.locator('html').getAttribute('data-game-reduced-motion'),'true');report.nativeFeedbackSettings=true;
+ const guided=page.getByTestId('guided-mode-toggle');if(await guided.getAttribute('aria-pressed')==='true')await guided.click();await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
  await page.locator('.pc-shortcuts').getByRole('button',{name:'메시지',exact:true}).click();await page.getByRole('button',{name:'의뢰 수락',exact:true}).click();
  await until(async()=>(await read()).accepted,true);
  const active=()=>page.locator('.pc-window[data-active="true"]');
@@ -89,6 +92,7 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
 
  const first=await read();assert.equal(first.gameplay.lab.proofs.receipt.passed,true);assert.equal(first.accepted,true);assert.equal(first.gameplay.career.completed.length,18);report.closeSave=true;
  await launch();assert.equal(await page.locator('html').getAttribute('lang'),'ko');await page.locator('.pc-play').click();
+ await page.locator('.pc-language').click();assert.equal(await page.getByTestId('audio-settings').getByRole('slider',{name:'전체 음량',exact:true}).inputValue(),'64');assert.equal(await page.getByTestId('audio-settings').getByRole('slider',{name:'조작음',exact:true}).inputValue(),'30');assert.equal(await page.getByTestId('reduce-motion').getAttribute('aria-pressed'),'true');report.nativeFeedbackPersist=true;await page.screenshot({animations:'disabled',path:path.join(out,'native-audio-settings.png')});await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
  await page.locator('.pc-shortcuts').getByRole('button',{name:'터미널',exact:true}).click();await command('code /home/dev/code-lab/receipt.js');await page.getByTestId('virtual-file-editor').waitFor({state:'visible'});
  // Import an actually UI-earned save from the browser edition through Settings.
  await page.locator('.pc-language').click();await page.locator('.save-tools input[type=file]').setInputFiles(path.join(out,'completed-career-save.json'));
