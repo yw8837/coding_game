@@ -7,7 +7,7 @@
 .title-room-effects{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
 .title-room:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#071019db 0%,#08131cac 29%,#08131c22 54%,transparent 75%),linear-gradient(0deg,#09121d55,transparent 45%)}
 .title-home-content{position:relative;min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:max(36px,env(safe-area-inset-top)) max(28px,env(safe-area-inset-right)) max(36px,env(safe-area-inset-bottom)) max(7.7vw,env(safe-area-inset-left));width:min(620px,54vw);gap:0}
-.title-home-edition{font:500 11px/1.5 var(--mono);letter-spacing:.22em;color:#e8bd86;margin-bottom:23px}
+
 .title-home-logo{font:800 clamp(64px,7.2vw,112px)/.95 var(--mono);letter-spacing:-.075em;color:#f4f0e8;margin:0;text-shadow:0 4px 28px #0002}
 .title-home-logo>span{display:block}.title-home-logo em{color:#e9b877;font-style:normal}
 .title-home-description{font-size:clamp(14px,1.12vw,17px);line-height:1.75;color:#ced5d8;margin:25px 0 34px;max-width:350px;word-break:keep-all;text-wrap:pretty}
@@ -45,8 +45,8 @@
 .title-home[data-paused="true"] :is(.title-rain line,.title-coffee-steam path,.title-code-caret){animation-play-state:paused}
 .title-home[data-paused="true"] .title-scene-art{transform:translate(-50%,-50%) scale(1.035)}
 @media(min-aspect-ratio:21/9){.title-home-content{padding-left:11vw}}
-@media(max-width:760px){.title-home-content{width:100%;padding:48px 28px;justify-content:flex-end;min-height:100dvh;max-width:480px}.title-home-logo{font-size:clamp(62px,16vw,84px)}.title-home-logo>span{display:inline}.title-home-logo>span+span{display:block}.title-home-description{font-size:14px;max-width:270px;margin:21px 0 27px}.title-home-edition{margin-bottom:15px;font-size:10px}.title-home-menu{width:100%;max-width:320px}.title-room:after{background:linear-gradient(90deg,#071019d6 0%,#08131c99 42%,#08131c14 100%),linear-gradient(0deg,#071019d9,transparent 72%)}.title-scene-art{left:18%}.title-home-menu>button{min-height:54px}}
-@media(max-height:600px) and (min-width:761px){.title-home-content{padding-block:24px}.title-home-logo{font-size:62px}.title-home-edition{margin-bottom:13px}.title-home-description{margin:16px 0 20px;font-size:14px}.title-home-menu>button{min-height:46px;padding-block:9px}}
+@media(max-width:760px){.title-home-content{width:100%;padding:48px 28px;justify-content:flex-end;min-height:100dvh;max-width:480px}.title-home-logo{font-size:clamp(62px,16vw,84px)}.title-home-logo>span{display:inline}.title-home-logo>span+span{display:block}.title-home-description{font-size:14px;max-width:270px;margin:21px 0 27px}.title-home-menu{width:100%;max-width:320px}.title-room:after{background:linear-gradient(90deg,#071019d6 0%,#08131c99 42%,#08131c14 100%),linear-gradient(0deg,#071019d9,transparent 72%)}.title-scene-art{left:18%}.title-home-menu>button{min-height:54px}}
+@media(max-height:600px) and (min-width:761px){.title-home-content{padding-block:24px}.title-home-logo{font-size:62px}.title-home-description{margin:16px 0 20px;font-size:14px}.title-home-menu>button{min-height:46px;padding-block:9px}}
 .title-home[data-motion="still"] .title-scene-art{transform:translate(-50%,-50%) scale(1.035)!important;transition:none!important;will-change:auto}
 .title-home[data-motion="still"] :is(.title-rain line,.title-coffee-steam path,.title-code-caret,.title-terminal-log-entry){animation:none!important}
 .title-home[data-motion="still"] .title-coffee-steam path{opacity:.12}

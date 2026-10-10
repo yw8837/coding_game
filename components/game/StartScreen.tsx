@@ -4,7 +4,7 @@ import {ArrowRight,Play,RotateCcw,Settings2} from 'lucide-react';
 import {type Language} from '@/lib/game/i18n';
 import {TitleWorkspace} from './TitleWorkspace';
 import '@/app/title-screen.css';
-export function TitleScreen({hasSave,language,onStart,onSettings,onNew,loading=false,unavailable=false,paused=false,edition='full'}:{hasSave:boolean;language:Language;onStart:()=>void;onSettings:()=>void;onNew:()=>void;loading?:boolean;unavailable?:boolean;paused?:boolean;edition?:import('@/lib/game/edition').GameEdition}){
+export function TitleScreen({hasSave,language,onStart,onSettings,onNew,loading=false,unavailable=false,paused=false}:{hasSave:boolean;language:Language;onStart:()=>void;onSettings:()=>void;onNew:()=>void;loading?:boolean;unavailable?:boolean;paused?:boolean}){
  const [ready,setReady]=useState(false);
  // The title is a continuous ambient scene; gameplay motion preferences stay separate.
  const animate=ready;
@@ -40,7 +40,6 @@ export function TitleScreen({hasSave,language,onStart,onSettings,onNew,loading=f
  }} onPointerLeave={()=>moveRoom(0,0)}>
   <div ref={room} className="title-room"><TitleWorkspace paused={paused||!animate}/></div>
   <div className="title-home-content">
-   <span className="title-home-edition">{edition==='demo'?tr('무료 데모','FREE DEMO','無料体験版'):tr('개발자 시뮬레이터','A CODING SIMULATOR','開発者シミュレーター')}</span>
    <h1 className="title-home-logo" aria-label="CODE:SHIFT"><span>CODE<em>:</em></span><span>SHIFT</span></h1>
    <p className="title-home-description">{tr('동네 카페의 작은 부탁으로 시작하는 개발자 생활.','Your life as a developer starts with a favor for the café next door.','近所のカフェからの小さなお願い。それが、開発者生活のはじまり。')}</p>
    <nav className="title-home-menu" aria-label={tr('메인 메뉴','Main menu','メインメニュー')} onKeyDown={navigate}>

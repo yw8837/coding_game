@@ -7,7 +7,8 @@ are synthetic data in local SQLite, not production visitors.
 ## Current changes
 
 - Title menu contains New game, Continue and Settings. Continue reflects the
-  existence of a save, including a fresh desktop saved before the first message.
+  existence of player progress, including unfinished code or terminal work.
+  A fresh/reset desktop save without player work does not enable Continue.
   Reset cancellation preserves progress. Keyboard navigation and returning focus
   from Settings are supported in Korean, English and Japanese.
 - The existing evening room remains the background. The monitor now shows a dark
@@ -101,8 +102,9 @@ with a fresh native/package pass of the final source:
 
 ## Release work still required
 
-The final source still needs a new native campaign run and packaged/offline
-Windows verification before replacing the delivered RC. This checkpoint does not
+The current native campaign run passed again after the title/reset correction
+(see `QA-title-reset-2026-10-10.md`). Packaged/offline Windows verification remains
+necessary before replacing the delivered RC; a source Electron run does not
 update the old Windows package. Steam AppID/depot registration, payment, upload,
 store review, real beginner/coder playtests, native-language review and another
 physical PC remain separate gates. AppID `5336990` belongs to another game.
