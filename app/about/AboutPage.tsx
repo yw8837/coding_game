@@ -1,4 +1,5 @@
-import { aboutCopy, type AboutLanguage } from './content';
+import { type AboutLanguage } from './content';
+import { demoCopy as aboutCopy, trailerScope } from './demo-content';
 import { aboutPaths, SITE_ORIGIN } from './metadata';
 import styles from './about.module.css';
 
@@ -42,6 +43,7 @@ export default function AboutPage({ language }: { language: AboutLanguage }) {
         </section>
 
         <section className={styles.trailer} aria-label={language==='ko'?'실제 플레이 영상':language==='en'?'Gameplay trailer':'ゲームプレイ映像'}>
+          <p>{trailerScope[language]}</p>
           <video controls playsInline preload="none" poster={'/media/first-release-poster'+(language==='en'?'-en':'')+'.jpg?v=desktop-20261010'} aria-label={language==='ko'?'30초 내 첫 출시 게임 영상':language==='en'?'30-second My First Release gameplay trailer':'30秒のはじめてのリリース紹介映像'}>
             <source src={'/media/codeshift-'+language+'.mp4?v=polish-20261010'} type="video/mp4"/>
           </video>

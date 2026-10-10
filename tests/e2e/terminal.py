@@ -1,7 +1,7 @@
 from playwright.sync_api import sync_playwright,expect
 from pathlib import Path
-import json
-out=Path('output/0.10-qa');reports=[]
+import json, os
+out=Path(os.environ.get('CODESHIFT_QA_DIR','output/0.10-qa'));out.mkdir(parents=True,exist_ok=True);reports=[]
 with sync_playwright() as pw:
  b=pw.chromium.launch(channel='chrome',headless=True)
  try:

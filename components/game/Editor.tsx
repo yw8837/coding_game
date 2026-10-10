@@ -8,15 +8,19 @@ import {currentTask,taskSelection} from '@/lib/game/workflow';
 import {MISSIONS,DEMO_FILE_NAMES,INITIAL_FILES} from '@/lib/game/content';
 import type {GameProps} from './types';
 import {VirtualFileEditor} from './VirtualFileEditor';
+import {editionAllowsPath,editionAllowsProject} from '@/lib/game/edition';
+import {DemoBoundary} from './DemoBoundary';
 
 function highlighted(line:string){return line.split(/("[^"\n]*"|'[^'\n]*'|\/\/.*|#.*|\b(?:function|return|const|let|from|import|def|if|True|False|class)\b|\b\d+(?:\.\d+)?(?:px|%)?\b)/g).map((part,i)=><span key={i} className={/^(\/\/|#)/.test(part)?'syntax-comment':/^["']/.test(part)?'syntax-string':/^(function|return|const|let|from|import|def|if|True|False|class)$/.test(part)?'syntax-keyword':/^\d/.test(part)?'syntax-number':''}>{part}</span>);}
 
 export function EditorView(props:GameProps){
+ if(props.state.repo&&!props.editorTarget?.file.startsWith('/')&&!editionAllowsProject(props.edition,props.state.repo.root))return <DemoBoundary/>;
+ if(!editionAllowsPath(props.edition,props.editorTarget?.file??props.state.repo?.root??'/home/dev',props.state.repo?.root??props.state.machines.local.cwd))return <DemoBoundary/>;
  return props.editorTarget?.file.startsWith('/')?<VirtualFileEditor {...props}/>:<ProjectEditorView {...props}/>;
 }
 
 function ProjectEditorView(props:GameProps){
- const {state,onAction,onTest,testing,onNavigate}=props;const task=currentTask(state);const [file,setFile]=useState(MISSIONS[state.mission].file);const smart=useRef<SmartCodeHandle>(null);const pre=useRef<HTMLPreElement>(null),numbers=useRef<HTMLDivElement>(null);const fs=projectFiles(state);const content=fs[file]??'';const dirty=dirtyFiles(state);const stale=state.tests?.hash!==sourceHash(fs)||state.tests?.mission!==state.mission;
+ const {state,onAction,onTest,testing,onNavigate}=props;const task=currentTask(state,props.edition);const [file,setFile]=useState(MISSIONS[state.mission].file);const smart=useRef<SmartCodeHandle>(null);const pre=useRef<HTMLPreElement>(null),numbers=useRef<HTMLDivElement>(null);const fs=projectFiles(state);const content=fs[file]??'';const dirty=dirtyFiles(state);const stale=state.tests?.hash!==sourceHash(fs)||state.tests?.mission!==state.mission;
  // eslint-disable-next-line react-hooks/set-state-in-effect -- An external mission transition selects its authored file while keeping manual file selection within that mission.
  useEffect(()=>setFile(MISSIONS[state.mission].file),[state.mission]);
  // eslint-disable-next-line react-hooks/set-state-in-effect -- An external editor-open request selects its requested file; local explorer choices remain independent.

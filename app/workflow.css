@@ -8,3 +8,23 @@
 @media(prefers-reduced-motion:no-preference){.quest-list .done .quest-check{animation:step-done .2s ease-out}@keyframes step-done{from{transform:scale(.85)}to{transform:scale(1)}}}
 
 @media(max-width:650px){.os-shell .token-help{flex-wrap:nowrap}.os-shell .token-help span{flex-basis:auto;white-space:normal;overflow-wrap:anywhere}.os-shell .token-help button{align-self:flex-start}}
+
+/* Quest actions precede optional reference material. */
+.os-shell .quest-tracker.quest-compact{gap:10px}
+.os-shell .quest-compact .quest-priority{margin:0;padding:12px;flex:0 0 auto}
+.quest-compact .quest-priority>strong{display:block;font-size:15px;line-height:1.45;margin:4px 0}
+.quest-compact .quest-priority>small{display:block;font-size:11px;color:var(--mint)}
+.quest-compact .quest-priority .primary-button{width:100%;justify-content:center;margin:4px 0 8px}
+.quest-compact .quest-priority .quest-goal{margin:5px 0;font-size:12px;line-height:1.5}
+.quest-target{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font:11px/1.5 var(--mono);color:#bfcfca;margin:5px 0!important}
+.quest-compact .quest-target code,.quest-ribbon-compact .quest-target code{display:inline;padding:1px 5px;margin:0;font-size:11px}
+.quest-help,.quest-trail,.quest-campaign{font-size:12px;line-height:1.5;color:#bfcfca}
+.quest-help summary,.quest-trail summary,.quest-campaign summary{cursor:pointer;padding:6px 0;color:#cfe3da}
+.quest-help summary:focus-visible,.quest-trail summary:focus-visible,.quest-campaign summary:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
+.quest-compact .quest-help p{font-size:12px;line-height:1.6;margin:6px 0}
+.quest-evidence{flex:0 0 auto}.quest-proof-status{font-size:11px;line-height:1.5;margin:6px 0;color:#e3d2a9}
+.quest-trail ol{list-style:none;padding:0;margin:4px 0}.quest-trail li{display:flex;align-items:center;gap:7px;padding:5px 0;font-size:11px}.quest-trail li>small{margin-left:auto;font-size:10px}.quest-trail li.active{color:var(--mint)}.quest-trail li.done{color:#cfe3da}
+.quest-current>strong{display:block;font-size:14px;line-height:1.5}.quest-current>small{font-size:11px;color:var(--mint)}
+.quest-ribbon-compact .quest-help p{margin:5px 0}.quest-compact .quest-chapter{margin:0;font-size:11px}
+.quest-compact .sidebar-reward{margin:0}.quest-campaign{margin-top:auto}
+@media(prefers-reduced-motion:reduce){.quest-compact .desk-progress span,.quest-trail li{transition:none;animation:none}}

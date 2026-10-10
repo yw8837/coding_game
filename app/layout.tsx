@@ -19,11 +19,11 @@ import "./workstation-shell.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://code.yeolmaeapps.kr"),
-  title: "CODE:SHIFT — 컴퓨터 속 작은 사건들",
-  description: "바탕화면에서 메시지를 열고, 화면과 코드를 직접 고쳐 손님 주문을 해결하세요. 카페 3장과 선택하는 동네 의뢰를 거쳐 내 첫 작품을 출시하는 코딩 시뮬레이터. 한국어·영어·일본어를 지원합니다.",
+  title: "CODE:SHIFT 무료 데모 | 우리 동네 코딩 시뮬레이터",
+  description: "가상 컴퓨터에서 카페 메뉴판, 계산대와 주문 연결을 고쳐 보세요. 카페 입문 3장과 오픈 행사까지 무료로 플레이하는 브라우저 코딩 시뮬레이터 데모. 한국어·영어·일본어를 지원합니다.",
   alternates: { canonical: "/" },
-  openGraph: { type: "website", title: "CODE:SHIFT", description: "내 컴퓨터에서 시작하는 작은 사건들. 직접 고치고, 확인하고, 전달하세요.", url: "/", siteName: "CODE:SHIFT", locale: "ko_KR", images: [{url:"/screenshots/desktop.png",width:1440,height:900,alt:"CODE:SHIFT desktop with taskbar and quest tracker"}] },
-  twitter: {card:"summary_large_image",title:"CODE:SHIFT",images:["/screenshots/desktop.png"]},
+  openGraph: { type: "website", title: "CODE:SHIFT · Free Coding Simulator Demo", description: "Repair a cafe menu, fix its till and connect customer orders. Three free browser chapters and an opening celebration.", url: "/", siteName: "CODE:SHIFT", locale: "ko_KR", images: [{url:"/screenshots/desktop.png",width:1440,height:900,alt:"CODE:SHIFT desktop with taskbar and quest tracker"}] },
+  twitter: {card:"summary_large_image",title:"CODE:SHIFT · Free Coding Simulator Demo",description:"Three cafe chapters on a virtual desktop. Free in your PC browser, with Korean, English and Japanese.",images:["/screenshots/desktop.png"]},
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

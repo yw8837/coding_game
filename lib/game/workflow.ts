@@ -23,7 +23,8 @@ function upload(s:GameState,phase:number):Task|null{
  if(r.remote.id!==r.commits.at(-1)!.id)return shell('push',phase,'CatHub에 수정본 보내기','push는 내 기록을 CatHub로 보내요. 전송 뒤 브라우저에서 검토할 수 있어요.','git push');
  return null;
 }
-export function currentTask(s:GameState):Task{
+export function currentTask(s:GameState,edition:import('./edition.ts').GameEdition='full'):Task{
+ if(edition==='demo'&&s.gameplay.openingCelebrated)return step('demo-complete',5,'카페 데모 완료!','완성한 카페를 다시 살펴보거나 설정에서 저장 파일을 백업하세요.','achievements');
  if(s.gameplay.openingCelebrated){
   const c=s.gameplay.career,job=careerCurrent(s),next=careerNext(s);
   const career=(id:string,phase:number,title:Localized,detail:Localized):Task=>({id,phase,title:title.ko,detail:detail.ko,app:'career',localized:{title,detail}});

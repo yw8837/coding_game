@@ -5,6 +5,7 @@ from playwright.sync_api import sync_playwright,expect
 from pathlib import Path
 import json, os
 out=Path(os.environ.get('CODESHIFT_QA_DIR','output/0.10-qa'));out.mkdir(parents=True,exist_ok=True)
+demo=os.environ.get('CODESHIFT_EDITION')=='demo'
 def state(p): return p.evaluate("JSON.parse(localStorage.getItem('codeshift-intro-demo-v1'))")
 def click(p,id):p.get_by_test_id(id).click()
 def finish(p):
@@ -75,11 +76,21 @@ with sync_playwright() as pw:
    p.locator('.pc-window[data-active=true] button').filter(has_text='OPEN').click()
    assert state(p)['gameplay']['openingCelebrated'];assert state(p)['completed']==[0,1,2]
    (out/f'{lang}-cafe-save.json').write_text(json.dumps(state(p),ensure_ascii=False),encoding='utf-8')
-   click(p,'opening-first-client');expect(p.get_by_test_id('career-accept')).to_be_visible()
-   assert p.get_by_test_id('career-job-bakery-price').get_attribute('aria-current')=='page'
+   if demo:
+    expect(p.get_by_test_id('demo-complete')).to_be_visible()
+    p.screenshot(path=str(out/f'{lang}-demo-complete.png'),animations='disabled')
+    p.get_by_test_id('demo-complete').locator('.primary-button').click()
+    expect(p.get_by_test_id('opening-first-client')).to_have_count(0)
+    expect(p.get_by_test_id('career-accept')).to_have_count(0)
+    p.reload(wait_until='networkidle');p.locator('.pc-play').click()
+    expect(p.get_by_test_id('demo-complete')).to_be_visible()
+    assert state(p)['completed']==[0,1,2] and state(p)['gameplay']['openingCelebrated']
+   else:
+    click(p,'opening-first-client');expect(p.get_by_test_id('career-accept')).to_be_visible()
+    assert p.get_by_test_id('career-job-bakery-price').get_attribute('aria-current')=='page'
    assert state(p)['gameplay']['career']['accepted']==[];assert state(p)['gameplay']['career']['completed']==[]
    assert not errors,errors
-   reports.append({'language':lang,'cafeChapters':3,'customersServed':3,'actualApiEvidence':True,'actualMenuResponse':True,'fixedOrderTarget':True,'firstClientHandoff':True,'typedEditsAndSlider':True,'blankInputBlocked':True,'hintsManualOnly':True,'hintsClosedAfterErrors':True,'wrongInputsRecover':True,'errors':errors,'assistedFunctionalTest':True})
+   reports.append({'language':lang,'cafeChapters':3,'customersServed':3,'actualApiEvidence':True,'actualMenuResponse':True,'fixedOrderTarget':True,'firstClientHandoff':not demo,'demoCompletionAndReload':demo,'typedEditsAndSlider':True,'blankInputBlocked':True,'hintsManualOnly':True,'hintsClosedAfterErrors':True,'wrongInputsRecover':True,'errors':errors,'assistedFunctionalTest':True})
    c.close()
   (out/'coach-report.json').write_text(json.dumps(reports,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(reports,ensure_ascii=False))
  except Exception:

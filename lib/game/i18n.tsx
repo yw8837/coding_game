@@ -2,6 +2,7 @@
 import {Children,cloneElement,isValidElement,useSyncExternalStore,type ReactNode,type ReactElement} from 'react';
 import {translate,type Language} from './translations';
 import {createLocaleStore,LANGUAGE_PREFERENCE_KEY,type LanguagePlatformInfo,type LanguagePreference} from './locale.ts';
+import {fetchRegionLanguage} from './region-locale.ts';
 export type {Language};
 export type {LanguagePreference};
 const listeners=new Set<()=>void>();
@@ -9,6 +10,8 @@ const locale=createLocaleStore({
  readPreference:()=>typeof localStorage==='undefined'?null:localStorage.getItem(LANGUAGE_PREFERENCE_KEY),
  writePreference:preference=>{if(typeof localStorage!=='undefined')localStorage.setItem(LANGUAGE_PREFERENCE_KEY,preference);},
  browserLanguages:()=>typeof navigator==='undefined'?[]:navigator.languages?.length?navigator.languages:navigator.language?[navigator.language]:[],
+ isDesktop:()=>typeof window!=='undefined'&&!!(window as Window&{desktopBridge?:unknown}).desktopBridge,
+ regionLanguage:signal=>typeof window==='undefined'?Promise.resolve(null):fetchRegionLanguage((url,init)=>fetch(url,init),signal),
  platformInfo:async()=>{
   if(typeof window==='undefined')return null;
   const bridge=(window as Window&{desktopBridge?:{getPlatformInfo:()=>Promise<LanguagePlatformInfo>}}).desktopBridge;

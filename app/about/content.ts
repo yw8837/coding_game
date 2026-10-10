@@ -55,7 +55,7 @@ export const aboutCopy: Record<AboutLanguage, AboutCopy> = {
     faqTitle: '자주 묻는 질문', faq: [
       { question: '코딩을 몰라도 시작할 수 있나요?', answer: '코딩을 처음 접하는 플레이어를 목표로 현재 행동과 수정 위치를 안내합니다. 실제 초보자의 이해도, 교육 효과나 완주율을 측정한 결과는 아직 없습니다.' },
       { question: '무료인가요? 가입해야 하나요?', answer: '현재 브라우저 버전은 전체 콘텐츠를 무료로 플레이할 수 있고 회원 가입이 필요 없습니다. Steam에서 실제 구매가 가능해진 뒤에는 웹을 카페 입문 3장의 무료 데모로 전환하고 유료판에 전체 캠페인을 제공할 계획입니다. 웹 제한은 아직 구현하지 않았습니다. 게임 크레딧은 플레이 안에서 쓰는 가상 자금입니다.' },
-      { question: 'Steam에서도 플레이할 수 있나요?', answer: '한국 정가는 11,000원으로 정했으며 출시 할인율은 최종 선택 대기 중입니다. 아직 Steam 가격에 적용하지 않았고 이 게임은 Steam에 미등록입니다. Steam 실환경 동작과 출시 일정도 확정하지 않았습니다.' },
+      { question: 'Steam에서도 플레이할 수 있나요?', answer: '한국 정가는 11,000원이며 출시 첫 7일은 20% 할인한 8,800원으로 정했습니다. 아직 Steam 가격에 적용하지 않았고 이 게임은 Steam에 미등록입니다. Steam 실환경 동작과 출시 일정도 확정하지 않았습니다.' },
       { question: '어떤 언어를 지원하나요?', answer: '타이틀 또는 설정에서 한국어, 영어, 일본어 UI를 선택할 수 있습니다. 코드와 명령, 파일 이름은 원래 표기를 유지합니다.' },
       { question: '내 컴퓨터에서 코드가 실행되나요?', answer: '터미널과 서버는 게임 상태를 바꾸는 가상 환경입니다. HTML/CSS 미리보기와 제한된 JavaScript 해석기, 계산·설정 판정을 제공하며 범용 개발 환경이나 실제 운영체제는 아닙니다. 외부 AI/LLM을 호출하지 않습니다.' },
       { question: '플레이 시간이나 이용 등급이 정해져 있나요?', answer: '초보자 대상 플레이 시간을 아직 측정하지 않았습니다. 코딩을 모르는 15세 전후 플레이어를 디자인 대상으로 삼지만 공식 이용 등급을 받았다는 의미는 아닙니다.' },
@@ -104,7 +104,7 @@ export const aboutCopy: Record<AboutLanguage, AboutCopy> = {
     faqTitle: 'Questions before you play', faq: [
       { question: 'Can I start without knowing code?', answer: 'The game is designed for newcomers and provides guidance for the next action and edit location. We have not yet measured novice understanding, educational outcomes, or completion rates.' },
       { question: 'Is it free? Do I need an account?', answer: 'The current browser version offers all content for free with no signup. Once the game is actually available to buy on Steam, we plan to turn the web version into a free demo of the three cafe chapters, with the full campaign in the paid edition. The web limit is not implemented yet. Credits are simulated funds used inside the game.' },
-      { question: 'Can I play on Steam?', answer: 'The chosen Korean base price is KRW 11,000. The launch discount awaits a final choice. The price is not applied on Steam. This game is not registered there, real Steam operation is unverified, and a release date is not confirmed.' },
+      { question: 'Can I play on Steam?', answer: 'The chosen Korean base price is KRW 11,000, with a 20% launch discount to KRW 8,800 for the first seven days. These prices are not applied on Steam. This game is not registered there, real Steam operation is unverified, and a release date is not confirmed.' },
       { question: 'Which languages are supported?', answer: 'Choose Korean, English, or Japanese UI from the title screen or Settings. Code, commands, and filenames keep their original spelling.' },
       { question: 'Does it run commands on my computer?', answer: 'The terminal and servers modify simulated game state. The game provides an HTML/CSS preview, a limited JavaScript interpreter, and arithmetic and configuration checks, rather than a general development environment or operating system. It does not call an external AI/LLM service.' },
       { question: 'How long is it? Is there an age rating?', answer: 'Play time for complete beginners has not been measured. The design targets coding newcomers around age 15; that does not represent an official age classification.' },
@@ -153,7 +153,7 @@ export const aboutCopy: Record<AboutLanguage, AboutCopy> = {
     faqTitle: 'プレイ前によくある質問', faq: [
       { question: 'コードを知らなくても始められますか？', answer: '初めてコードに触れる人を想定し、次の操作と編集位置を案内します。初心者の理解度、教育効果、クリア率はまだ測定していません。' },
       { question: '無料ですか？登録は必要ですか？', answer: '現在のブラウザ版は全コンテンツを無料で遊べて、登録は不要です。Steamで実際に購入できるようになった後、Web版をカフェ入門3章の無料デモに切り替え、有料版で全キャンペーンを提供する予定です。Webの制限はまだ実装していません。クレジットはゲーム内の仮想資金です。' },
-      { question: 'Steamでも遊べますか？', answer: '韓国の定価は11,000ウォンと決め、発売時の割引率は最終選択待ちです。Steamの価格にはまだ適用していません。このゲームは未登録で、実際のSteam環境での動作は未検証、発売日も未確定です。' },
+      { question: 'Steamでも遊べますか？', answer: '韓国の定価は11,000ウォンで、発売後最初の7日間は20%引きの8,800ウォンに決めました。Steamの価格にはまだ適用していません。このゲームは未登録で、実際のSteam環境での動作は未検証、発売日も未確定です。' },
       { question: 'どの言語を選べますか？', answer: 'タイトル画面または設定から韓国語、英語、日本語のUIを選べます。コード、コマンド、ファイル名の表記は元のままです。' },
       { question: '自分のパソコンでコマンドが動きますか？', answer: 'ターミナルとサーバーはゲームの仮想状態を変更します。HTML/CSSのプレビュー、限定されたJavaScriptインタープリタ、計算・設定の判定を提供し、汎用開発環境や実際のOSではありません。外部のAI/LLMサービスは呼び出しません。' },
       { question: 'プレイ時間や年齢区分はありますか？', answer: '完全な初心者のプレイ時間はまだ測定していません。15歳前後のコード未経験者をデザインの対象にしていますが、公式の年齢区分を取得したという意味ではありません。' },

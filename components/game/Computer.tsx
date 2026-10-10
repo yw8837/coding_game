@@ -2,6 +2,8 @@
 import {useState} from 'react';
 import {Monitor,Folder,FolderOpen,FileText,FileCode,ChevronRight,Check,Download,Package,Play,Globe,TerminalSquare,HardDrive,ArrowLeft} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
+import {editionAllowsProject} from '@/lib/game/edition';
+import {DemoBoundary} from './DemoBoundary';
 import {dirtyFiles,projectFiles} from '@/lib/game/engine';
 import {runSetupStep,setupReadiness,type SetupStep} from '@/lib/game/setup';
 import {CAREER_JOBS} from '@/lib/game/career-content';
@@ -29,7 +31,7 @@ export function ComputerView(props:GameProps){
  };
  const perform=(step:SetupStep)=>{
   if(!allowed)return;
-  const result=runSetupStep(state,step);
+  const result=runSetupStep(state,step,props.edition);
   for(const command of result.commands)onCommand(command);
   setFailure(result.error?result.output:'');
  };
@@ -39,6 +41,7 @@ export function ComputerView(props:GameProps){
   {id:'preview' as const,Icon:Play,done:ready.preview,enabled:allowed&&ready.prepared,title:tr('미리보기 켜기','Start preview','プレビューを起動'),description:tr('내 파일로 카페 사이트를 켜요. 바꾸면 화면에도 반영돼요.','Run the cafe site from your files. Edits appear in the preview.','自分のファイルでサイトを起動します。編集が画面にも反映されます。')},
  ];
  const names=Object.keys(files).sort((a,b)=>a.localeCompare(b));
+ if(state.repo&&!editionAllowsProject(props.edition,state.repo.root))return <DemoBoundary/>;
  return <div className="computer-view" data-no-translate>
   <div className="computer-toolbar">
    <button className="computer-back" onClick={()=>setTab('pc')} disabled={tab==='pc'} aria-label={tr('내 PC로 이동','Go to This PC','PCに移動')}><ArrowLeft size={16}/></button>
@@ -49,11 +52,11 @@ export function ComputerView(props:GameProps){
    <nav className="computer-sidebar" aria-label={tr('파일 탐색','File navigation','ファイルのナビゲーション')}>
     <button className={tab==='pc'?'selected':''} onClick={()=>setTab('pc')} aria-pressed={tab==='pc'}><Monitor size={18}/>{tr('내 PC','This PC','PC')}</button>
     <button className={tab==='project'?'selected':''} onClick={()=>setTab('project')} aria-pressed={tab==='project'}><Folder size={18}/>{tr('프로젝트','Project','プロジェクト')}</button>
-    {state.gameplay.openingCelebrated&&<button className={tab==='jobs'?'selected':''} onClick={()=>setTab('jobs')} aria-pressed={tab==='jobs'}><Folder size={18}/>{tr('고객 의뢰','Client jobs','顧客の依頼')}</button>}
+    {props.edition!=='demo'&&state.gameplay.openingCelebrated&&<button className={tab==='jobs'?'selected':''} onClick={()=>setTab('jobs')} aria-pressed={tab==='jobs'}><Folder size={18}/>{tr('고객 의뢰','Client jobs','顧客の依頼')}</button>}
     <button onClick={()=>onOpen('terminal')}><TerminalSquare size={18}/>{tr('터미널','Terminal','ターミナル')}</button>
    </nav>
    <div className="computer-content">
-    {tab==='jobs'&&<section className="computer-files"><h2>{tr('고객 의뢰 파일','Client job files','顧客の依頼ファイル')}</h2><p>/home/dev/jobs</p>{state.gameplay.career.accepted.length===0&&<button className="primary-button" onClick={()=>onOpen('career')}>{tr('의뢰 센터 열기','Open Contracts','依頼センターを開く')}</button>}{CAREER_JOBS.filter(j=>state.gameplay.career.accepted.includes(j.id)).map(job=><div key={job.id}><h3>{job.title[language]}</h3><p>{careerRoot(job.id)}</p>{Object.keys(careerFiles(state,job.id)).map(file=><button key={file} className="computer-file-row" onClick={()=>{if(props.openCareerFile)props.openCareerFile(job.id,file);else{props.onAction({type:'career-accept',id:job.id});onOpen('career');}}}><span><FileCode size={19}/>{file}</span><span>{tr('의뢰 센터에서 열기','Open in Contracts','依頼センターで開く')}</span></button>)}</div>)}</section>}
+    {props.edition!=='demo'&&tab==='jobs'&&<section className="computer-files"><h2>{tr('고객 의뢰 파일','Client job files','顧客の依頼ファイル')}</h2><p>/home/dev/jobs</p>{state.gameplay.career.accepted.length===0&&<button className="primary-button" onClick={()=>onOpen('career')}>{tr('의뢰 센터 열기','Open Contracts','依頼センターを開く')}</button>}{CAREER_JOBS.filter(j=>state.gameplay.career.accepted.includes(j.id)).map(job=><div key={job.id}><h3>{job.title[language]}</h3><p>{careerRoot(job.id)}</p>{Object.keys(careerFiles(state,job.id)).map(file=><button key={file} className="computer-file-row" onClick={()=>{if(props.openCareerFile)props.openCareerFile(job.id,file);else{props.onAction({type:'career-accept',id:job.id});onOpen('career');}}}><span><FileCode size={19}/>{file}</span><span>{tr('의뢰 센터에서 열기','Open in Contracts','依頼センターで開く')}</span></button>)}</div>)}</section>}
 
     {!ready.ready&&<section className="computer-setup" aria-label={tr('카페 사이트 준비','Prepare the cafe site','カフェのサイトを準備')}>
      <div className="computer-setup-heading"><FolderOpen size={28}/><div><h2>{tr('카페 사이트 준비','Prepare the cafe site','カフェのサイトを準備')}</h2><p>{tr('세 버튼을 차례로 누르면 시작할 수 있어요.','Use these three buttons in order to get started.','三つのボタンを順番に押すと始められます。')}</p></div></div>

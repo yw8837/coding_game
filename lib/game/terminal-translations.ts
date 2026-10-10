@@ -1,4 +1,5 @@
 import {tokenize} from './engine.ts';
+import {DEMO_LOCKED_MESSAGE,demoLockedMessage} from './edition.ts';
 import type {Language} from './translations.ts';
 
 // Exact authored lines only. Paths, commands, code and user messages are opaque.
@@ -60,6 +61,7 @@ const lines:Record<string,readonly [string,string]>={
  * curl JSON. Commit text and clone destination names are also preserved.
  */
 export function translateTerminalOutput(command:string,output:string,language:Language):string{
+ if(output===DEMO_LOCKED_MESSAGE)return demoLockedMessage(language);
  if(language==='ko'||!output)return output;
  const translate=(line:string)=>lines[line]?.[language==='en'?0:1]??line;
  let args:string[];

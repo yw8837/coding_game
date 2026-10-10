@@ -35,13 +35,13 @@ function nextSetupCommand(state:GameState,step:SetupStep):string|null{
  * Return the command list for the UI to dispatch with onCommand. Stop on errors
  * so a broken package.json or occupied clone target remains visible to players.
  */
-export function runSetupStep(state:GameState,step:SetupStep){
+export function runSetupStep(state:GameState,step:SetupStep,edition:import('./edition.ts').GameEdition='full'){
  let next=state;
  const commands:string[]=[];
  let error=false,output='';
  for(let i=0;i<10;i++){
   const command=nextSetupCommand(next,step);if(!command)break;
-  const result=runCommand(next,command);
+  const result=runCommand(next,command,edition);
   commands.push(command);next=result.state;output=result.output;error=result.error;
   if(error)break;
  }

@@ -33,7 +33,7 @@ export function createGameplay():Gameplay{return {lab:createLab(),career:createC
 export type GameMessage={id:string;sender:string;role:string;subject:string;body:string;initial:string;action:'repair'|'accept'|'missions'|'workbench'|'preview'|'achievements'};
 export function gameMessages(s:GameState):GameMessage[]{
  const all:{message:GameMessage;unlocked:boolean}[]=[
-  {unlocked:true,message:{id:'welcome',sender:'지우',role:'모노 카페 사장',initial:'지',subject:'간판이 바뀌었어요!',body:'모노 카페 사장 지우예요. 메뉴판에 다른 이름이 떠요. 휴대폰에서는 메뉴도 잘리고요. 카페 파일을 보낼 테니 고쳐 주실래요? 의뢰를 수락하면 오른쪽에 할 일이 표시돼요.',action:'accept'}},
+  {unlocked:true,message:{id:'welcome',sender:'지우',role:'모노 카페 사장',initial:'지',subject:'메뉴판에 다른 카페 이름이 떠요',body:'모노 카페 사장 지우예요. 메뉴판에 다른 이름이 떠요. 휴대폰에서는 메뉴도 잘리고요. 카페 파일을 보낼 테니 고쳐 주실래요? 의뢰를 수락하면 오른쪽에 할 일이 표시돼요.',action:'accept'}},
   {unlocked:s.completed.includes(0),message:{id:'mentor',sender:'민서',role:'옆자리 개발자',initial:'민',subject:'막혀도 괜찮아. 네 작업실이니까.',body:'오류가 떠도 의뢰가 날아가지는 않아. 내용을 읽고 한 단계씩 해결해 보자. 여유가 생기면 보너스 과제도 해봐! 프로젝트를 탐색하고 버튼 색을 바꾸면 추가 크레딧과 배지를 받을 수 있어.',action:'workbench'}},
   {unlocked:s.completed.length===3,message:{id:'repo',sender:'민서',role:'옆자리 개발자',initial:'민',subject:'프로젝트 도착! 안에 뭐가 들었을까?',body:'파일을 가져왔네! 프로젝트 폴더에서 pwd로 위치를 확인하고, ls로 목록을 보고, cat README.md로 안내를 읽어 봐. 세 가지를 모두 해보면 터미널 탐험가 배지를 받을 수 있어.',action:'workbench'}},
   {unlocked:s.completed.includes(0),message:{id:'preview',sender:'지우',role:'모노 카페 사장',initial:'지',subject:'휴대폰으로도 메뉴가 잘 보이면 좋겠어요.',body:'메뉴 세 가지와 주문 버튼이 화면 안에 모두 보이면 돼요. Ghrom에서 PC와 360px 화면을 번갈아 확인해 주세요. 직접 바꾼 코드가 화면으로 나타나는 게 신기하네요!',action:'preview'}},

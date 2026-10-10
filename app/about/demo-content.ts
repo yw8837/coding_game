@@ -1,0 +1,62 @@
+import { aboutCopy, type AboutLanguage } from './content';
+
+/** Public web copy describes the playable demo, not the unreleased full build. */
+export const demoCopy: typeof aboutCopy = {
+  ko: {
+    ...aboutCopy.ko,
+    title: 'CODE:SHIFT 무료 데모 | 우리 동네 코딩 시뮬레이터',
+    description: '가상 컴퓨터에서 카페 메뉴판과 계산대, 주문 연결을 고쳐 보세요. 카페 입문 3장과 오픈 행사까지 무료로 플레이하는 코딩 시뮬레이터 데모. 가입 없이 브라우저에서 시작하고 진행을 저장할 수 있습니다.',
+    workingTitle: '무료 웹 데모 · 게임명 투표 준비 중 · CODE:SHIFT는 작업명입니다',
+    hero: '이 카페, 당신의 코드가 필요해요.',
+    lead: '휴대폰 밖으로 튀어나온 메뉴판, 이상한 커피값, 도착하지 않는 주문. 파일을 고치고 결과를 확인하며 작은 카페의 문을 열어 주세요.',
+    play: '무료 데모 플레이',
+    facts: [{ label: '공개 범위', value: '카페 입문 3장 + 오픈 행사' }, { label: '플레이 환경', value: 'PC 브라우저 · 무료 · 가입 없이' }, { label: '언어', value: '한국어 / English / 日本語 · 자동 설정' }],
+    overview: 'CODE:SHIFT는 가상 컴퓨터를 직접 조작하는 코딩 시뮬레이터입니다. 무료 데모에서는 카페의 세 가지 문제를 해결하고 OPEN 간판을 켭니다. 함께 배우기로 한 부분씩 고치거나, 에디터와 터미널에서 직접 작업할 수 있습니다. 터미널·서버·API는 게임 안의 시뮬레이션입니다.',
+    chaptersTitle: '데모에서 맡을 세 가지 부탁',
+    chapters: aboutCopy.ko.chapters.slice(0, 3),
+    how: '메시지로 부탁을 받고, 고장 난 화면을 살펴보고, 파일을 고친 뒤 검사해 전달합니다. 지금 할 일과 대상 앱·파일은 퀘스트에 표시됩니다. 함께 배우기와 직접 작업 모드는 설정에서 언제든 바꿀 수 있습니다. 세 의뢰를 마치고 카페 문을 열면 데모 이야기가 끝납니다.',
+    help: '힌트는 보고 싶을 때 직접 엽니다. 사용해도 보상은 줄지 않습니다. 자동완성, 실행 취소, 터미널 기록과 Tab 완성을 사용할 수 있고, 두 플레이 방식은 같은 카페 파일을 수정합니다.',
+    faq: aboutCopy.ko.faq.map((item, index) => index === 1 ? { ...item, answer: '카페 입문 3장과 오픈 행사를 무료로 플레이할 수 있으며 가입은 필요 없습니다. 동네 의뢰 18개, 선택 연습 6개, 고급 코드 실험실과 최종 개인 프로젝트·엔딩은 본편용 콘텐츠로 데모에서 잠겨 있습니다. 게임 크레딧은 가상 자금입니다.' } : index === 3 ? { ...item, answer: '첫 접속의 자동 설정은 접속 국가를 기준으로 한국은 한국어, 일본은 일본어, 그 외는 영어를 선택합니다. 국가 정보가 없으면 브라우저 언어를 사용합니다. 타이틀이나 설정에서 직접 선택하면 그 선택이 우선합니다.' } : item).concat([{ question: '이전에 저장한 전체판 진행은 어떻게 되나요?', answer: '기존 진행은 삭제하거나 카페 3장으로 잘라내지 않습니다. 본편 콘텐츠는 데모에서 실행할 수 없지만 설정에서 전체 저장 백업을 내보낼 수 있습니다. 새로 시작하려면 초기화 확인이 필요합니다. 저장은 접속한 주소와 브라우저마다 별도입니다.' }]),
+    footer: 'CODE:SHIFT는 작업명입니다. 정식 게임명은 투표 뒤 결정할 예정입니다. 소개 영상은 본편 개발 빌드의 실제 한국어 플레이를 편집했으며 데모에서 잠긴 동네 의뢰와 최종 배포도 포함합니다. 게임 안의 배포는 실제 인터넷 공개나 Steam 출시를 뜻하지 않습니다.',
+  },
+  en: {
+    ...aboutCopy.en,
+    title: 'CODE:SHIFT Free Demo | Neighborhood Coding Simulator',
+    description: 'Fix a cafe menu, repair its till and reconnect customer orders on a virtual PC. Play three cafe chapters and the opening celebration in this free browser coding sim demo. No signup; local saves included.',
+    workingTitle: 'Free browser demo · Name vote in preparation · CODE:SHIFT is a working title',
+    hero: 'This cafe needs your code.',
+    lead: 'The menu does not fit. The coffee total is wrong. Orders never arrive. Fix the files, check what changed and help a small cafe open its doors.',
+    play: 'Play the free demo',
+    facts: [{ label: 'Demo content', value: '3 cafe chapters + opening celebration' }, { label: 'Play on', value: 'PC browser · Free · No signup' }, { label: 'Languages', value: 'Korean / English / Japanese · Auto-detected' }],
+    overview: 'CODE:SHIFT is a coding simulator played through a virtual desktop. The free demo covers three cafe repairs and the OPEN sign celebration. Use Learn Together to edit one part at a time, or work directly in the editor and terminal. Commands, servers and APIs run inside the game simulation.',
+    chaptersTitle: 'Three requests in the demo',
+    chapters: aboutCopy.en.chapters.slice(0, 3),
+    how: 'Read a request, inspect the broken screen, edit the files, then check and deliver the result. Your quest shows the current task and its app or file. Switch between Learn Together and Direct Work in Settings. The demo story ends when all three requests are delivered and the cafe opens.',
+    help: 'Open hints when you want them, with no reward penalty. Autocomplete, undo, terminal history and Tab completion remain available. Both play styles edit the same cafe files.',
+    faq: aboutCopy.en.faq.map((item, index) => index === 1 ? { ...item, answer: 'Three cafe chapters and the opening celebration are free, with no signup. The 18 neighborhood jobs, six optional practice jobs, advanced Code Lab and final personal project and ending are reserved for the full game and locked in this demo. Credits are simulated game currency.' } : index === 3 ? { ...item, answer: 'Automatic language uses the connection country: Korean in South Korea, Japanese in Japan and English elsewhere. If country data is unavailable, the browser language is used. A language you select on the title screen or in Settings takes priority.' } : item).concat([{ question: 'What happens to an older full-game save?', answer: 'Existing progress is preserved, not cut down to three chapters. Full-game content is locked in the demo, but you can export your complete save backup in Settings. Starting over requires confirmation. Saves are separate for each website address and browser.' }]),
+    footer: 'CODE:SHIFT is a working title; the final name will be chosen after voting. The trailer is edited from actual Korean gameplay in the full development build, including neighborhood jobs and the final release that are locked in this demo. An in-game release is not a real Internet deployment or a Steam launch.',
+  },
+  ja: {
+    ...aboutCopy.ja,
+    title: 'CODE:SHIFT 無料デモ | まちのコーディングシミュレーター',
+    description: '仮想PCでカフェのメニュー、レジ、注文の接続を修正。カフェ入門3章と開店イベントを無料で遊べるブラウザ版コーディングシミュレーターです。登録不要、ローカル保存に対応。',
+    workingTitle: '無料Webデモ · タイトル投票を準備中 · CODE:SHIFTは仮タイトルです',
+    hero: 'このカフェに、あなたのコードを。',
+    lead: '画面からはみ出すメニュー、おかしな会計、届かない注文。ファイルを直し、結果を確かめて、小さなカフェの開店を手伝いましょう。',
+    play: '無料デモをプレイ',
+    facts: [{ label: 'デモの内容', value: 'カフェ入門3章 + 開店イベント' }, { label: 'プレイ環境', value: 'PCブラウザ · 無料 · 登録不要' }, { label: '言語', value: '韓国語 / 英語 / 日本語 · 自動設定' }],
+    overview: 'CODE:SHIFTは仮想デスクトップを操作するコーディングシミュレーターです。無料デモではカフェの3つの問題を直し、OPENの看板を点灯します。ガイドと一緒に1か所ずつ直すほか、エディターやターミナルで直接作業できます。コマンド、サーバー、APIはゲーム内のシミュレーションです。',
+    chaptersTitle: 'デモで引き受ける3つのお願い',
+    chapters: aboutCopy.ja.chapters.slice(0, 3),
+    how: '依頼を読み、問題の画面を見て、ファイルを修正し、検査して届けます。クエストには現在の作業と対象のアプリ・ファイルが表示されます。ガイド付きと直接作業は設定で切り替えられます。3つの依頼を届け、カフェが開店するとデモの物語が終わります。',
+    help: 'ヒントは必要なときに開けます。報酬は減りません。補完、取り消し、コマンド履歴、Tab補完も使えます。どちらの方法でも同じカフェのファイルを編集します。',
+    faq: aboutCopy.ja.faq.map((item, index) => index === 1 ? { ...item, answer: 'カフェ入門3章と開店イベントを無料・登録不要で遊べます。まちの依頼18件、任意の練習6問、高度なコード実験室、最後の自作プロジェクトとエンディングは本編用コンテンツとしてデモではロックされています。クレジットはゲーム内の仮想通貨です。' } : index === 3 ? { ...item, answer: '自動設定は接続元の国を使い、韓国では韓国語、日本では日本語、その他は英語を選びます。国の情報がなければブラウザの言語を使います。タイトル画面や設定で直接選んだ言語が優先されます。' } : item).concat([{ question: '以前の本編セーブはどうなりますか？', answer: '進行状況は削除せず、3章分に切り詰めることもありません。本編の内容はデモでは遊べませんが、設定からセーブ全体のバックアップを書き出せます。最初から始めるには確認が必要です。保存はサイトのアドレスとブラウザごとに分かれています。' }]),
+    footer: 'CODE:SHIFTは仮タイトルで、正式名は投票後に決める予定です。映像は本編開発ビルドの実際の韓国語プレイを編集したもので、デモではロックされているまちの依頼や最後の公開も含まれます。ゲーム内の公開は実際のインターネット公開やSteam発売ではありません。',
+  },
+};
+
+export const trailerScope: Record<AboutLanguage, string> = {
+  ko: '본편 개발 빌드 영상 · 데모에서 잠긴 콘텐츠 포함',
+  en: 'Full development build trailer · Includes content locked in the demo',
+  ja: '本編開発ビルドの映像 · デモでロックされた内容を含みます',
+};

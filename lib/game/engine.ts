@@ -8,6 +8,7 @@ import {RELEASE_ROOT,invalidateRelease} from './release.ts';
 import {parseTerminalInput,terminalArgumentError} from './terminal-shell.ts';
 import {checkLabFileWrite,syncLabWorkspace,dispatchLabNode} from './code-lab-terminal.ts';
 import {dispatchCareerNode} from './career-code-terminal.ts';
+import {editionAllowsAction,editionAllowsCommand,editionAllowsPath,DEMO_LOCKED_MESSAGE,type GameEdition} from './edition.ts';
 
 export type Files = Record<string,string>;
 export type MachineId = 'local'|'server';
@@ -72,7 +73,8 @@ export function parseBackend(code:string):{route:string;save:boolean}{
  if(!p[2].startsWith('/'))throw new Error('ValueError: URL rule must start with a slash.');return {route:p[2],save:save[1]==='True'};
 }
 
-export function act(state:GameState,action:Action):GameState{
+export function act(state:GameState,action:Action,edition:GameEdition='full'):GameState{
+ if(!editionAllowsAction(state,action,edition))return {...clone(state),notice:DEMO_LOCKED_MESSAGE};
  const s=clone(state);s.notice='';
  if(action.type.startsWith('career-')){applyCareer(s,action as CareerAction);return s;}
  if(action.type.startsWith('lab-'))return applyLab(s,action as LabAction);
@@ -121,9 +123,9 @@ export function act(state:GameState,action:Action):GameState{
  if(action.type==='discover'){s.discovered[action.what]=true;return s;}
  if(action.type==='genericfile-edit'){
   if(s.machine!=='local'){s.notice='File editing is available on workstation only. exit to return to local files.';return s;}
-  try{const path=commandPath(s.machines.local.cwd,action.path);if(!Object.hasOwn(s.machines.local.files,path)){s.notice='File not found. Open an existing local file.';return s;}if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}if(typeof action.content!=='string')return s;storedFile(path,action.content);if(path.startsWith('/home/dev/jobs/')&&action.content.length>20000)throw Error('Job files can contain up to 20,000 characters.');s.machines.local.files[path]=action.content;syncLabWorkspace(s);invalidateRelease(s);}catch(e){s.notice=(e as Error).message;}return s;
+  try{const path=commandPath(s.machines.local.cwd,action.path);if(!Object.hasOwn(s.machines.local.files,path)){s.notice='File not found. Open an existing local file.';return s;}if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}if(typeof action.content!=='string')return s;storedFile(path,action.content);if(path.startsWith('/home/dev/jobs/')&&action.content.length>20000)throw Error('Job files can contain up to 20,000 characters.');s.machines.local.files[path]=action.content;if(edition==='full'){syncLabWorkspace(s);invalidateRelease(s);}}catch(e){s.notice=(e as Error).message;}return s;
  }
- if(action.type==='edit'){if(!s.repo)return s;if(action.content.length>60000){s.notice='파일은 60,000자까지 편집할 수 있어요.';return s;}if(!Object.hasOwn(projectFiles(s),action.path))return s;const path=s.repo.root+'/'+action.path;if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}try{storedFile(path,action.content);}catch(e){s.notice=(e as Error).message;return s;}s.machines.local.files[path]=action.content;syncLabWorkspace(s);invalidateRelease(s);return s;}
+ if(action.type==='edit'){if(!s.repo)return s;if(action.content.length>60000){s.notice='파일은 60,000자까지 편집할 수 있어요.';return s;}if(!Object.hasOwn(projectFiles(s),action.path))return s;const path=s.repo.root+'/'+action.path;if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}try{storedFile(path,action.content);}catch(e){s.notice=(e as Error).message;return s;}s.machines.local.files[path]=action.content;if(edition==='full'){syncLabWorkspace(s);invalidateRelease(s);}return s;}
  if(action.type==='request-tests'){s.testRequest++;return s;}
  if(action.type==='test-result'){if(action.hash!==sourceHash(projectFiles(s)))return s;s.tests={hash:action.hash,mission:s.mission,checks:action.checks};if(action.designChoice&&action.designChoice===s.gameplay.designChoice)s.gameplay.designEvidence={hash:action.hash,choice:action.designChoice,passed:action.designPassed===true};s.notice=action.checks.every(c=>c.passed)?(action.designChoice===s.gameplay.designChoice&&action.designChoice?(action.designPassed?'화면과 색상 모두 통과! 보너스 창에서 보상을 받아 보세요.':'의뢰 검사는 통과했어요. 선택한 버튼 색은 아직 달라요.'):'손님 확인을 마쳤어요. 지우에게 알려 주세요.'):'아직 해결할 항목이 있어요. 검사 결과를 확인해 보세요.';return s;}
  if(action.type==='install-server'){if(s.mission<2){s.notice='세 번째 의뢰에서 서버가 지급됩니다.';return s;}s.serverReady=true;log(s,'[mono-server] Ubuntu 24.04 설치 완료 · 가상 서버');return s;}
@@ -144,10 +146,15 @@ export function act(state:GameState,action:Action):GameState{
  return s;
 }
 
-export function runCommand(state:GameState,input:string):CommandResult{
+export function runCommand(state:GameState,input:string,edition:GameEdition='full'):CommandResult{
  let s=clone(state);s.notice='';const origin=s.machine,cwd=s.machines[origin].cwd;let error=false;let output='';let openFile:string|undefined;
  const fail=(text:string)=>{error=true;output=text;};
  let args:string[],redirect:ReturnType<typeof parseTerminalInput>['redirect']=null;try{const parsed=parseTerminalInput(input,tokenize);args=tokenize(parsed.command);redirect=parsed.redirect;}catch(e){args=[];const message=(e as Error).message;fail(message.startsWith('shell:')?message:'shell: '+message);}
+ if(!editionAllowsCommand(state,args,redirect,edition)){
+  const output=DEMO_LOCKED_MESSAGE;s.notice=output;
+  if(input.trim())s.history.push({command:input,output,error:true,machine:origin,cwd});s.history=s.history.slice(-100);
+  return {state:s,output,error:true};
+ }
  const m=s.machines[s.machine];const [cmd,...a]=args;const root=s.machine==='local'?(s.repo?.root??PROJECT):PROJECT;
  const protectDelivered=(path:string)=>{if(s.machine==='local'&&localPathReadOnly(s,path))throw Error('Read-only: this project has already been delivered. Copy it to a different folder to experiment.');};
  const inProject=()=>m.cwd===root||m.cwd.startsWith(root+'/');
@@ -167,7 +174,7 @@ export function runCommand(state:GameState,input:string):CommandResult{
   const end=a.indexOf('--'),flags=a.slice(0,end<0?a.length:end).filter(x=>x.startsWith('-')).join(''),operand=end>=0?a[end+1]:a.find(x=>!x.startsWith('-')),path=resolvePath(m.cwd,operand||'.');
   const show=(name:string,full:string)=>{const directory=m.dirs.includes(full),bytes=directory?0:new TextEncoder().encode(m.files[full]??'').length,size=flags.includes('h')&&bytes>=1024?(bytes/1024).toFixed(1)+'K':String(bytes),readonly=s.machine==='local'&&localPathReadOnly(s,full),mode=directory?(readonly?'dr-xr-xr-x':'drwxr-xr-x'):(readonly?'-r--r--r--':'-rw-r--r--');return flags.includes('l')?`${mode} 1 dev dev ${size.padStart(6)} - ${name}`:name+(directory?'/':'');};
   if(!m.dirs.includes(path)){if(m.files[path]!==undefined)output=show(path.split('/').at(-1)!,path);else fail(`ls: cannot access '${path}': No such file or directory`);}
-  else{const prefix=path==='/'?'/':path+'/',names=[...new Set([...m.dirs,...Object.keys(m.files)].filter(p=>p.startsWith(prefix)&&p!==path).map(p=>p.slice(prefix.length).split('/')[0]))].filter(name=>flags.includes('a')||!name.startsWith('.')).sort();const entries=names.map(name=>show(name,prefix+name));if(flags.includes('a'))entries.unshift(show('.',path),show('..',resolvePath(path,'..')));output=entries.join(flags.includes('l')||flags.includes('1')?'\n':'  ');}
+  else{const prefix=path==='/'?'/':path+'/',names=[...new Set([...m.dirs,...Object.keys(m.files)].filter(p=>p.startsWith(prefix)&&p!==path&&editionAllowsPath(edition,p)).map(p=>p.slice(prefix.length).split('/')[0]))].filter(name=>flags.includes('a')||!name.startsWith('.')).sort();const entries=names.map(name=>show(name,prefix+name));if(flags.includes('a'))entries.unshift(show('.',path),show('..',resolvePath(path,'..')));output=entries.join(flags.includes('l')||flags.includes('1')?'\n':'  ');}
  }
  else if(cmd==='cd'){
   const previous=a[0]==='-'?s.history.findLast(h=>!h.error&&h.machine===s.machine&&h.cwd!==m.cwd&&/^cd(?:\s|$)/.test(h.command.trim()))?.cwd:undefined;
@@ -230,14 +237,15 @@ export function runCommand(state:GameState,input:string):CommandResult{
   if(s.machine==='local'&&target.startsWith('/home/dev/jobs/')&&text.length>20000)throw Error('Job files can contain up to 20,000 characters.');
   m.files[target]=text;output='';
  }
- syncLabWorkspace(s);
+ if(edition==='full')syncLabWorkspace(s);
  }catch(e){s=clone(state);s.notice='';openFile=undefined;fail((e as Error).message);}
+ if(edition==='demo'&&(cmd==='help'||cmd==='man'))output=output.split('\n').filter(line=>!line.startsWith('LAB ')).join('\n');
  if(!error&&origin==='local'&&s.repo){
   if(cmd==='pwd'&&cwd===s.repo.root)s.gameplay.exploration.pwd=true;
   if(cmd==='ls'&&resolvePath(cwd,a.find(x=>!x.startsWith('-'))||'.')===s.repo.root)s.gameplay.exploration.ls=true;
   if(cmd==='cat'&&a[0]&&resolvePath(cwd,a[0])===s.repo.root+'/README.md')s.gameplay.exploration.readme=true;
  }
- invalidateRelease(s);
+ if(edition==='full')invalidateRelease(s);
  if(input.trim())s.history.push({command:input,output,error,machine:origin,cwd});s.history=s.history.slice(-100);return {state:s,output,error,...(openFile?{openFile}:{})};
 }
 

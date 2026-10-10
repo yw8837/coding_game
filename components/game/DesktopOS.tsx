@@ -1,5 +1,6 @@
 'use client';
 import {useCallback,useEffect,useRef,useState,type ReactNode} from 'react';
+import {editionAllowsApp,editionAllowsPath} from '@/lib/game/edition';
 import {Monitor,Code2,TerminalSquare,MessageCircle,FolderOpen,FileText,Settings2,Trophy,Palette,Server,Send,LayoutGrid,Search,Power,Volume2,VolumeX,Wifi,Check,Flag,Puzzle,Expand,ChevronLeft,ChevronRight,CalendarDays} from 'lucide-react';
 import {useLanguage,t} from '@/lib/game/i18n';
 import {gameMessages} from '@/lib/game/gameplay';
@@ -50,7 +51,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
  const toggleCalendar=()=>{if(calendar)closePanel();else{const current=new Date();setNow(current);setMonth(calendarMonth(current));returnFocus.current=clockRef.current;setPanel('calendar');}};
  const time=now?.toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit',hour12:false})??'--:--';
  const date=now?.toLocaleDateString(locale,{month:'2-digit',day:'2-digit'})??'--/--';
- const recentFiles=recentEditorFiles(props.state.history,props.state.machines.local.files);
+ const recentFiles=recentEditorFiles(props.state.history,props.state.machines.local.files).filter(path=>editionAllowsPath(props.edition,path));
  const recentWork=props.state.history.slice(-3).reverse();
  const weekdays=Array.from({length:7},(_,day)=>new Date(2023,0,1+day,12));
  const unread=gameMessages(props.state).filter(m=>!props.state.gameplay.readMessages.includes(m.id)).length;
@@ -62,7 +63,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
  useEffect(()=>{if(manager.app==='desktop')startRef.current?.focus({preventScroll:true});},[manager.app]);
  useEffect(()=>{if(!panel)return;const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePanel();}};const outside=(e:PointerEvent)=>{const target=e.target as Node;if(startPanel.current?.contains(target)||calendarPanel.current?.contains(target)||startRef.current?.contains(target)||searchRef.current?.contains(target)||clockRef.current?.contains(target))return;closePanel();};document.addEventListener('keydown',key,true);document.addEventListener('pointerdown',outside);return()=>{document.removeEventListener('keydown',key,true);document.removeEventListener('pointerdown',outside);};},[panel,closePanel]);
  const open=(id:AppId)=>{closePanel(false);props.onOpen(id);};
- const available=DESKTOP_APPS.filter(a=>(a.id!=='career'||props.state.gameplay.openingCelebrated)&&(advanced||!['server','api'].includes(a.id)||props.state.mission===2));
+ const available=DESKTOP_APPS.filter(a=>editionAllowsApp(props.edition,a.id)&&(a.id!=='career'||props.state.gameplay.openingCelebrated)&&(advanced||!['server','api'].includes(a.id)||props.state.mission===2));
  const label=(a:typeof DESKTOP_APPS[number])=>a[lang];
  const activeApps=manager.windows.filter(w=>!w.closed);
  const visibleApps=visibleQuestApps(manager.windows,manager.bounds,manager.compact);
@@ -75,7 +76,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
     <nav className="pc-shortcuts" aria-label={tr('바탕화면 바로가기','Desktop shortcuts','デスクトップのショートカット')}>
      {available.filter(a=>['computer','messages','browser','editor','terminal','notes','challenges','career'].includes(a.id)).map(a=><button key={a.id} aria-label={label(a)} className={'pc-shortcut '+(a.id==='messages'&&welcomeUnread?'first-message':'')} onClick={()=>open(a.id)}><span className={'pc-app-icon '+a.color}><a.icon size={28}/>{a.id==='messages'&&unread>0&&<i>{unread}</i>}</span><span>{label(a)}</span></button>)}
     </nav>
-    <div className="pc-desktop-caption"><span>{props.state.gameplay.career.upgrades.includes('studio-sign')?tr('나의 독립 작업실','Independent studio','自分の作業場'):'SHIFT OS'}</span><small>{tr('개인용 컴퓨터','Personal computer','パーソナルコンピューター')}</small></div>
+    <div className="pc-desktop-caption"><span>{props.edition!=='demo'&&props.state.gameplay.career.upgrades.includes('studio-sign')?tr('나의 독립 작업실','Independent studio','自分の作業場'):'SHIFT OS'}</span><small>{tr('개인용 컴퓨터','Personal computer','パーソナルコンピューター')}</small></div>
     {manager.app==='desktop'&&welcomeUnread&&<button className="pc-mail-toast" onClick={()=>open('messages')}><CharacterPortrait name="지우"/><span><small>{tr('지우 · 새 메시지','Jiwoo · New message','ジウ · 新着メッセージ')}</small><strong>{tr('메뉴판이 이상해요. 한번 봐줄래요?','The menu is broken. Can you take a look?','メニューがおかしいんです。見てもらえますか？')}</strong><em>{tr('눌러서 읽기','Click to read','クリックして読む')} →</em></span></button>}
     {manager.windows.map(w=>{const a=DESKTOP_APPS.find(a=>a.id===w.id);return <DesktopWindow key={w.id} window={w} bounds={manager.bounds} compact={manager.compact} active={manager.app===w.id} title={a?label(a):t('의뢰함')} icon={a?<a.icon size={16}/>:<Monitor size={16}/>} onFocus={()=>manager.focus(w.id)} onChange={manager.change} onClose={()=>{manager.close(w.id);onWindowClose();}}>{renderApp(w.id as AppId)}</DesktopWindow>;})}
    </div></div>

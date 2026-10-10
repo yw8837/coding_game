@@ -3,6 +3,8 @@ import {localizeUI} from '@/lib/game/i18n';
 import {CheckCircle2,Trophy} from 'lucide-react';
 import {MISSIONS} from '@/lib/game/content';
 import {OpeningEnding} from './Ending';
+import {DemoSummary} from './DemoBoundary';
+import {isDemoComplete} from '@/lib/game/edition';
 import {CHAPTERS} from '@/lib/game/story';
 import type {GameProps} from './types';
 
@@ -13,6 +15,7 @@ export function MissionsView(props:GameProps){
 
 export function AchievementsView(props:GameProps){
  const {state}=props;
+ if(props.edition==='demo'&&isDemoComplete(state))return <DemoSummary {...props}/>;
  const done=state.completed.length===MISSIONS.length;
  if(done)return localizeUI(<OpeningEnding {...props}/>);
  return localizeUI(<div className="campaign-ending"><span className="eyebrow-text">나의 해결사 수첩</span><h1>오픈까지 남은 일</h1><p>모노 카페의 세 의뢰를 해결하고 오픈까지 함께해 주세요.</p><div className="career-summary"><div><span>해결한 의뢰</span><strong>{state.completed.length}<small> / 3</small></strong></div><div><span>경험치</span><strong>{state.xp}<small> XP</small></strong></div><div><span>크레딧</span><strong>{state.credits}<small> cr</small></strong></div></div><div className="campaign-track">{MISSIONS.map((m,i)=><article key={m.id}>{state.completed.includes(i)?<CheckCircle2 size={25}/>:<Trophy size={25}/>}<div><h3>{CHAPTERS[i].title}</h3><p>{state.completed.includes(i)?CHAPTERS[i].lesson:'이야기를 이어가며 발견해 보세요.'}</p></div><small>{state.completed.includes(i)?m.badge:'아직 미완료'}</small></article>)}</div><div className="earned-badges">{state.badges.map(b=><span key={b}><Trophy size={16}/>{b}</span>)}</div><button className="primary-button" onClick={props.onFollow}>이야기 이어 하기</button></div>);

@@ -90,9 +90,10 @@ with sync_playwright() as pw:
     page.set_default_timeout(15000)
     page.on('pageerror', lambda error: report['pageErrors'].append(str(error)))
     page.on('request', lambda request: report['requests'].append({'url': request.url, 'resourceType': request.resource_type}))
-    page.add_init_script("localStorage.setItem('codeshift-guided','false');localStorage.setItem('codeshift-language-preference','ko')")
+    page.add_init_script("localStorage.setItem('codeshift-guided','false')")
     try:
         page.goto(BASE + '/', wait_until='networkidle')
+        page.get_by_role('combobox',name='Language').select_option('ko')
         page.locator('.pc-play').click()
         expect(page.locator('.pc-shortcuts')).to_be_visible()
         assert page.locator('.pc-window:visible').count() == 0
@@ -147,31 +148,46 @@ with sync_playwright() as pw:
                markerExecuted=False, parserProbeRequests=probe_requests)
         page.screenshot(path=str(OUT / 'web-preview-probe.png'), animations='disabled')
 
-        # Runtime attacks are entered through the actual editor, not an eval surrogate.
-        page.get_by_test_id('show-desktop').click()
-        page.locator('.pc-shortcuts').get_by_role('button', name='연습 의뢰', exact=True).click()
-        page.get_by_test_id('code-lab-tab').click()
-        page.get_by_test_id('lab-job-receipt').click()
-        editor = page.get_by_test_id('lab-source').locator('textarea')
-        before = saved(page)['credits']
-        for source, kind in [('function solve(input) { while (true) {} }', 'budget'),
-                             ('function solve(input) { return globalThis; }', 'unsupported'),
-                             ('function solve(input) { return input.constructor; }', 'unsupported')]:
-            editor.fill(source)
-            started = time.monotonic()
+        if os.environ.get('CODESHIFT_EDITION') == 'demo':
+            page.get_by_test_id('show-desktop').click()
+            expect(page.locator('.pc-shortcuts').get_by_role('button',name='연습 의뢰',exact=True)).to_have_count(0)
+            page.locator('.pc-shortcuts').get_by_role('button',name='터미널',exact=True).click()
+            lab_before=saved(page)['gameplay']['lab']
+            credits_before=saved(page)['credits']
+            field=page.locator('.pc-window[data-active=true] .terminal-form input')
+            for command in ['node ~/code-lab/receipt.js', 'code /home/dev/-/../studio/launch/index.html', 'echo hacked > ~/jobs/hack.js']:
+                field.fill(command);field.press('Enter')
+                expect(page.locator('.pc-window[data-active=true] .terminal-error').last).to_contain_text('웹 데모')
+                assert saved(page)['gameplay']['lab']==lab_before
+                assert saved(page)['credits']==credits_before
+            record('demo-lab-inaccessible', appHidden=True, commandsRejected=True, labStateUnchanged=True,
+                   fullEditionRuntimeAttackUI='not applicable: Code Lab is locked in the demo')
+        else:
+            # Runtime attacks are entered through the actual editor, not an eval surrogate.
+            page.get_by_test_id('show-desktop').click()
+            page.locator('.pc-shortcuts').get_by_role('button', name='연습 의뢰', exact=True).click()
+            page.get_by_test_id('code-lab-tab').click()
+            page.get_by_test_id('lab-job-receipt').click()
+            editor = page.get_by_test_id('lab-source').locator('textarea')
+            before = saved(page)['credits']
+            for source, kind in [('function solve(input) { while (true) {} }', 'budget'),
+                                 ('function solve(input) { return globalThis; }', 'unsupported'),
+                                 ('function solve(input) { return input.constructor; }', 'unsupported')]:
+                editor.fill(source)
+                started = time.monotonic()
+                editor.press('Control+Enter')
+                page.wait_for_function("({key,source})=>{const proof=JSON.parse(localStorage.getItem(key)).gameplay.lab.proofs.receipt;return proof?.source===source}", arg={'key': KEY, 'source': source})
+                proof = saved(page)['gameplay']['lab']['proofs']['receipt']
+                assert not proof['passed'] and proof['cases'][0]['error']['kind'] == kind, proof
+                assert saved(page)['credits'] == before
+                record('bounded-lab-attack', source=source, errorKind=kind, seconds=round(time.monotonic()-started, 3), noReward=True)
+            editor.fill('function solve(input) { return input.price * input.quantity; }')
             editor.press('Control+Enter')
-            page.wait_for_function("({key,source})=>{const proof=JSON.parse(localStorage.getItem(key)).gameplay.lab.proofs.receipt;return proof?.source===source}", arg={'key': KEY, 'source': source})
-            proof = saved(page)['gameplay']['lab']['proofs']['receipt']
-            assert not proof['passed'] and proof['cases'][0]['error']['kind'] == kind, proof
-            assert saved(page)['credits'] == before
-            record('bounded-lab-attack', source=source, errorKind=kind, seconds=round(time.monotonic()-started, 3), noReward=True)
-        editor.fill('function solve(input) { return input.price * input.quantity; }')
-        editor.press('Control+Enter')
-        page.wait_for_function('(key)=>JSON.parse(localStorage.getItem(key)).gameplay.lab.proofs.receipt?.passed===true', arg=KEY)
-        assert saved(page)['credits'] == before + 35
-        assert page.evaluate('(marker)=>window[marker]===undefined', MARKER)
-        record('valid-repair-after-attacks', passed=True, actualReward=35)
-        page.screenshot(path=str(OUT / 'web-lab-recovery.png'), animations='disabled')
+            page.wait_for_function('(key)=>JSON.parse(localStorage.getItem(key)).gameplay.lab.proofs.receipt?.passed===true', arg=KEY)
+            assert saved(page)['credits'] == before + 35
+            assert page.evaluate('(marker)=>window[marker]===undefined', MARKER)
+            record('valid-repair-after-attacks', passed=True, actualReward=35)
+            page.screenshot(path=str(OUT / 'web-lab-recovery.png'), animations='disabled')
         assert not report['pageErrors'], report['pageErrors']
         assert not probe_requests, 'DOMParser/preview attempted probe requests: ' + json.dumps(probe_requests)
         assert not report['blockedOutbound'], report['blockedOutbound']

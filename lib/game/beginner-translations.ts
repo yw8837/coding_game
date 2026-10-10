@@ -135,7 +135,7 @@ export const beginnerRows=String.raw`
 지우에게 메시지가 왔어요.¦You have a message from Jiwoo.¦ジウからメッセージが届きました。
 동네 카페의 간판이 엉뚱하게 바뀌었대요.¦The neighborhood cafe has the wrong sign.¦近所のカフェの看板が変わってしまったそうです。
 아래 버튼을 눌러 무슨 일인지 들어 봐요.¦Press the button below to hear what happened.¦下のボタンを押して話を聞きましょう。
-간판이 바뀌었어요!¦Our sign is wrong!¦看板が変わってしまいました！
+메뉴판에 다른 카페 이름이 떠요¦The menu shows the wrong cafe name¦メニューに別のカフェ名が表示されます
 저는 모노 카페 사장 지우예요. 휴대폰 메뉴판에 엉뚱한 가게 이름이 붙었어요. 우리 카페 간판을 골라 주실래요? 아래 버튼을 누르면 간판 두 개를 보여드릴게요.¦I'm Jiwoo, the owner of Mono Cafe. Our phone menu has the wrong shop name. Could you choose our sign? Press the button below to see two signs.¦モノカフェの店主、ジウです。スマホのメニューが違う店名になっています。看板を選んでくれませんか？下のボタンで二つの看板を見せますね。
 간판 고르러 가기¦Choose a sign¦看板を選びに行く
 좋아요. 제가 간판을 골라 볼게요!¦Sure, I'll choose a sign!¦はい、看板を選んでみます！

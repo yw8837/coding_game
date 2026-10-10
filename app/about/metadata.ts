@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { aboutCopy, type AboutLanguage } from './content';
+import { type AboutLanguage } from './content';
+import { demoCopy as aboutCopy } from './demo-content';
 
 export const SITE_ORIGIN = 'https://code.yeolmaeapps.kr';
 export const aboutPaths: Record<AboutLanguage, string> = { ko: '/about', en: '/about/en', ja: '/about/ja' };
