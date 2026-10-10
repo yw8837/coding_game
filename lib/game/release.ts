@@ -1,8 +1,12 @@
-import {type Localized} from './career-content.ts';
+import {CAREER_JOBS,type CareerJob,type Localized} from './career-content.ts';
 import {careerRouteReady} from './career-progress.ts';
+import {careerFootprint} from './career-tags.ts';
 import {parseReleaseProduct,parseReleaseStyle,RELEASE_PROJECT_SOURCE,type ReleaseProduct,type ReleaseStyle} from './release-product.ts';
+import type {ReleaseFootprint} from './release-letter.ts';
 export {filterReleaseItems,parseReleaseProduct,parseReleaseStyle} from './release-product.ts';
 export type {ReleaseProduct,ReleaseItem,ReleaseStyle} from './release-product.ts';
+export {releaseLetter} from './release-letter.ts';
+export type {ReleaseEnding,ReleaseFootprint,ReleaseLetter} from './release-letter.ts';
 
 export const RELEASE_ROOT='/home/dev/studio/launch';
 export const RELEASE_FILES:Record<string,string>={
@@ -75,4 +79,18 @@ export function applyRelease(s:Host,action:ReleaseAction):void{
  if(action.type==='career-release-test'){progress.proof={hash:releaseHash(files),passed:evaluateRelease(files,progress.formatRevision===2).passed};return;}
  if(action.type==='career-release-build'){if(releaseFresh(s))progress.build={hash:releaseHash(files),version:'1.0.0'};return;}
  if(action.type==='career-release-publish'&&releaseBuildFresh(s))progress.published={hash:releaseHash(files),version:'1.0.0'};
+}
+/** Mirrors careerRoot in career.ts, which imports this module. */
+const JOB_ROOT='/home/dev/jobs/';
+/** The mentor narrates the letter and the festival includes Jiwoo, so neither is quoted back as a client. */
+const NARRATOR_JOBS=['school-sort','festival-report'];
+type FootprintHost=Pick<Host,'machines'>&{gameplay:{career:{completed:string[];endingJobs:string[]}}};
+/** The ending's job snapshot (or the live list before it exists), its delivered files, and the released product. */
+export function releaseFootprint(s:FootprintHost):ReleaseFootprint{
+ const career=s.gameplay.career,ids=career.endingJobs.length?career.endingJobs:career.completed,files=s.machines.local.files;
+ const footprint=careerFootprint(ids,id=>{const root=JOB_ROOT+id+'/';return Object.fromEntries(Object.entries(files).filter(([path])=>path.startsWith(root)).map(([path,value])=>[path.slice(root.length),value]));});
+ const delivered=[...new Set(ids)].map(id=>CAREER_JOBS.find(job=>job.id===id)).filter((job):job is CareerJob=>!!job&&!NARRATOR_JOBS.includes(job.id));
+ const clients=(delivered.length>1?[delivered[0],delivered[delivered.length-1]]:[]).map(job=>job.client);
+ const preview=evaluateRelease(releaseFiles(s)).preview;
+ return {...footprint,clients,title:preview.title,product:preview.personalized&&preview.productValid&&preview.product.items.length?preview.product:null};
 }
