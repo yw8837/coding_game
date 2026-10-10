@@ -1,5 +1,18 @@
 # Current gameplay trailer
 
+## Gameplay action revision — October 10
+
+The newest English delivery uses `action-edit.py` and the accepted source in
+`output/trailer-action-20261010/take2/`. It includes 14.067 seconds of actual
+terminal/code work, then delivery, equipment, personal-app interaction, build,
+publish and the final letter. See `docs/QA-action-trailer-2026-10-10.md`.
+
+Set `CODESHIFT_CAPTURE_ACTION=1` together with the English capture environment
+below. Render with `python media/trailer/action-edit.py`; `--assets-only` exports
+the 1280×720 gameplay cover and silent 10.33-second Reddit gallery GIF. This cut
+supersedes the delivered English MP4 below; earlier evidence remains archived.
+Reddit is on hold; the user has already posted X and Threads.
+
 ## English UI capture — October 10
 
 A separate overseas trailer now uses the actual English game UI, including the

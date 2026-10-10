@@ -7,6 +7,8 @@ STORE_CAPTURE=os.environ.get('CODESHIFT_CAPTURE_MODE')=='store'
 LANG=os.environ.get('CODESHIFT_CAPTURE_LANGUAGE','ko')
 assert LANG in ('ko','en'),'Supported capture languages: ko, en'
 EN=LANG=='en'
+ACTION=os.environ.get('CODESHIFT_CAPTURE_ACTION')=='1'
+assert not ACTION or EN,'Action capture currently uses English UI'
 OUT=ROOT/os.environ.get('CODESHIFT_CAPTURE_OUTPUT', 'output/steam-launch-20261010/capture' if STORE_CAPTURE else 'output/trailer-current')
 WIDTH,HEIGHT=(1920,1080) if STORE_CAPTURE else (1600,900)
 SEED=ROOT/('output/demo-20261010/en-cafe-save.json' if EN else 'output/0.13.1-qa/ko-cafe-save.json')
@@ -37,6 +39,18 @@ def main():
   def maximize():
    active=p.locator('.pc-window[data-active="true"]')
    if active.bounding_box()['width']<WIDTH-100:active.get_by_role('button',name='Maximize or restore window' if EN else '창 최대화 또는 복원',exact=True).click()
+  def terminal():
+   p.locator('.pc-start-button').click()
+   p.locator('.pc-start-apps').get_by_role('button',name='Terminal',exact=True).click()
+   maximize()
+  def command(text, error=False, delay=45):
+   field=p.locator('.pc-window[data-active="true"] .terminal-form input')
+   field.press_sequentially(text,delay=delay);field.press('Enter')
+   p.wait_for_function("text=>JSON.parse(localStorage.getItem('codeshift-intro-demo-v1')).history.at(-1)?.command===text",arg=text)
+   entry=state()['history'][-1]
+   assert bool(entry.get('error'))==error,entry
+   events.append({'type':'command','command':text,'output':entry.get('output'),'error':error})
+   pause(.3)
   try:
    p.goto(URL,wait_until='networkidle');p.get_by_role('combobox',name='Language').select_option(LANG)
    anchors.append(clock.record_marker(p,t0,'start'));p.locator('.pc-play').click();s=start();pause(2.2);end('desktop',s)
@@ -56,7 +70,26 @@ def main():
      p.get_by_test_id('career-scenario-select').select_option('0');p.get_by_test_id('career-scenario-run').scroll_into_view_if_needed();s=start();click('career-scenario-run');expect(p.get_by_test_id('career-scenario-actual')).to_have_text('12,600');pause(3);end('broken',s,'.career-playground')
     if id in inputs['solutions']:
      click('career-use-javascript');editor=p.get_by_test_id('career-js-editor').locator('textarea')
-     if index==0:
+     if index==0 and ACTION:
+      paths=[path for path in state()['machines']['local']['files'] if 'bakery-price' in path and path.endswith('/solution.js')]
+      assert len(paths)==1,paths
+      terminal()
+      if 'nodejs' not in state()['machines']['local']['tools']:
+       command('sudo apt update');command('sudo apt install nodejs')
+      command('cd '+paths[0].rsplit('/',1)[0]);command('clear')
+      s=start();command('node --test solution.js',error=True);pause(1.5);end('terminal-fail',s,'.pc-window[data-active="true"] .terminal-output')
+      s=start();command('code solution.js');maximize();pause(.5);end('terminal-open',s,'.pc-window[data-active="true"]')
+      field=p.get_by_test_id('virtual-file-source').locator('textarea');field.fill('');s=start()
+      for char in inputs['solutions'][id]:
+       p.keyboard.insert_text(char);pause(.025)
+      expect(field).to_have_value(inputs['solutions'][id]);pause(1);end('code',s,'[data-testid="virtual-file-editor"]')
+      click('virtual-file-terminal');maximize();command('clear')
+      s=start();command('node solution.js \'{"quantity":8}\'');pause(1.4);end('terminal-run',s,'.pc-window[data-active="true"] .terminal-output')
+      s=start();command('node --test solution.js');pause(2.5);end('terminal-pass',s,'.pc-window[data-active="true"] .terminal-output')
+      assert state()['gameplay']['career']['proofs'][id]['passed']
+      p.locator('.pc-window[data-active="true"]').get_by_role('button',name='Close window',exact=True).click()
+      p.locator('.pc-window[data-active="true"]').get_by_role('button',name='Close window',exact=True).click()
+     elif index==0:
       editor.fill('');editor.scroll_into_view_if_needed();s=start()
       for line in inputs['solutions'][id].splitlines(keepends=True):p.keyboard.insert_text(line);pause(.2)
       editor.click();expect(editor).to_have_value(inputs['solutions'][id]);click('career-code-save');pause(1.5);end('code',s,'[data-testid="career-js-editor"]')
@@ -95,10 +128,21 @@ def main():
    s=start();pause(3);end('project',s,'.release-preview-frame' if EN else '.release-preview')
    s=start();p.get_by_test_id('release-category-filter').select_option('Tools' if EN else '도구');expect(p.get_by_test_id('release-results').locator('li')).to_have_count(2);p.get_by_test_id('release-search').fill('Bakery' if EN else '빵집');expect(p.get_by_test_id('release-results').locator('li')).to_have_count(1);pause(2);end('project-filter',s,'.release-preview-frame' if EN else '.release-preview')
    p.get_by_test_id('release-search').fill('');p.get_by_test_id('release-category-filter').select_option('');p.get_by_test_id('release-inquiry').fill('Could I try the calculator?' if EN else '계산기를 써 봐도 될까요?');click('release-send-inquiry')
-   click('release-test');click('release-build');s=start();click('release-publish');expect(p.locator('.release-published')).to_be_visible()
+   click('release-test')
+   if ACTION:
+    p.get_by_test_id('release-build').scroll_into_view_if_needed();s=start();pause(.5);click('release-build');pause(.65)
+    end('build',s,'.release-actions')
+    p.get_by_test_id('release-publish').hover();pause(.5)
+   else:click('release-build')
+   s=start();click('release-publish');expect(p.locator('.release-published')).to_be_visible()
    if EN:p.locator('.release-preview-frame').evaluate('el=>el.scrollTo(0,0)')
    pause(3.8);end('release',s,'.release-published')
    assert state()['gameplay']['career']['release']['published']['version']=='1.0.0';assert len(state()['gameplay']['career']['completed'])==12
+   if ACTION:
+    click('release-letter');p.get_by_test_id('career-ending').scroll_into_view_if_needed();s=start();pause(.5);click('career-ending')
+    expect(p.get_by_test_id('final-letter')).to_be_visible();p.get_by_test_id('final-letter').scroll_into_view_if_needed();pause(4)
+    end('letter',s,'[data-testid="final-letter"]')
+    events.append({'type':'ending','ending':state()['gameplay']['career']['ending'],'text':p.get_by_test_id('final-letter').inner_text()})
    p.locator('.pc-language').click();p.get_by_role('button',name='Return to title' if EN else '타이틀로 돌아가기',exact=True).click();s=start();pause(3);end('title',s)
    assert not errors,errors;pause(.2);anchors.append(clock.record_marker(p,t0,'end'))
    video=p.video;c.close();raw=Path(video.path());media=clock.inspect_recording(raw,clock.media_binary('ffmpeg'),clock.media_binary('ffprobe'));aligned,timing=clock.align_shots(shots,anchors,media);shutil.copy2(raw,OUT/'raw.webm')
