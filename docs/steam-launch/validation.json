@@ -45,7 +45,7 @@
   "code_lab_in_draft_requires_final_ship_validation": true,
   "no_appid_assigned": true,
   "price_krw": 11000,
-  "launch_discount": "undecided; recommendation only, not applied",
+  "launch_discount": "user-confirmed on 2026-10-10: 20 percent for 7 days, KRW 8800; not applied or scheduled on Steam",
   "working_title": "CODE:SHIFT",
   "current_web_scope": "full game until actual Steam purchase availability",
   "promo_footage_version": "0.13.2-rc.0; actual Korean UI with KO/EN/JA editorial type",

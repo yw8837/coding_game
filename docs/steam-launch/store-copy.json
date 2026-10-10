@@ -82,8 +82,9 @@
     "days": 7,
     "price_krw": 8800,
     "applied": false,
-    "status": "undecided-not-applied",
-    "decision_status": "awaiting_user_choice; 20 percent remains only a recommendation"
+    "status": "user-confirmed-not-applied",
+    "decision_status": "explicit user selection on 2026-10-10: 20 percent for the first 7 days; KRW 8800",
+    "confirmed_date_kst": "2026-10-10"
   },
   "game_version_scope": "0.13.2 RC; final Steam build not submitted",
   "korea_price_decision": "user-selected; not applied on Steam",
