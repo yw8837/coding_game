@@ -4,9 +4,13 @@ import ast, hashlib, importlib.util, json, os, shutil, subprocess, time
 
 ROOT=Path(__file__).resolve().parents[2]
 STORE_CAPTURE=os.environ.get('CODESHIFT_CAPTURE_MODE')=='store'
-OUT=ROOT/('output/steam-launch-20261010/capture' if STORE_CAPTURE else 'output/trailer-current')
+LANG=os.environ.get('CODESHIFT_CAPTURE_LANGUAGE','ko')
+assert LANG in ('ko','en'),'Supported capture languages: ko, en'
+EN=LANG=='en'
+OUT=ROOT/os.environ.get('CODESHIFT_CAPTURE_OUTPUT', 'output/steam-launch-20261010/capture' if STORE_CAPTURE else 'output/trailer-current')
 WIDTH,HEIGHT=(1920,1080) if STORE_CAPTURE else (1600,900)
-SEED=ROOT/'output/0.13.1-qa/ko-cafe-save.json'
+SEED=ROOT/('output/demo-20261010/en-cafe-save.json' if EN else 'output/0.13.1-qa/ko-cafe-save.json')
+URL=os.environ.get('CODESHIFT_CAPTURE_URL','http://127.0.0.1:5173/')
 spec=importlib.util.spec_from_file_location('capture_clock',Path(__file__).with_name('capture-art.py'))
 clock=importlib.util.module_from_spec(spec);spec.loader.exec_module(clock)
 tree=ast.parse((ROOT/'tests/e2e/freedom.py').read_text(encoding='utf-8'))
@@ -20,7 +24,7 @@ def main():
  shots=[];events=[];errors=[];anchors=[]
  with sync_playwright() as pw:
   browser=pw.chromium.launch(channel='chrome',headless=True)
-  c=browser.new_context(viewport={'width':WIDTH,'height':HEIGHT},locale='ko-KR',record_video_dir=str(OUT/'recording'),record_video_size={'width':WIDTH,'height':HEIGHT})
+  c=browser.new_context(viewport={'width':WIDTH,'height':HEIGHT},locale='en-US' if EN else 'ko-KR',record_video_dir=str(OUT/'recording'),record_video_size={'width':WIDTH,'height':HEIGHT})
   t0=time.monotonic();p=c.new_page();p.set_default_timeout(15000);p.on('pageerror',lambda e:errors.append(str(e)))
   def click(id):p.get_by_test_id(id).click()
   def state():return p.evaluate('JSON.parse(localStorage.getItem("codeshift-intro-demo-v1"))')
@@ -29,15 +33,15 @@ def main():
   def start():return now()
   def end(id,t,focus=None):
    box=p.locator(focus).first.bounding_box() if focus else {'x':0,'y':0,'width':WIDTH,'height':HEIGHT}
-   shots.append({'id':id,'start':round(t,3),'end':round(now(),3),'focus':box});p.screenshot(path=str(OUT/'screenshots'/f'{id}.png'));print('captured '+id,flush=True)
+   shots.append({'id':id,'start':round(t,3),'end':round(now(),3),'focus':box});p.screenshot(path=str(OUT/'screenshots'/f'{id}.png'));(OUT/'screenshots'/f'{id}.txt').write_text(p.locator('body').inner_text(),encoding='utf-8');print('captured '+id,flush=True)
   def maximize():
    active=p.locator('.pc-window[data-active="true"]')
-   if active.bounding_box()['width']<WIDTH-100:active.get_by_role('button',name='창 최대화 또는 복원',exact=True).click()
+   if active.bounding_box()['width']<WIDTH-100:active.get_by_role('button',name='Maximize or restore window' if EN else '창 최대화 또는 복원',exact=True).click()
   try:
-   p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.get_by_role('combobox',name='Language').select_option('ko')
+   p.goto(URL,wait_until='networkidle');p.get_by_role('combobox',name='Language').select_option(LANG)
    anchors.append(clock.record_marker(p,t0,'start'));p.locator('.pc-play').click();s=start();pause(2.2);end('desktop',s)
    # Import through the actual Settings UI. Cafe completion was earned by prior UI QA.
-   p.locator('.pc-language').click();p.locator('.save-tools input[type=file]').set_input_files(str(SEED));p.get_by_role('button',name='이 저장으로 이어하기',exact=True).click();p.locator('.pc-play').click()
+   p.locator('.pc-language').click();p.locator('.save-tools input[type=file]').set_input_files(str(SEED));p.get_by_role('button',name='Continue from this save' if EN else '이 저장으로 이어하기',exact=True).click();p.locator('.pc-play').click()
    p.locator('.quest-next button').click();maximize()
    close=p.locator('#mission-sidebar .panel-close')
    if close.is_visible():close.click()
@@ -80,21 +84,26 @@ def main():
      click('career-map-button');p.locator('.neighborhood-view').scroll_into_view_if_needed();s=start();pause(3);end('map',s,'.neighborhood-view')
    click('career-final-project');click('release-start')
    p.get_by_test_id('release-purpose').select_option('portfolio');p.get_by_test_id('release-accent').select_option('ocean');p.get_by_test_id('release-layout').select_option('cards')
-   p.get_by_test_id('release-description').fill('내가 고쳐서 다시 쓰게 된 동네의 도구들')
-   p.get_by_test_id('release-items').fill('빵집 계산기 | 상자와 낱개 가격 계산 | 도구\n공방 시간표 | 쉬는 시간이 있는 세 수업 | 일정\n도서관 대출 | 함께 쓰는 대출 규칙 | 도구');click('release-author-save')
-   for value in ['우리 동네 도구함','90%','/api/places','true']:
+   p.get_by_test_id('release-description').fill('Neighborhood tools, repaired and ready to use' if EN else '내가 고쳐서 다시 쓰게 된 동네의 도구들')
+   p.get_by_test_id('release-items').fill('Bakery calculator | Box and single-item prices | Tools\nWorkshop schedule | Three classes with breaks | Schedules\nLibrary lending | Shared borrowing rules | Tools' if EN else '빵집 계산기 | 상자와 낱개 가격 계산 | 도구\n공방 시간표 | 쉬는 시간이 있는 세 수업 | 일정\n도서관 대출 | 함께 쓰는 대출 규칙 | 도구');click('release-author-save')
+   for value in ['Neighborhood Toolbox' if EN else '우리 동네 도구함','90%','/api/places','true']:
     p.get_by_test_id('release-token').fill(value);click('release-apply')
    click('release-load-places');expect(p.get_by_test_id('release-results').locator('li')).to_have_count(3)
-   p.get_by_test_id('release-preview-title').scroll_into_view_if_needed();s=start();pause(3);end('project',s,'.release-preview')
-   s=start();p.get_by_test_id('release-category-filter').select_option('도구');expect(p.get_by_test_id('release-results').locator('li')).to_have_count(2);p.get_by_test_id('release-search').fill('빵집');expect(p.get_by_test_id('release-results').locator('li')).to_have_count(1);pause(2);end('project-filter',s,'.release-preview')
-   p.get_by_test_id('release-search').fill('');p.get_by_test_id('release-category-filter').select_option('');p.get_by_test_id('release-inquiry').fill('계산기를 써 봐도 될까요?');click('release-send-inquiry')
-   click('release-test');click('release-build');s=start();click('release-publish');expect(p.locator('.release-published')).to_be_visible();pause(3.8);end('release',s,'.release-published')
+   if EN:
+    p.locator('.release-preview').evaluate('el=>el.scrollIntoView({block:"start"})');p.locator('.release-preview-frame').evaluate('el=>el.scrollTo(0,0)')
+   else:p.get_by_test_id('release-preview-title').scroll_into_view_if_needed()
+   s=start();pause(3);end('project',s,'.release-preview-frame' if EN else '.release-preview')
+   s=start();p.get_by_test_id('release-category-filter').select_option('Tools' if EN else '도구');expect(p.get_by_test_id('release-results').locator('li')).to_have_count(2);p.get_by_test_id('release-search').fill('Bakery' if EN else '빵집');expect(p.get_by_test_id('release-results').locator('li')).to_have_count(1);pause(2);end('project-filter',s,'.release-preview-frame' if EN else '.release-preview')
+   p.get_by_test_id('release-search').fill('');p.get_by_test_id('release-category-filter').select_option('');p.get_by_test_id('release-inquiry').fill('Could I try the calculator?' if EN else '계산기를 써 봐도 될까요?');click('release-send-inquiry')
+   click('release-test');click('release-build');s=start();click('release-publish');expect(p.locator('.release-published')).to_be_visible()
+   if EN:p.locator('.release-preview-frame').evaluate('el=>el.scrollTo(0,0)')
+   pause(3.8);end('release',s,'.release-published')
    assert state()['gameplay']['career']['release']['published']['version']=='1.0.0';assert len(state()['gameplay']['career']['completed'])==12
-   p.locator('.pc-language').click();p.get_by_role('button',name='타이틀로 돌아가기',exact=True).click();s=start();pause(3);end('title',s)
+   p.locator('.pc-language').click();p.get_by_role('button',name='Return to title' if EN else '타이틀로 돌아가기',exact=True).click();s=start();pause(3);end('title',s)
    assert not errors,errors;pause(.2);anchors.append(clock.record_marker(p,t0,'end'))
    video=p.video;c.close();raw=Path(video.path());media=clock.inspect_recording(raw,clock.media_binary('ffmpeg'),clock.media_binary('ffprobe'));aligned,timing=clock.align_shots(shots,anchors,media);shutil.copy2(raw,OUT/'raw.webm')
    sha=lambda data:hashlib.sha256(data).hexdigest()
-   evidence={'version':json.loads((ROOT/'package.json').read_text())['version'],'gameCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'workingTreeDiffSha256':sha(subprocess.check_output(['git','diff','HEAD'],cwd=ROOT)),'gameSourceSha256':{name:sha((ROOT/name).read_bytes()) for name in ['components/game/CareerView.tsx','app/career.css','components/game/GameShell.tsx']},'viewport':[WIDTH,HEIGHT],'capture':'Actual Korean game UI with automated input; prior UI-earned cafe save imported visibly; all 12 career jobs and own project solved on this recording; selected shots form a retimed montage, not a continuous playthrough. No completion-state injection.','saveImport':{'path':str(SEED.relative_to(ROOT)),'sha256':sha(SEED.read_bytes()),'careerJobsAtImport':0},'timing':timing,'events':events,'pageErrors':errors,'shots':aligned,'rawSha256':sha((OUT/'raw.webm').read_bytes())}
+   evidence={'version':json.loads((ROOT/'package.json').read_text())['version'],'gameCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'workingTreeDiffSha256':sha(subprocess.check_output(['git','diff','HEAD'],cwd=ROOT)),'gameSourceSha256':{name:sha((ROOT/name).read_bytes()) for name in ['components/game/CareerView.tsx','app/career.css','components/game/GameShell.tsx']},'viewport':[WIDTH,HEIGHT],'language':LANG,'capture':f'Actual {"English" if EN else "Korean"} game UI with automated input; prior UI-earned cafe save imported visibly; all 12 career jobs and own project solved on this recording; selected shots form a retimed montage, not a continuous playthrough. No completion-state injection.','saveImport':{'path':str(SEED.relative_to(ROOT)),'sha256':sha(SEED.read_bytes()),'careerJobsAtImport':0},'timing':timing,'events':events,'pageErrors':errors,'shots':aligned,'rawSha256':sha((OUT/'raw.webm').read_bytes())}
    (OUT/'capture-evidence.json').write_text(json.dumps(evidence,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps({'shots':len(aligned),'seconds':media['duration'],'errors':errors}),flush=True)
   except Exception:
    if not p.is_closed():p.screenshot(path=str(OUT/'capture-failure.png'));(OUT/'capture-failure.txt').write_text(p.locator('body').inner_text(),encoding='utf-8')

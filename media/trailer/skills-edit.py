@@ -10,13 +10,14 @@ import hashlib
 import importlib.util
 import json
 import math
+import os
 from pathlib import Path
 import shutil
 import sys
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-OUT = ROOT / 'output/trailer-polish'
+OUT = ROOT / os.environ.get('CODESHIFT_TRAILER_OUTPUT', 'output/trailer-polish')
 EDIT = OUT / 'edit'
 FINAL = OUT / 'final'
 FPS = 30
@@ -101,7 +102,7 @@ def footage_box(layout, vertical):
     return [28, 160, 1864, 842]
 
 
-def safe_crop(focus, overview=False):
+def safe_crop(focus, overview=False, margin=24):
     if overview or focus is None:
         return [0, 0, *VIEWPORT]
     vals = [focus.get(k) for k in ('x', 'y', 'width', 'height')]
@@ -113,14 +114,15 @@ def safe_crop(focus, overview=False):
     # Some tall UI elements extend beyond the viewport. Only their recorded
     # intersection can be shown; no reconstruction or invented outside pixels.
     # Extra recorded pixels protect UI labels from the inherited 1.8% punch-in.
-    left, top = max(0, math.floor(x - 24)), max(0, math.floor(y - 24))
-    right, bottom = min(1600, math.ceil(x + w + 24)), min(900, math.ceil(y + h + 24))
+    left, top = max(0, math.floor(x - margin)), max(0, math.floor(y - margin))
+    right, bottom = min(1600, math.ceil(x + w + margin)), min(900, math.ceil(y + h + margin))
     return [left, top, right - left, bottom - top]
 
 
 def make_edl(check_media=True):
     evidence_path, source = OUT / 'capture-evidence.json', OUT / 'raw.webm'
     evidence = json.loads(evidence_path.read_text(encoding='utf-8-sig'))
+    english_ui = evidence.get('language') == 'en'
     if evidence.get('viewport') != VIEWPORT:
         raise ValueError('Current capture must be calibrated at 1600x900')
     takes = evidence.get('shots', [])
@@ -135,6 +137,8 @@ def make_edl(check_media=True):
             take = by_id['project']
             start, end = take['end']-.6, take['end']
             shot.update(start=start, end=end, speed=1, source='raw.webm', recordedFocus=take['focus'], crop=[716,278,388,488], portraitCrop=[716,278,388,488], footageBox=footage_box('end',False), portraitFootageBox=footage_box('end',True), holdLastFrame=True, cropReason='Hold the real authored app; do not replace the payoff with a blank text card')
+            if english_ui:
+                shot['crop'] = shot['portraitCrop'] = safe_crop(take['focus'], margin=0)
         else:
             if ident not in by_id:
                 raise ValueError(f'Missing recorded shot: {ident}')
@@ -158,6 +162,16 @@ def make_edl(check_media=True):
                     x, y, cw, ch = selected
                     if min(x, y) < 0 or min(cw, ch) <= 0 or x+cw > 1600 or y+ch > 900:
                         raise ValueError(f'{ident}: reviewed crop exceeds the actual viewport')
+            if english_ui:
+                if ident in ('project', 'project-filter'):
+                    shot['crop'] = shot['portraitCrop'] = safe_crop(take['focus'], margin=0)
+                    shot['cropReason'] = 'Recorded English app viewport, scrolled into view through UI'
+                elif ident == 'broken':
+                    shot['crop'] = shot['portraitCrop'] = [866, 502, 700, 224]
+                    shot['cropReason'] = 'Reviewed English receipt with expected and actual results'
+                elif ident == 'release':
+                    shot['crop'] = shot['portraitCrop'] = [320, 40, 1180, 780]
+                    shot['cropReason'] = 'English release banner, source and app preview'
             shot['footageBox'] = footage_box(layout, False)
             shot['portraitFootageBox'] = footage_box(layout, True)
         shots.append(shot)
@@ -174,7 +188,8 @@ def make_edl(check_media=True):
         'gameSourceSha256': evidence.get('gameSourceSha256'),
         'captureTiming': evidence.get('timing'), 'sourceEvents': evidence.get('events', []),
         'saveImport': evidence.get('saveImport'),
-        'capture': 'Actual Korean UI; automated inputs; visible import of UI-earned cafe save; omitted intervening actions; retimed montage; editorial typography and SFX',
+        'sourceLanguage': evidence.get('language', 'ko'),
+        'capture': evidence.get('capture', 'Actual Korean UI; automated inputs; visible import of UI-earned cafe save; omitted intervening actions; retimed montage; editorial typography and SFX'),
         'audioAssets': AUDIO_HASHES, 'maxSpeed': MAX_SPEED, 'layoutVersion': 'desktop-hook-v3', 'shots': shots,
     }
     if not edl['gameCommit']:
@@ -200,7 +215,7 @@ def make_edl(check_media=True):
 
 
 def prepare_audio():
-    original = ROOT / 'output/trailer-rebuild/audio'
+    original = ROOT / ('output/trailer-polish/audio' if OUT != ROOT / 'output/trailer-polish' else 'output/trailer-rebuild/audio')
     target = OUT / 'audio'
     target.mkdir(parents=True, exist_ok=True)
     for name, expected in AUDIO_HASHES.items():
@@ -300,7 +315,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         if layout == 'end':
             for i, line in enumerate(title):
                 text(a, b, line, 84, (210+i*155) if vertical else (240+i*170), 122 if vertical else 138, color if i else 'ink', delay=i*.10, maxw=910 if vertical else 860)
-            text(a+.3, b, 'CODE:SHIFT', 84, 1720 if vertical else 760, 50, 'ink', maxw=900)
+            text(a+.3, b, 'A neighborhood coding sim' if edl.get('sourceLanguage') == 'en' else 'CODE:SHIFT', 84, 1720 if vertical else 760, 40 if edl.get('sourceLanguage') == 'en' else 50, 'ink', maxw=900)
             text(a+.4, b, shot['detail'][lang]+'  →', 84, 1810 if vertical else 855, 42, 'gold', maxw=900 if vertical else 870)
             text(a+.4, b, copy('게임 속, 직접 만든 앱의 1.0.0', 'Your own app, version 1.0.0 in game', 'ゲーム内で作った、自分のアプリ1.0.0')[lang], 84, 530 if vertical else 630, 29, 'muted', animate=False, maxw=900 if vertical else 850)
         elif layout in ('split', 'showcase'):
@@ -335,6 +350,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 text(a+.08, b, line, 84, (1710+i*90) if emphasis else (1740+i*50) if vertical else 1016, 49 if emphasis else 31 if vertical else 32, maxw=w-170)
         event(a, min(b, a+.2), rf'\an7\pos(0,0)\p1\c&H{base.COLORS[color]}&\fscx3\t(0,170,\fscx100)', f'm 0 0 l {w} 0 l {w} 12 l 0 12', 3)
     note = copy('실제 게임 화면 · 자동 조작·장면 생략·속도 편집', 'Actual Korean gameplay · automated input · cuts & retiming', '実際の韓国語版プレイ · 自動操作・場面省略・速度編集')[lang]
+    if edl.get('sourceLanguage') == 'en':
+        note = 'Actual gameplay footage'
+        text(26.25, 30, 'Music: Voxel Revolution - Kevin MacLeod (incompetech.com)', 84, 936 if not vertical else 1570, 20, 'muted', animate=False, maxw=900)
+        text(26.25, 30, 'CC BY 4.0 - creativecommons.org/licenses/by/4.0', 84, 962 if not vertical else 1596, 20, 'muted', animate=False, maxw=900)
+        text(26.25, 30, 'Edited excerpt, tempo change and additional effects', 84, 988 if not vertical else 1622, 20, 'muted', animate=False, maxw=900)
     text(0, 2.8, note, 84, 50 if vertical else 32, 19, 'muted', animate=False, maxw=w-170)
     out.write_text(''.join(lines), encoding='utf-8-sig')
     return out

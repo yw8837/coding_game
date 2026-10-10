@@ -1,5 +1,23 @@
 # Current gameplay trailer
 
+## English UI capture — October 10
+
+A separate overseas trailer now uses the actual English game UI, including the
+player-authored Neighborhood Toolbox. The existing Korean capture and deliveries
+remain unchanged. See `docs/QA-english-gameplay-trailer-2026-10-10.md` for evidence,
+scope and the final delivery. The accepted source lives in
+`output/trailer-english-ui-20261010/take2/`.
+
+For a new isolated capture, set `CODESHIFT_CAPTURE_LANGUAGE=en`,
+`CODESHIFT_CAPTURE_URL` to the local full-edition desktop-client server, and
+`CODESHIFT_CAPTURE_OUTPUT` to an unused output directory before running
+`capture-current.py`. Set `CODESHIFT_TRAILER_OUTPUT` to that directory for
+`skills-edit.py --lang en`. Defaults retain the historical Korean workflow.
+The English edit uses calibrated app-frame bounds and carries its source language
+in the EDL; it does not translate recorded pixels with overlays.
+
+## Original Korean UI capture
+
 This 30-second edit starts with an actual bakery pricing bug: six buns should
 cost 10,000 won, but the game shows 12,600. The player edits real code and tests
 both six buns (10,000) and eight buns (13,600), completes the job for +200 cr and
