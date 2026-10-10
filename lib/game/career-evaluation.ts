@@ -1,6 +1,7 @@
 import {CAREER_JOBS,L,type Localized} from './career-content.ts';
 import {careerCodeMode,careerCodeSpec,evaluateCareerCode} from './career-code.ts';
-export type CareerCheck={name:Localized;passed:boolean;expected:string;actual:string};
+/** `hint` is a localized next step, set only on failed JavaScript-mode checks. */
+export type CareerCheck={name:Localized;passed:boolean;expected:string;actual:string;hint?:Localized};
 export type CareerEvaluation={passed:boolean;checks:CareerCheck[];preview:{label:Localized;value:string}[]};
 type Row=Record<string,string>;
 function display(value:unknown):string{return typeof value==='string'?value:JSON.stringify(value)??'null';}

@@ -18,10 +18,12 @@ export function dispatchCareerNode(state:GameState,args:string[],resolve:(cwd:st
   const files=careerFiles(state,id);if(careerCodeModeSafe(files)!=='javascript')return fail('Select JavaScript mode before running career JavaScript checks.');
   applyCareer(state,{type:'career-test',id});const proof=state.gameplay.career.proofs[id],evaluation=evaluateCareer(id,files);
   if(!proof||proof.hash!==careerHash(files))return fail('Accept this career job before recording its checks.');
-  return {output:'# CODE:SHIFT limited JavaScript interpreter\n'+evaluation.checks.map((check,index)=>`${check.passed?'ok':'not ok'} ${index+1} - ${check.name.en}`+(check.passed?'':`\n  expected: ${check.expected}\n  actual: ${check.actual}`)).join('\n')+`\n# tests ${evaluation.checks.length}\n# pass ${evaluation.checks.filter(check=>check.passed).length}\n# fail ${evaluation.checks.filter(check=>!check.passed).length}`,error:!evaluation.passed};
+  // One hint, on the first failure, keeps TAP output readable when many varied inputs fail.
+  const hinted=evaluation.checks.find(check=>!check.passed&&check.hint);
+  return {output:'# CODE:SHIFT limited JavaScript interpreter\n'+evaluation.checks.map((check,index)=>`${check.passed?'ok':'not ok'} ${index+1} - ${check.name.en}`+(check.passed?'':`\n  expected: ${check.expected}\n  actual: ${check.actual}`)+(check===hinted?`\n  hint: ${check.hint!.en}`:'')).join('\n')+`\n# tests ${evaluation.checks.length}\n# pass ${evaluation.checks.filter(check=>check.passed).length}\n# fail ${evaluation.checks.filter(check=>!check.passed).length}`,error:!evaluation.passed};
  }
  if(args.length!==2)return fail("Usage: node solution.js '<input JSON>'");
  const result=runCareerCode(id,source,args[1]);
- if(result.error)return fail(`${result.error.kind}: ${result.error.message}${result.error.line?' (line '+result.error.line+')':''}`);
+ if(result.error)return fail(`${result.error.kind}: ${result.error.message}${result.error.line?' (line '+result.error.line+')':''}`+(result.diagnosis?`\nhint: ${result.diagnosis.en}`:''));
  return {output:'# CODE:SHIFT limited JavaScript interpreter\n'+JSON.stringify(result.actual,null,2),error:false};
 }
