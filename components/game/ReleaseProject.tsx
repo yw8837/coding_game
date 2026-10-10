@@ -8,11 +8,13 @@ import {SmartCodeInput,type SmartCodeHandle} from './SmartCodeInput';
 import {ReleaseAuthoring} from './ReleaseAuthoring';
 import {ReleaseLearning} from './ReleaseLearning';
 import {CampaignGoal} from './CampaignGoal';
+import {StudioWorkspace} from './StudioWorkspace';
 import type {GameProps} from './types';
 
 export function ReleaseProject({props,onLetter,onMap}:{props:GameProps;onLetter:()=>void;onMap:()=>void}) {
  const {state,onAction}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
  const progress=state.gameplay.career.release,unlocked=releaseUnlocked(state);
+ const [studioOpen,setStudioOpen]=useState(false);
  const [codeMode,setCodeMode]=useState(()=>props.guided===false);
  const [file,setFile]=useState('index.html'),[hint,setHint]=useState(false),[answer,setAnswer]=useState(false);
  const [editError,setEditError]=useState('');
@@ -31,7 +33,7 @@ export function ReleaseProject({props,onLetter,onMap}:{props:GameProps;onLetter:
  // eslint-disable-next-line react-hooks/set-state-in-effect -- A changed global help preference changes the initial editing mode, while manual mode switches stay local.
  useEffect(()=>{setCodeMode(props.guided===false);setHint(false);setAnswer(false);},[props.guided]);
  useEffect(()=>{heading.current?.focus({preventScroll:true});},[]);
- useEffect(()=>{if(published){publishedCard.current?.scrollIntoView({block:'start'});publishedCard.current?.focus({preventScroll:true});}},[published]);
+ useEffect(()=>{if(published){publishedCard.current?.scrollIntoView({block:'start'});publishedCard.current?.focus({preventScroll:true});}},[published,studioOpen]);
  const hints:Record<string,string>={
   'index.html':tr('<h1>와 </h1> 사이의 Untitled를 내 제목으로 바꾸세요. 1~40자이며 태그는 남겨 둡니다.','Replace Untitled between <h1> and </h1> with your own title, 1–40 characters. Keep the tags.','<h1>と</h1>の間のUntitledを、自分のタイトル1～40文字に変えます。タグは残します。'),
   'style.css':tr('예를 들어 width: 90% 또는 width: 960px; max-width: 100%로 화면 폭을 따라가게 할 수 있어요. padding을 쓰면 box-sizing도 확인하세요.','For example, width: 90% or width: 960px; max-width: 100% can follow the screen. Check box-sizing when adding padding.','例えばwidth: 90%やwidth: 960px; max-width: 100%で画面に合わせられます。paddingを使うときはbox-sizingも確認しましょう。'),
@@ -47,12 +49,13 @@ export function ReleaseProject({props,onLetter,onMap}:{props:GameProps;onLetter:
  const stage=!progress.started?0:!passed?1:!built?2:!published?3:4;
  const stages=[tr('프로젝트 받기','Get project','作品を受け取る'),tr('수정 · 검사','Edit · check','修正・検査'),tr('버전 기록','Build version','版を記録'),tr('배포','Release','公開')];
  const submit=()=>{const result=simulateReleaseRequest(files,message.trim());if(result.status!==200)setRequestStatus('offline');else if(!result.stored)setRequestStatus('lost');else {setSent(items=>[(inquiryItem?inquiryItem+' · ':'')+message.trim(),...items].slice(0,3));setMessage('');setRequestStatus('stored');}};
+ if(published&&studioOpen)return <StudioWorkspace props={props} onBack={()=>setStudioOpen(false)}/>;
  return <section className="release-project" data-testid="release-project" data-no-translate>
   <header className="release-heading"><span className="career-section-label">{tr('마지막 프로젝트','FINAL PROJECT','最後のプロジェクト')} / v1.0.0</span><h2 ref={heading} tabIndex={-1}>{tr('내 콘텐츠로 만드는 첫 웹앱','Your first web app, with your own content','自分の内容で作る最初のウェブアプリ')}</h2><p>{tr('추천 장소, 행사 안내, 작품 모음 중 필요한 것을 만드세요. 내 소개와 목록을 쓰고, 검색·문의 기능을 연결한 뒤 내 첫 버전을 배포합니다.','Make a directory, event board or portfolio you need. Write your description and items, connect search and inquiries, then release your first version.','必要な場所案内、イベント案内、作品集を作りましょう。自分の紹介と一覧を書き、検索と問い合わせをつないで最初の版を公開します。')}</p></header>
   {!unlocked?<div className="release-locked"><Lock size={28}/><h3>{tr('동네 의뢰를 마치면 시작해요.','Finish the neighborhood jobs to begin.','まちの依頼を終えると始められます。')}</h3><CampaignGoal state={state}/><button className="primary-button" onClick={onMap}>{tr('의뢰 지도 보기','View the job map','依頼マップへ')}<ArrowRight size={16}/></button></div>:<>
    <ol className="release-steps" aria-label={tr('배포 단계','Release steps','公開の手順')}>{stages.map((label,index)=><li key={label} className={stage>index?'done':stage===index?'current':''} aria-current={stage===index?'step':undefined}><span>{stage>index?<Check size={14}/>:index+1}</span>{label}</li>)}</ol>
    {!progress.started?<div className="release-brief"><Image unoptimized src="/game-art/neighborhood.png" width={1672} height={941} loading="eager" alt=""/><div><h3>{tr('이번에는 내 프로젝트입니다.','This time, it is your project.','今度はあなたの作品です。')}</h3><p>{tr('제목과 소개, 담을 목록을 직접 정하세요. 화면 폭을 맞추고 검색·문의 기능을 연결해 내가 사용할 첫 웹앱을 만듭니다. 도움은 직접 열 수 있어요.','Choose your title, description and items. Make the page fit, connect search and inquiries, and create a first web app you can use. Open help when you want it.','タイトル、紹介、載せる一覧を自分で決めましょう。画面を合わせ、検索と問い合わせをつなぎ、自分が使う最初のウェブアプリを作ります。ヒントは自分で開けます。')}</p><button className="primary-button" data-testid="release-start" onClick={()=>onAction({type:'career-release-start'})}>{tr('최종 프로젝트 시작','Start final project','最後の作品を始める')}<ArrowRight size={16}/></button></div></div>:<>
-    {published&&<div ref={publishedCard} tabIndex={-1} className="release-published" role="status"><Rocket size={25}/><div><strong>{tr('1.0.0 배포 완료','Version 1.0.0 released','1.0.0 公開完了')}</strong><p>{tr('이 버전의 파일과 검사 기록이 저장됐습니다.','This version’s files and checks are saved.','この版のファイルと検査記録を保存しました。')}</p></div><button className="primary-button" data-testid="release-letter" onClick={onLetter}>{tr('마지막 편지 읽기','Read the final letter','最後の手紙を読む')}<ArrowRight size={16}/></button></div>}
+    {published&&<div ref={publishedCard} tabIndex={-1} className="release-published" role="status"><Rocket size={25}/><div><strong>{tr('1.0.0 배포 완료','Version 1.0.0 released','1.0.0 公開完了')}</strong><p>{tr('이 버전의 파일과 검사 기록이 저장됐습니다.','This version’s files and checks are saved.','この版のファイルと検査記録を保存しました。')}</p></div><button className="primary-button" data-testid="release-letter" onClick={onLetter}>{tr('마지막 편지 읽기','Read the final letter','最後の手紙を読む')}<ArrowRight size={16}/></button><button className="outline-button" data-testid="release-open-studio" onClick={()=>setStudioOpen(true)}>{tr('내 앱 계속 만들기','Keep building my app','自分のアプリを続けて作る')}</button></div>}
     {!published&&<ReleaseAuthoring source={files['project.json']} onEdit={content=>onAction({type:'career-release-edit',file:'project.json',content})}/>}
     {!published&&<><div className="release-mode"><button className="outline-button" data-testid="release-code-mode" aria-pressed={codeMode} onClick={()=>setCodeMode(!codeMode)}>{codeMode?tr('한 부분씩 쓰기','Write one part at a time','1つずつ書く'):tr('전체 코드 직접 편집','Edit full code','コード全体を編集')}</button><small>{tr('도움을 써도 같은 배포 기록이 남아요.','Both ways create the same release record.','どちらでも同じ公開記録になります。')}</small></div>{!codeMode&&<ReleaseLearning requireProject={progress.formatRevision===2} files={files} onEdit={(file,content)=>onAction({type:'career-release-edit',file,content})}/>}</>}
     <div className={'release-workspace '+(!codeMode&&!published?'guided-release':'')}><section className="release-files" hidden={!codeMode&&!published}><nav className="career-file-tabs" aria-label={tr('최종 프로젝트 파일','Final project files','最後の作品のファイル')}>{Object.keys(published?files:RELEASE_START_FILES).map(name=><button key={name} aria-pressed={file===name} onClick={()=>{setFile(name);setHint(false);setAnswer(false);setEditError('');}}>{name}</button>)}</nav>

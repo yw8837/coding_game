@@ -1,6 +1,9 @@
 'use strict';
 const messages = {
   en: {
+    appExportTitle: 'Export your web app', appExportButton: 'Save HTML app',
+    appExportInvalid: 'The app document is invalid or larger than 512 KiB.',
+    appExportFailed: 'The app could not be saved. Choose an HTML file and check folder access and free space.',
     timeout: 'The game has not confirmed its final save.',
     saveFailed: 'The latest progress could not be saved.',
     unsaved: 'Your last successfully saved progress remains available. Closing now may lose recent changes.',
@@ -13,6 +16,9 @@ const messages = {
     startupFailed: 'The desktop shell could not initialize. Check the packaged files and permissions.',
   },
   ko: {
+    appExportTitle: '내 웹앱 내보내기', appExportButton: 'HTML 앱 저장',
+    appExportInvalid: '앱 파일 형식이 올바르지 않거나 512 KiB를 넘었어요.',
+    appExportFailed: '앱을 저장하지 못했어요. HTML 파일을 선택하고 폴더 접근 권한과 저장 공간을 확인해 주세요.',
     timeout: '게임의 마지막 저장 확인이 도착하지 않았어요.',
     saveFailed: '최근 진행 기록을 저장하지 못했어요.',
     unsaved: '마지막으로 저장에 성공한 기록은 남아 있어요. 지금 종료하면 최근 변경 사항이 사라질 수 있어요.',
@@ -25,6 +31,9 @@ const messages = {
     startupFailed: '데스크톱 게임을 준비하지 못했어요. 패키지 파일과 접근 권한을 확인해 주세요.',
   },
   ja: {
+    appExportTitle: '自分のウェブアプリを書き出す', appExportButton: 'HTMLアプリを保存',
+    appExportInvalid: 'アプリの形式が無効か、512 KiBを超えています。',
+    appExportFailed: 'アプリを保存できませんでした。HTMLファイルを選び、フォルダーの権限と空き容量を確認してください。',
     timeout: 'ゲームの最終保存を確認できませんでした。',
     saveFailed: '最新の進行状況を保存できませんでした。',
     unsaved: '最後に保存できた進行状況は残っています。今終了すると、最近の変更が失われる可能性があります。',

@@ -4,9 +4,11 @@ import {allowedCareerFile,careerCodeSpec,CAREER_CODE_FILE,CAREER_CODE_MODE_FILE,
 import {careerActReady,careerPriorActsReady,careerRouteReady,careerEndingFor} from './career-progress.ts';
 import {createRelease,applyRelease,releasePublishedFresh,type ReleaseProgress,type ReleaseAction} from './release.ts';
 
-export type CareerProgress={rulesRevision:1|2;active:string|null;accepted:string[];inspected:string[];completed:string[];proofs:Record<string,{hash:string;passed:boolean}>;choices:Record<string,string>;upgrades:string[];checkpoints:Record<string,Record<string,string>>;ending:'community'|'studio'|'balanced'|null;endingJobs:string[];release:ReleaseProgress};
-export const createCareer=():CareerProgress=>({rulesRevision:2,active:null,accepted:[],inspected:[],completed:[],proofs:{},choices:{},upgrades:[],checkpoints:{},ending:null,endingJobs:[],release:createRelease()});
-export type CareerAction=ReleaseAction|{type:'career-accept'|'career-inspect'|'career-test'|'career-checkpoint'|'career-restore';id:string}|{type:'career-code-mode';id:string;mode:CareerCodeMode}|{type:'career-edit';id:string;file:string;content:string}|{type:'career-deliver';id:string;choice:string}|{type:'career-upgrade';id:string}|{type:'career-ending'};
+import {applyStudio,type StudioAction,type StudioProgress} from './studio.ts';
+export type CareerProgress={rulesRevision:1|2;active:string|null;accepted:string[];inspected:string[];completed:string[];proofs:Record<string,{hash:string;passed:boolean}>;choices:Record<string,string>;upgrades:string[];checkpoints:Record<string,Record<string,string>>;ending:'community'|'studio'|'balanced'|null;endingJobs:string[];release:ReleaseProgress;studio?:StudioProgress|null};
+export const createCareer=():CareerProgress=>({rulesRevision:2,active:null,accepted:[],inspected:[],completed:[],proofs:{},choices:{},upgrades:[],checkpoints:{},ending:null,endingJobs:[],release:createRelease(),studio:null});
+export type CareerAction=StudioAction|ReleaseAction|{type:'career-accept'|'career-inspect'|'career-test'|'career-checkpoint'|'career-restore';id:string}|{type:'career-code-mode';id:string;mode:CareerCodeMode}|{type:'career-edit';id:string;file:string;content:string}|{type:'career-deliver';id:string;choice:string}|{type:'career-upgrade';id:string}|{type:'career-ending'};
+function isStudioAction(action:CareerAction):action is StudioAction{return action.type.startsWith('career-studio-');}
 function isReleaseAction(action:CareerAction):action is ReleaseAction{return action.type.startsWith('career-release-');}
 type Host={completed:number[];gameplay:{career:CareerProgress;openingCelebrated:boolean};machines:{local:{files:Record<string,string>;dirs:string[]}};credits:number;xp:number;notice:string};
 const l=(ko:string,en:string,ja:string):Localized=>({ko,en,ja});
@@ -26,6 +28,7 @@ export function careerPhase(s:Host){const job=careerCurrent(s),c=s.gameplay.care
 function replaceFiles(s:Host,id:string,files:Record<string,string>){const root=careerRoot(id);for(const p of ['/home/dev/jobs',root])if(!s.machines.local.dirs.includes(p))s.machines.local.dirs.push(p);for(const [p,c] of Object.entries(files))s.machines.local.files[root+'/'+p]=c;}
 /** Called only on the engine's cloned state. The machine filesystem is canonical. */
 export function applyCareer(s:Host,a:CareerAction):void{
+ if(isStudioAction(a)){applyStudio(s,a);return;}
  if(isReleaseAction(a)){applyRelease(s,a);return;}
  const c=s.gameplay.career;
  if(!s.gameplay.openingCelebrated)return;

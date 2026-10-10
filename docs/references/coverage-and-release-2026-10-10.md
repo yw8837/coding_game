@@ -39,6 +39,32 @@ the existing task indicator and exact wallet delta already explain the action.
 
 ## Remaining evidence
 
+### Automated full-video analysis attempt in this pass
+
+The connected vidIQ `video_watch` service consumed six included 25-credit requests
+(150 credits total; no purchase). A completed job is **not** proof that the service
+accessed or watched the source. Its reports were retained for audit and checked
+against the existing frames:
+
+| Video / job | Result and evidence decision |
+| --- | --- |
+| HWQz19cO2JQ / `job_9ed7249c-1f05-480d-9160-d96ce7180871` | A source-length timeline was returned. Advisory only: not independently verified throughout, so no continuous-viewing credit. |
+| vMDS10pL0N0 / `job_ad6203fc-fda0-4119-8e5d-e86d5bb4f540` | **Rejected.** Described an unrelated roughly ten-minute coding game instead of the 3:21:22 HackHub source. |
+| gMjduQanVn4 / `job_2ee39998-0acf-4009-8107-d0d87aa2e736` | **Unreliable.** Reversed timestamps and an unsupported closing/completion claim. Direct 66:54 frame shows multiple terminals and an unfinished Part 6 objective. |
+| vMDS10pL0N0 retry / `job_c8b08fc8-0917-47cb-8980-b3201807d0c9` | **Access failed.** The service explicitly stated that no stream, frames or timeline were accessible. |
+| II8UiTmjCoc / `job_85f8f23b-a077-4173-8ba2-95094b670ace` | Setup report is consistent with inspected 00:00–00:50 and 03:00 frames: desktop, visible setup checklist, registration and first-job application. Other exact timings/audio remain unverified. |
+| XrQjCfUwXSw / `job_7b194c26-0aa4-4ad2-ba94-a75a6fe9d32b` | Final sequence is consistent with inspected 09:00–11:53 frames: windows coexist, checklist persists and final delivery leaves a waiting objective. Other exact timings/audio remain unverified. |
+
+The other 17 playlist videos have sampled-frame evidence only. Do not count these
+six jobs as six completed viewings, or repeat the rejected narratives in game
+requirements. Further paid requests were not made after the service failures.
+
+The directly observed design lesson is continuity: keep the current goal visible
+while moving between apps, show which work produced the outcome, and retain the
+result after a transient reward. This pass applies it to actionable diagnostic
+results, a persistent client portfolio, and a separate post-release workbench.
+Attack workflows and reference artwork/dialogue are not imported.
+
 Selected screenshot samples cannot settle moment-to-moment pacing, sound mix,
 human comprehension or enjoyment. Release validation still needs independent
 beginner and experienced-player observations, target-speaker/headphone listening,

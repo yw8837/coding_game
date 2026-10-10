@@ -4,9 +4,12 @@ import {createCareer,CAREER_UPGRADES} from './career.ts';
 import {createRelease} from './release.ts';
 import {careerPriorActsReady,careerRouteReady,careerEndingFor} from './career-progress.ts';
 import {allowedCareerFile} from './career-code.ts';
+import {studioSourceMapValid,STUDIO_MAX_SNAPSHOTS} from './studio.ts';
+const studioFilesSchema=z.record(z.string().max(100),z.string().max(20000)).refine(files=>studioSourceMapValid(files));
 const jobId=z.string().max(64).refine(id=>CAREER_JOBS.some(j=>j.id===id));
 const ids=z.array(jobId).max(18).refine(a=>new Set(a).size===a.length);
 export const careerSchema=z.object({
+ studio:z.object({appId:z.string().regex(/^[a-f0-9]{16}$/),nextId:z.number().int().min(1).max(1_000_000_000),proof:z.object({hash:z.string().regex(/^[a-f0-9]{16}$/),passed:z.boolean()}).nullable(),snapshots:z.array(z.object({id:z.number().int().min(1),hash:z.string().regex(/^[a-f0-9]{16}$/),files:studioFilesSchema})).max(STUDIO_MAX_SNAPSHOTS)}).nullable().default(null),
  rulesRevision:z.union([z.literal(1),z.literal(2)]).default(1),
  release:z.object({formatRevision:z.union([z.literal(1),z.literal(2)]).default(1),started:z.boolean(),proof:z.object({hash:z.string().max(40),passed:z.boolean()}).nullable(),build:z.object({hash:z.string().max(40),version:z.literal('1.0.0')}).nullable(),published:z.object({hash:z.string().max(40),version:z.literal('1.0.0')}).nullable()}).default(createRelease),
  active:jobId.nullable(),accepted:ids,inspected:ids,completed:ids,

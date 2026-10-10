@@ -4,6 +4,7 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const {SaveStore, validateRaw} = require('./save-store.cjs');
 const {writeBackup} = require('./export-backup.cjs');
+const {exportAppDocument} = require('./export-app.cjs');
 const {nativeLanguage, messages} = require('./native-i18n.cjs');
 const {createSteam, readConfig} = require('./steam.cjs');
 const {ENTRY, CSP, MIME, isAppURL, resolveAsset, isTrustedSender} = require('./security.cjs');
@@ -143,6 +144,17 @@ async function boot() {
     finally { exporting = false; }
   });
   handle('desktop:achievements', ids => steam.unlock(ids));
+  handle('desktop:export-app', html => exportAppDocument(html, {
+    isBusy: () => exporting || closing,
+    setBusy: busy => { exporting = busy; },
+    words: words(),
+    choose: () => dialog.showSaveDialog(window, {
+        title: words().appExportTitle, buttonLabel: words().appExportButton,
+        defaultPath: path.join(app.getPath('documents'), 'my-neighborhood-app.html'),
+        filters: [{name: 'HTML', extensions: ['html']}],
+        properties: ['showOverwriteConfirmation'],
+    }),
+  }));
   handle('desktop:confirm-close', async () => {
     if (!closing) return {ok: false};
     clearTimeout(closeTimer);
