@@ -4,7 +4,7 @@
 
 The public demo stays at 6bc997b / Sites v25. Work below targets the offline full edition; no Sites deployment is authorized by this pass. Preserve existing saves, published first-release files, character art and the neighborhood identity.
 
-Reference evidence is in `references/coverage-and-release-2026-10-10.md`. Sampled frames and complete transcripts are not continuous audiovisual viewing. The connected vidIQ tool returned six reports, including a source-access failure and reports contradicted by retained frames; the coverage ledger marks rejected and advisory results explicitly. It has not fulfilled complete viewing. Human enjoyment and learning efficacy remain playtest questions.
+Reference evidence is in `references/coverage-and-release-2026-10-10.md`. Sampled frames and complete transcripts are not continuous audiovisual viewing. The initial vidIQ pass returned six reports, including a source-access failure and reports contradicted by retained frames; a post-delivery follow-up obtained the other 17 playlist reports and cross-checked them. The coverage ledger marks rejected and advisory results explicitly. It has not fulfilled complete viewing. Human enjoyment and learning efficacy remain playtest questions.
 
 ## Player outcome
 

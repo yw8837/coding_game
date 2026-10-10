@@ -123,12 +123,15 @@ review, another Windows PC/minimum-spec check, final title and optional signing.
 Do not use AppID 5336990; it belongs to another game. Planned Korean price is
 ₩11,000, with a 20% first-seven-day launch discount (₩8,800), not yet applied.
 
-All reference videos have **not** been continuously watched. Six vidIQ requests
-returned mixed-quality reports, including source-access failure and a fabricated
-timeline. Rejected and advisory reports are separated in
-`references/coverage-and-release-2026-10-10.md`. The direct visual-frame/transcript
-analysis supports the applied UX lessons but does not replace the requested full
-audiovisual review or human playtesting.
+All reference videos have **not** been continuously watched. The first six vidIQ
+requests returned mixed-quality reports, including source-access failure and a
+fabricated timeline. A post-delivery follow-up retrieved the other 17 playlist
+reports and checked them against frames; it found additional inaccuracies and
+resolved several end-state ambiguities. Rejected and advisory results are separated
+in `references/coverage-and-release-2026-10-10.md` and its linked follow-up. The
+direct visual-frame/transcript analysis supports the applied UX lessons but does
+not replace the requested full audiovisual review or human playtesting. The
+follow-up changes research/playtest documents only, not this tested RC build.
 
 ## Cleanup and delivery
 

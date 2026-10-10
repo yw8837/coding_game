@@ -10,7 +10,7 @@ checked against retained local evidence during the release quality pass.
 | Original HackHub video, HWQz19cO2JQ, approximately 1h47m | 163 real frames; first 5 minutes at 5-second intervals, later at 60-second intervals; final frame 1:46:58; 41 contact sheets | Brief interactions between samples and audio were not continuously reviewed. The closing review segment is not the game's ending. |
 | English video, vMDS10pL0N0, 3:21:22 | 163 real frames including three denser interaction sequences; nine full-size reinspections; all 1,963 English transcript segments | Full transcript review is not continuous audiovisual viewing. |
 | Korean live video, gMjduQanVn4, 1:06:57 | 46 real frames at 90-second intervals | Starts mid-session, so it cannot establish first-time onboarding. Captions unavailable. |
-| Playlist PLZ65Bh0LwRtBoGqh8oB1-i7WjhoNvESc6, 19 videos | 252 real frames plus an additional ending sample; short/long videos sampled at 10/45-second intervals | Playlist duration is not game playtime. Not every transition or sound was reviewed. |
+| Playlist PLZ65Bh0LwRtBoGqh8oB1-i7WjhoNvESc6, 19 videos | 252 principal real frames plus ending samples; all 19 now also have source-specific automated reports, cross-checked as described in the follow-up | Reports contain errors. Playlist duration is not game playtime. Not every transition or sound was reviewed. |
 | Learning blog and coding-learning projects | Retained original Korean transcript/blog extracts; project-specific source and licensing notes in the linked reports | A reference set, not evidence of curriculum efficacy or intermediate/advanced proficiency. |
 | Engine, game and video repositories supplied by the user | Triage and selected documentation/source review in reference-research.md | Not every repository was installed, run or audited. No engine replacement is claimed. |
 | AI Tech Studio MCP | Successful initialize, tool listing, search and technique retrieval receipts; pinned upstream MIT license | Public research, not a runtime service. Proposal notes must be distinguished from shipped integrations. |
@@ -41,10 +41,13 @@ the existing task indicator and exact wallet delta already explain the action.
 
 ### Automated full-video analysis attempt in this pass
 
-The connected vidIQ `video_watch` service consumed six included 25-credit requests
-(150 credits total; no purchase). A completed job is **not** proof that the service
-accessed or watched the source. Its reports were retained for audit and checked
-against the existing frames:
+The initial vidIQ `video_watch` pass submitted six requests advertised as 25 credits
+each. The earlier claim that these consumed 150 credits was an incorrect inference:
+the later balance was 144, and 17 additional accepted requests changed it to 127.
+Submission receipts still report 25 each; do not treat the advertised sum as actual
+billed usage. No credits were purchased. A completed job is **not** proof that the
+service accessed or watched the source. The initial reports were retained for
+audit and checked against the existing frames:
 
 | Video / job | Result and evidence decision |
 | --- | --- |
@@ -55,9 +58,13 @@ against the existing frames:
 | II8UiTmjCoc / `job_85f8f23b-a077-4173-8ba2-95094b670ace` | Setup report is consistent with inspected 00:00–00:50 and 03:00 frames: desktop, visible setup checklist, registration and first-job application. Other exact timings/audio remain unverified. |
 | XrQjCfUwXSw / `job_7b194c26-0aa4-4ad2-ba94-a75a6fe9d32b` | Final sequence is consistent with inspected 09:00–11:53 frames: windows coexist, checklist persists and final delivery leaves a waiting objective. Other exact timings/audio remain unverified. |
 
-The other 17 playlist videos have sampled-frame evidence only. Do not count these
-six jobs as six completed viewings, or repeat the rejected narratives in game
-requirements. Further paid requests were not made after the service failures.
+The other 17 playlist videos initially had sampled-frame evidence only. After the
+connection notification, the observed remaining balance allowed additional analysis
+of all 17. All results were retrieved and cross-checked; additional ending frames
+resolve several earlier delivery/next-chapter ambiguities. This does not make them
+17 verified continuous viewings. A false hotspot-completion claim and other errors
+were rejected. The failed long-source requests were not repeated. See the
+[follow-up and validation table](vidiq-followup-2026-10-10.md) and its receipts.
 
 The directly observed design lesson is continuity: keep the current goal visible
 while moving between apps, show which work produced the outcome, and retain the
@@ -72,7 +79,8 @@ native-language review and another Windows PC. A request for full continuous
 viewing remains unfulfilled by these records; this report does not silently
 redefine it as completed.
 
-Detailed sources: [original visuals](original-visual-2026-10-10.md),
+Detailed sources: [additional playlist analysis](vidiq-followup-2026-10-10.md),
+[original visuals](original-visual-2026-10-10.md),
 [English visuals and transcript](english-full-transcript-2026-10-10.md),
 [Korean video and playlist](korean-playlist-2026-10-10.md),
 [MCP research](techstudio-quest-techniques-2026-10-10.md),
