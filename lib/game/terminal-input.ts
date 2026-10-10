@@ -32,3 +32,22 @@ export function terminalCompletions(state:GameState,input:string):string[]{
  }
  return [...new Set(candidates)].slice(0,12);
 }
+
+export type TerminalCompletion={value:string;caret:number};
+
+/** Replace the active shell token, leaving subsequent operands exactly as typed. */
+export function terminalCompletionsAtCursor(state:GameState,input:string,caret=input.length):TerminalCompletion[]{
+ const cursor=Math.max(0,Math.min(input.length,Math.trunc(caret)));
+ let quote='',escape=false,end=cursor;
+ for(let i=0;i<input.length;i++){
+  const c=input[i];
+  if(i>=cursor&&!quote&&!escape&&/[\s<>|&;]/.test(c)){end=i;break;}
+  if(escape)escape=false;
+  else if(c==='\\'&&quote!=="'")escape=true;
+  else if(quote){if(c===quote)quote='';}
+  else if(c==='"'||c==="'")quote=c;
+  end=i+1;
+ }
+ const tail=input.slice(end);
+ return terminalCompletions(state,input.slice(0,cursor)).map(value=>({value:value+tail,caret:value.length}));
+}
