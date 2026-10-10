@@ -11,7 +11,7 @@
     "build": "node scripts/run-framework.mjs build",
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --max-warnings 0",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "node scripts/generate-db.mjs",
     "test": "node --test lib/game/*.test.ts",
     "typecheck": "tsc --noEmit",
     "verify": "node scripts/verify-quality.mjs",

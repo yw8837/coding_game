@@ -19,7 +19,7 @@ with sync_playwright() as pw:
    page.route('**/api/locale',lambda route:route.fulfill(json={'language':region}))
    page.route('**/cdn-cgi/trace',lambda route:route.fulfill(content_type='text/plain',body='loc='+edge_country+'\n' if edge_country else ''))
    page.goto(base,wait_until='networkidle');expect(page.locator('html')).to_have_attribute('lang',expected)
-   page.get_by_role('combobox',name='Language').select_option('en')
+   page.get_by_test_id('title-settings').click();page.get_by_role('combobox',name='Language').select_option('en');page.keyboard.press('Escape')
    page.reload(wait_until='networkidle');expect(page.locator('html')).to_have_attribute('lang','en')
    assert page.evaluate("localStorage.getItem('codeshift-language')")=='en'
    assert not errors,errors
@@ -28,7 +28,7 @@ with sync_playwright() as pw:
 
   context=browser.new_context(locale='en-US',viewport={'width':1366,'height':768},accept_downloads=True)
   page=context.new_page();page.set_default_timeout(10000);errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-  page.goto(base,wait_until='networkidle');page.get_by_role('combobox',name='Language').select_option('en')
+  page.goto(base,wait_until='networkidle');page.get_by_test_id('title-settings').click();page.get_by_role('combobox',name='Language').select_option('en');page.keyboard.press('Escape')
   # Import through the real confirmation UI, preserving all earned full-game data.
   page.locator('.pc-title-screen').get_by_role('button',name='Settings',exact=True).click()
   page.locator('.save-tools input[type=file]').set_input_files(str(seed.resolve()))

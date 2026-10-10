@@ -18,8 +18,8 @@ with sync_playwright() as pw:
   expect(image).to_have_attribute('width','1672')
   page.wait_for_function("document.querySelector('.title-environment').complete && document.querySelector('.title-environment').naturalWidth===1672")
   report['images'].append(image.evaluate('el=>({src:el.currentSrc,width:el.naturalWidth,height:el.naturalHeight})'))
-  page.get_by_role('combobox',name='Language').select_option('ko')
-  expect(page.locator('.pc-play')).to_have_text('시작하기')
+  page.get_by_test_id('title-settings').click();page.get_by_role('combobox',name='Language').select_option('ko');page.keyboard.press('Escape')
+  expect(page.locator('.pc-play')).to_have_text('새로 시작')
   page.locator('.pc-play').click();assert page.locator('.pc-window:visible').count()==0
   assert not report['pageErrors'] and not report['consoleErrors'] and not report['failedRequests'],report
   report['passed']=True

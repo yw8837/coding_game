@@ -24,6 +24,12 @@ assert.ok(notice.packages.length > 0);
 assert.deepEqual(read('renderer/THIRD-PARTY-NOTICES.txt'), await readFile(path.join(release, 'THIRD-PARTY-NOTICES.txt')));
 const matching = files.filter(name => /^renderer[/\\]/.test(name) || /^[^/\\]+\.cjs$/.test(name) && !name.endsWith('qa-build.cjs'));
 for (const name of matching) assert.deepEqual(read(name), extractFile(qaArchive, name), `QA mismatch: ${name}`);
+const rendererFiles = matching.filter(name => /^renderer[/\\]/.test(name));
+for (const name of rendererFiles) {
+  assert.deepEqual(read(name), await readFile(path.join(root, 'desktop', name)), `Current renderer mismatch: ${name}`);
+}
+assert.deepEqual(read('renderer/favicon.svg'), await readFile(path.join(root, 'public/favicon.svg')));
+assert.match(read('renderer/index.html').toString(), /href="\/favicon\.svg"/);
 const art = [];
 for (const name of ['studio-evening.png', 'neighborhood.png', 'mono-cafe.png', 'portraits.png', 'wallpaper-blue.png', 'wallpaper-coast.png', 'wallpaper-garden.png', 'wallpaper-loft.png']) {
   const packed = read('renderer/game-art/' + name);
@@ -35,7 +41,8 @@ for (const key of ['RunAsNode', 'EnableNodeOptionsEnvironmentVariable', 'EnableN
 for (const key of ['EnableEmbeddedAsarIntegrityValidation', 'OnlyLoadAppFromAsar', 'EnableCookieEncryption']) assert.equal(fuses[FuseV1Options[key]], 49, key);
 const report = {version: manifest.version, qaFlag: false, steamModuleIncluded: false, steamAppId: null,
   licenseFilesPresent: true, rendererNoticePackages: notice.packages.length, fuses,
-  matchingQAGameFiles: matching.length, asarFiles: files.length, art};
+  matchingQAGameFiles: matching.length, matchingCurrentRendererFiles: rendererFiles.length,
+  desktopIconPresent: true, asarFiles: files.length, art};
 await mkdir(path.join(root, 'output/art-qa'), {recursive: true});
 await writeFile(path.join(root, 'output/art-qa/offline-package-report.json'), JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));

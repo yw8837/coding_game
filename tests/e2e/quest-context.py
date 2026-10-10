@@ -18,7 +18,7 @@ with sync_playwright() as pw:
     context=browser.new_context(viewport={'width':width,'height':720 if width==1280 else 768 if width==1366 else 844},locale=locale)
     page=context.new_page();page.set_default_timeout(10000);errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
     try:
-     page.goto('http://127.0.0.1:5173/',wait_until='networkidle',timeout=20000);page.get_by_role('combobox',name='Language').select_option(lang);page.locator('.pc-play').click()
+     page.goto('http://127.0.0.1:5173/',wait_until='networkidle',timeout=20000);page.get_by_test_id('title-settings').click();page.get_by_role('combobox',name='Language').select_option(lang);page.keyboard.press('Escape');page.locator('.pc-play').click()
      area=page.locator('#mission-sidebar') if width>1000 else page.locator('.pc-compact-quest')
      cta=area.locator('button').filter(has=page.locator('svg.lucide-arrow-right'))
      current=area.get_by_test_id('quest-current-work')

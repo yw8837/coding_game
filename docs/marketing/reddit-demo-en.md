@@ -1,6 +1,6 @@
-# Reddit draft — ON HOLD
+# Reddit copy — user reported posted
 
-Not posted. X and Threads were posted by the user; their existing copy stays unchanged.
+On 2026-10-10 the user reported that posting was finished, after confirming video upload worked. X and Threads had already been posted by the user. This records the user's report; no post URL or independent live verification was supplied. Existing posted copy stays unchanged.
 This draft follows the template shown in the user's screenshot. A playable link
 is required by that template. It replaces the earlier link-free poll draft for
 this community only; it is not a claim that every subreddit permits promotion.
@@ -44,7 +44,7 @@ I'm also choosing a name. Which one fits?
 
 ## Attachment and posting notes — do not paste this section
 
-- Posting is on hold at the user's request.
+- Posting is complete according to the user's latest report. The attachment guidance below is retained for reference; no repost is scheduled.
 - If the community offers video posts, attach only `gameplay-trailer-en.mp4` to
   retain the soundtrack. Do not put an MP4 into an image gallery.
 - For an image/GIF gallery, use `reddit-gameplay-en.gif` (10.33 seconds, silent)

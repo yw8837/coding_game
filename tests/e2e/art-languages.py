@@ -22,7 +22,7 @@ with sync_playwright() as pw:
             page.locator('.save-tools input[type=file]').set_input_files('output/pc-qa/completed-save.json')
             page.locator('.save-confirm .primary-button').click()
             page.locator('.settings-dialog').wait_for(state='hidden')
-            page.get_by_role('combobox', name='Language', exact=True).select_option(lang)
+            page.get_by_test_id('title-settings').click();page.get_by_role('combobox', name='Language', exact=True).select_option(lang);page.keyboard.press('Escape')
             page.locator('.pc-play').click()
             page.locator('.pc-shortcuts').get_by_role('button', name=app, exact=True).click()
             page.locator('.pc-window[data-active="true"] .pc-window-buttons button').nth(3).click()

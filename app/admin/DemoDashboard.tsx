@@ -1,0 +1,26 @@
+'use client';
+import {useEffect,useState} from 'react';
+import Link from 'next/link';
+import {stageLabel} from '@/lib/demo-metrics';
+type Count={visits:number;starts:number;completes:number};
+type Report={updatedAt:number;days:number;summary:Count&{new_starts:number;new_completes:number;seconds:number};daily:(Count&{day:string})[];languages:(Count&{language:string})[];stages:{stage:string;sessions:number;seconds:number;last_seen:number}[];feedback:{created_at:number;language:string;stage:string;experience:string;message:string}[]};
+const integer=(n:number)=>new Intl.NumberFormat('ko-KR').format(n);
+const time=(n:number)=>`${Math.floor(n/60)}분 ${Math.floor(n%60)}초`;
+export function DemoDashboard(){
+ const [days,setDays]=useState(7),[revision,setRevision]=useState(0),[data,setData]=useState<Report|null>(null),[error,setError]=useState('');
+ useEffect(()=>{const controller=new AbortController();void fetch(`/api/admin/demo?days=${days}`,{cache:'no-store',signal:controller.signal}).then(async response=>{if(!response.ok)throw Error(response.status===403?'운영자 로그인이 필요합니다. 새로고침 후 다시 로그인해 주세요.':'집계 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');return response.json() as Promise<Report>;}).then(result=>{setData(result);setError('');}).catch(err=>{if(!controller.signal.aborted)setError(err.message);});return()=>controller.abort();},[days,revision]);
+ const loading=data?.days!==days;
+ const summary=data?.summary;
+ return <main className="demo-admin"><header><div><span>CODE:SHIFT / OPERATIONS</span><h1>데모 플레이 기록</h1><p>집계에 참여한 플레이의 흐름을 확인하세요.</p></div><nav><Link href="/">데모 열기 ↗</Link><a href="/signout-with-chatgpt?return_to=%2Fadmin" target="_top">로그아웃</a></nav></header>
+  <div className="demo-admin-toolbar"><label>조회 기간<select value={days} onChange={event=>setDays(Number(event.target.value))}><option value={1}>최근 24시간</option><option value={7}>최근 7일</option><option value={30}>최근 30일</option><option value={90}>최근 90일</option></select></label><button onClick={()=>setRevision(value=>value+1)}>새로고침</button><span>{data?`${new Date(data.updatedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})} KST 기준`:'집계 불러오는 중…'}</span></div>
+  {error&&<p className="demo-admin-error" role="alert">{error}</p>}
+  <aside className="demo-admin-scope"><strong>숫자를 읽기 전에</strong><p>설정에서 익명 통계 제공을 켠 세션만 집계합니다. 방문은 사람 수가 아닌 탭 세션 수이며, 과거 기록·미동의 플레이·다른 기기 기록은 포함하지 않습니다. 새로 시작과 이어하기는 구분합니다. 오래 머문 단계나 마지막 단계만으로 실제로 막혔다고 단정할 수 없습니다.</p><p>코드·터미널 입력·저장 파일·IP 원문은 수집하지 않습니다. 90일 지난 통계·피드백은 새 세션 수집 시 오래된 기록부터 최대 1,000건씩 정리합니다.</p></aside>
+  <div aria-busy={loading} className={loading?'demo-admin-loading':''}>
+   <section className="demo-admin-metrics">{[['집계 참여 방문',summary?.visits],['플레이 시작',summary?.starts],['데모 완료',summary?.completes]].map(([label,value])=><article key={label}><span>{label}</span><strong>{value===undefined?'—':integer(Number(value))}</strong></article>)}<article><span>새 플레이 완료율</span><strong>{summary?.new_starts?`${Math.round(summary.new_completes/summary.new_starts*100)}%`:'—'}</strong><small>{summary?`${summary.new_completes} / ${summary.new_starts} 새 시작 세션`:'데이터 대기'}</small></article></section>
+   <section className="demo-admin-panel"><h2>날짜별 흐름</h2><p>한국 시간 기준 · 참여 방문 → 플레이 시작 → 데모 완료</p>{data?.daily.length?<div className="demo-admin-chart">{data.daily.map(day=><div key={day.day}><span>{day.day.slice(5)}</span><div><i style={{width:`${day.visits/Math.max(...data.daily.map(d=>d.visits),1)*100}%`}}/><b style={{width:`${day.starts/Math.max(...data.daily.map(d=>d.visits),1)*100}%`}}/></div><span>{day.visits} → {day.starts} → {day.completes}</span></div>)}</div>:<p className="demo-admin-empty">아직 집계된 플레이가 없습니다. 데이터가 들어오면 실제 수치가 표시됩니다.</p>}</section>
+   <div className="demo-admin-columns"><section className="demo-admin-panel"><h2>단계별 체류</h2><p>활동이 감지된 시간만 계산합니다. ‘마지막’은 30분 넘게 후속 기록이 없는 미완료 세션입니다.</p><div className="demo-admin-table"><table><thead><tr><th>단계</th><th>세션</th><th>평균 활동</th><th>마지막</th></tr></thead><tbody>{data?.stages.map(row=><tr key={row.stage}><td>{stageLabel(row.stage)}</td><td>{row.sessions}</td><td>{time(row.seconds)}</td><td>{row.last_seen}</td></tr>)}</tbody></table></div>{!data?.stages.length&&<p className="demo-admin-empty">진행 단계 데이터가 아직 없습니다.</p>}</section>
+   <section className="demo-admin-panel"><h2>언어별 플레이</h2><div className="demo-admin-table"><table><thead><tr><th>언어</th><th>방문</th><th>시작</th><th>완료</th></tr></thead><tbody>{data?.languages.map(row=><tr key={row.language}><td>{{ko:'한국어',en:'English',ja:'日本語'}[row.language]??row.language}</td><td>{row.visits}</td><td>{row.starts}</td><td>{row.completes}</td></tr>)}</tbody></table></div><p>표본이 적을 때 언어별 난이도 차이를 단정하지 마세요.</p></section></div>
+   <section className="demo-admin-panel"><h2>플레이어 의견 <small>{data?.feedback.length??0}건 · 최근 100건</small></h2>{data?.feedback.length?<div className="demo-admin-feedback">{data.feedback.map((item,i)=><article key={`${item.created_at}-${i}`}><header><strong>{stageLabel(item.stage)}</strong><span>{item.language.toUpperCase()} · {{none:'코딩 처음',some:'조금 경험',experienced:'코딩 가능'}[item.experience]??'미상'} · {new Date(item.created_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}</span></header><p>{item.message}</p></article>)}</div>:<p className="demo-admin-empty">접수된 의견이 없습니다. 플레이어는 게임 설정에서 의견을 보낼 수 있습니다.</p>}</section>
+  </div>
+ </main>;
+}

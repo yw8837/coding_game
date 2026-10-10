@@ -74,3 +74,44 @@ test('renderer fallback to full-schema valid backup protects it from a shape-val
   await store.save(raw(4));
   assert.equal(await fs.readFile(store.backup, 'utf8'), raw(3));
 });
+
+test('temporary Windows rename locks retry without removing the previous save', async t => {
+  const store = await setup(t);
+  await store.save(raw(1));
+  const originalRename = fs.rename;
+  let attempts = 0;
+  t.mock.method(fs, 'rename', async (from, to) => {
+    if (to === store.primary && ++attempts <= 3) {
+      assert.equal(await fs.readFile(store.primary, 'utf8'), raw(1));
+      throw Object.assign(new Error('Temporary file lock'), {code: 'EPERM'});
+    }
+    return originalRename(from, to);
+  });
+  assert.equal((await store.save(raw(2))).ok, true);
+  assert.equal(attempts, 4);
+  assert.equal((await store.load()).raw, raw(2));
+  assert.equal((await store.loadBackup()).raw, raw(1));
+});
+
+test('persistent locks stop after a bounded retry and preserve progress for recovery', async t => {
+  const store = await setup(t);
+  await store.save(raw(1));
+  const originalRename = fs.rename;
+  let attempts = 0;
+  const mocked = t.mock.method(fs, 'rename', async (from, to) => {
+    if (to === store.primary) {
+      attempts++;
+      throw Object.assign(new Error('Persistent file lock'), {code: 'EPERM'});
+    }
+    return originalRename(from, to);
+  });
+  assert.equal((await store.save(raw(2))).ok, false);
+  assert.equal(attempts, 5);
+  assert.equal((await store.drain()).ok, false);
+  assert.equal((await store.load()).raw, raw(1));
+  assert.equal((await store.loadBackup()).raw, raw(1));
+  assert.deepEqual((await fs.readdir(store.directory)).sort(), ['game.json', 'game.json.bak']);
+  mocked.mock.restore();
+  assert.equal((await store.save(raw(3))).ok, true);
+  assert.equal((await store.load()).raw, raw(3));
+});

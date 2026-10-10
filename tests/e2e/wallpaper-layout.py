@@ -9,7 +9,7 @@ with sync_playwright() as pw:
   for lang in ['ko','en','ja']:
    for width in [1440,390]:
     c=b.new_context(viewport={'width':width,'height':900},locale={'ko':'ko-KR','en':'en-US','ja':'ja-JP'}[lang]);p=c.new_page();p.set_default_timeout(12000);errors=[];p.on('pageerror',lambda e:errors.append(str(e)))
-    p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.get_by_role('combobox',name='Language').select_option(lang);p.locator('.pc-play').click()
+    p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.get_by_test_id('title-settings').click();p.get_by_role('combobox',name='Language').select_option(lang);p.keyboard.press('Escape');p.locator('.pc-play').click()
     assert 'wallpaper-blue.png' in p.locator('.pc-stage>.pc-wallpaper').evaluate('el=>getComputedStyle(el).backgroundImage')
     if width==390 and p.locator('#mission-sidebar .panel-close').is_visible():p.locator('#mission-sidebar .panel-close').click()
     p.get_by_test_id('open-wallet').click()

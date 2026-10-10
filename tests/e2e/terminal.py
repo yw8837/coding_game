@@ -7,7 +7,7 @@ with sync_playwright() as pw:
  try:
   for lang in ['ko','en','ja']:
    c=b.new_context(viewport={'width':1440,'height':960});p=c.new_page();p.set_default_timeout(12000);errors=[];p.on('pageerror',lambda e:errors.append(str(e)))
-   p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.get_by_role('combobox',name='Language').select_option(lang);p.locator('.pc-play').click()
+   p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.get_by_test_id('title-settings').click();p.get_by_role('combobox',name='Language').select_option(lang);p.keyboard.press('Escape');p.locator('.pc-play').click()
    expect(p.locator('.pc-shortcuts').get_by_role('button',name='Ghrom',exact=True)).to_be_visible()
    p.locator('.pc-shortcuts').get_by_role('button',name='Ghrom',exact=True).click();assert p.locator('.pc-window[data-active=true] .grom-icon').count()>0
    p.screenshot(path=str(out/f'{lang}-ghrom.png'),animations='disabled')

@@ -20,8 +20,8 @@ with sync_playwright() as pw:
  b=pw.chromium.launch(channel='chrome',headless=True);reports=[]
  try:
   for lang,locale in [('ko','ko-KR'),('en','en-US'),('ja','ja-JP')]:
-   c=b.new_context(viewport={'width':1440,'height':960},locale=locale);p=c.new_page();p.set_default_timeout(12000);errors=[];p.on('pageerror',lambda e:errors.append(str(e)));p.on('console',lambda m:errors.append(m.text) if m.type=='error' else None)
-   p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.get_by_role('combobox',name='Language').select_option(lang)
+   c=b.new_context(viewport={'width':1440,'height':960},locale=locale);p=c.new_page();p.set_default_timeout(12000);errors=[];p.on('pageerror',lambda e:errors.append(str(e)));p.on('console',lambda m:errors.append(f'{m.text} ({m.location.get("url", "unknown source")})') if m.type=='error' else None)
+   p.goto('http://127.0.0.1:5173/',wait_until='networkidle');p.get_by_test_id('title-settings').click();p.get_by_role('combobox',name='Language').select_option(lang);p.keyboard.press('Escape')
    p.locator('.pc-play').click();assert p.locator('.pc-window:visible').count()==0
    # Late-loading legacy CSS must never collapse the desktop into its old grid.
    legacy=p.add_style_tag(content='.game-desktop{display:grid;grid-template-columns:82px minmax(0,1fr) 302px;}')

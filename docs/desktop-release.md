@@ -1,6 +1,6 @@
 # CODE:SHIFT Windows desktop release candidate
 
-The desktop shell packages the existing game as an offline Windows x64 application. The working title is **CODE:SHIFT**, and the candidate version is **0.11.0-rc.0**. This is a runnable packaging architecture with native-save and Steam adapters; it is not a claim that Steam review, store setup, or release QA is complete.
+The desktop shell packages the existing game as an offline Windows x64 application. The working title is **CODE:SHIFT**, and the candidate version is **0.13.2-rc.0**. The latest verified delivery and remaining release gates are recorded in [launch quality QA](QA-launch-quality-2026-10-10.md). This is a runnable packaging architecture with native-save and Steam adapters; it is not a claim that Steam review, store setup, or release QA is complete.
 
 ## Layout and build commands
 
@@ -37,7 +37,7 @@ On 2026-10-09, read-only npm registry checks (`npm view <package> version`) retu
 
 ## Third-party notices
 
-The renderer build derives its package list from emitted modules and directly imported global styles, then emits `THIRD-PARTY-NOTICES.txt` and `third-party-manifest.json`. Packaging requires these notices and includes Electron's license and Chromium notices. Packages without installed notice files fail the build unless an exact package/version has a committed upstream fallback whose declared license and SHA-256 match. The only current fallback is `react-remove-scroll-bar@2.3.8`: its published archive omits LICENSE, so the supplement uses the upstream license added later, with provenance and comparison of all 24 distributed source/declaration files against 2.3.7. This is not a recovered release-time LICENSE; see [vendor-notices/README.md](../desktop/vendor-notices/README.md) for the source and limits. Final build and runtime verification remains recorded in [QA-0.10-RC.md](QA-0.10-RC.md).
+The renderer build derives its package list from emitted modules and directly imported global styles, then emits `THIRD-PARTY-NOTICES.txt` and `third-party-manifest.json`. Packaging requires these notices and includes Electron's license and Chromium notices. Packages without installed notice files fail the build unless an exact package/version has a committed upstream fallback whose declared license and SHA-256 match. The only current fallback is `react-remove-scroll-bar@2.3.8`: its published archive omits LICENSE, so the supplement uses the upstream license added later, with provenance and comparison of all 24 distributed source/declaration files against 2.3.7. This is not a recovered release-time LICENSE; see [vendor-notices/README.md](../desktop/vendor-notices/README.md) for the source and limits. Current build and runtime verification is recorded in [launch quality QA](QA-launch-quality-2026-10-10.md); [QA-0.10-RC.md](QA-0.10-RC.md) is a historical report.
 
 ## Renderer boundary
 

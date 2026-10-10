@@ -93,7 +93,7 @@ with sync_playwright() as pw:
     page.add_init_script("localStorage.setItem('codeshift-guided','false')")
     try:
         page.goto(BASE + '/', wait_until='networkidle')
-        page.get_by_role('combobox',name='Language').select_option('ko')
+        page.get_by_test_id('title-settings').click();page.get_by_role('combobox',name='Language').select_option('ko');page.keyboard.press('Escape')
         page.locator('.pc-play').click()
         expect(page.locator('.pc-shortcuts')).to_be_visible()
         assert page.locator('.pc-window:visible').count() == 0

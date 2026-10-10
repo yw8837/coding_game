@@ -65,8 +65,17 @@ class SaveStore {
     const handle = await fs.open(temporary, 'w', 0o600);
     try { await handle.writeFile(raw, 'utf8'); await handle.sync(); }
     finally { await handle.close(); }
-    try { await fs.rename(temporary, file); }
-    catch (error) { await fs.unlink(temporary).catch(() => {}); throw error; }
+    try {
+      // Windows can briefly lock the destination while another reader opens it.
+      // Keep the previous save intact; retry the atomic replacement, never unlink it.
+      for (let attempt = 0; ; attempt++) {
+        try { await fs.rename(temporary, file); break; }
+        catch (error) {
+          if (!['EPERM', 'EACCES', 'EBUSY'].includes(error.code) || attempt >= 4) throw error;
+          await new Promise(resolve => setTimeout(resolve, 25 * 2 ** attempt));
+        }
+      }
+    } catch (error) { await fs.unlink(temporary).catch(() => {}); throw error; }
   }
   save(raw) {
     const task = this.queue.then(async () => {
