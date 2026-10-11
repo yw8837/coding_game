@@ -29,7 +29,7 @@ async function close(){
  const stopped=app.waitForEvent('close');await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].close());await stopped;app=null;
 }
 async function language(lang){
- await page.locator('.pc-language').click();await page.getByRole('combobox',{name:'Language',exact:true}).selectOption(lang);await page.keyboard.press('Escape');
+ await page.locator('.pc-tray-settings').click();await page.getByRole('combobox',{name:'Language',exact:true}).selectOption(lang);await page.keyboard.press('Escape');
  await until(()=>page.locator('html').getAttribute('lang'),lang);
 }
 async function openCareer(lang){

@@ -32,7 +32,7 @@ with sync_playwright() as pw:
    active(p).locator('.practice-rule-row button').click();assert saved(p)['credits']==before+25
    p.screenshot(path=str(out/f'practice-{lang}-mobile.png'),animations='disabled')
    # Settings/Escape only closes dialog; app continues. Language persisted.
-   p.locator('.pc-language').click();expect(p.locator('.settings-dialog')).to_be_visible();p.keyboard.press('Escape');expect(p.locator('.settings-dialog')).not_to_be_visible();expect(active(p)).to_be_visible()
+   p.locator('.pc-tray-settings').click();expect(p.locator('.settings-dialog')).to_be_visible();p.keyboard.press('Escape');expect(p.locator('.settings-dialog')).not_to_be_visible();expect(active(p)).to_be_visible()
    p.reload(wait_until='networkidle');p.locator('.pc-play').click();assert saved(p)['completed']==[0];assert p.locator('html').get_attribute('lang')==lang
    overflow=p.evaluate('document.documentElement.scrollWidth>innerWidth');assert not overflow
    results.append({'lang':lang,'firstChapter':True,'practice':True,'reload':True,'overflow':overflow});c.close()

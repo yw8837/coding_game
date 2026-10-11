@@ -18,3 +18,21 @@ export function openWindow(list:WindowState[],id:string,b:Bounds):WindowState[]{
  return [...list.filter(w=>w.id!==id),existing?{...existing,minimized:false,closed:false}:fresh];
 }
 export function focusedWindow(list:WindowState[]):string{return list.findLast(w=>!w.minimized&&!w.closed)?.id??'desktop';}
+const visible=(w:WindowState)=>!w.minimized&&!w.closed;
+/** Dual tile: `primary` on the left, the most recently focused other window on the right.
+ * Opens `fallback` when nothing else is on screen; every other window is minimized. */
+export function tileWindows(list:WindowState[],b:Bounds,primary='terminal',fallback='browser'):WindowState[]{
+ const partner=list.findLast(w=>w.id!==primary&&visible(w))?.id??(fallback===primary?null:fallback);
+ let next=list.some(w=>w.id===primary&&visible(w))?list:openWindow(list,primary,b);
+ if(partner&&!next.some(w=>w.id===partner&&visible(w)))next=openWindow(next,partner,b);
+ const arranged=next.map(w=>w.id===primary?{...w,mode:(partner?'left':'maximized') as WindowState['mode'],minimized:false,closed:false}:w.id===partner?{...w,mode:'right' as const,minimized:false,closed:false}:{...w,minimized:true});
+ // The primary window ends up last so it keeps focus for typing.
+ return [...arranged.filter(w=>w.id!==primary&&w.id!==partner),...arranged.filter(w=>w.id===partner),...arranged.filter(w=>w.id===primary)];
+}
+/** Edge snapping while dragging a titlebar. `x`/`y` are pointer coordinates inside the desktop. */
+export function snapZone(x:number,y:number,b:Bounds,edge=18,top=6):WindowState['mode']|null{
+ if(y<=top)return 'maximized';
+ if(x<=edge)return 'left';
+ if(x>=b.width-edge)return 'right';
+ return null;
+}

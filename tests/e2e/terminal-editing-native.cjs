@@ -42,7 +42,7 @@ async function command(value){await field.fill(value);await field.press('Enter')
  });
  for(const lang of ['en','ko','ja']){
   if(lang!=='en'){
-   await page.locator('.pc-language').click();await page.getByRole('combobox',{name:'Language',exact:true}).selectOption(lang);await page.keyboard.press('Escape');
+   await page.locator('.pc-tray-settings').click();await page.getByRole('combobox',{name:'Language',exact:true}).selectOption(lang);await page.keyboard.press('Escape');
    await until(()=>page.locator('html').getAttribute('lang'),lang);
   }
   await command('cd /home/dev');await command('echo alpha > alpha.txt');await command('echo alpine > alpine.txt');

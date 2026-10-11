@@ -14,8 +14,8 @@ with sync_playwright() as pw:
   assert p.locator('.wallpaper-preview img').evaluate_all('els=>els.every(el=>el.complete&&el.naturalWidth>1000)')
   p.reload(wait_until='networkidle');p.locator('.pc-play').click();assert state(p)['gameplay']['ownedCosmetics']==['mint','amber'];assert state(p)['credits']==30
   # Import real UI-earned progress, never a fabricated wallet balance.
-  p.locator('.pc-language').click();p.locator('.save-tools input[type=file]').set_input_files(str(out/'completed-learning-save.json'));p.get_by_role('button',name='이 저장으로 이어하기',exact=True).click();p.locator('.pc-play').click()
-  before=state(p)['credits'];p.locator('.quest-next button').click();p.locator('.pc-language').click();p.get_by_role('button',name='타이틀로 돌아가기',exact=True).click();p.locator('.pc-play').click();p.get_by_test_id('open-wallet').click();p.get_by_test_id('wallet-tools').click();expect(p.locator('.career-shop')).to_be_visible()
+  p.locator('.pc-tray-settings').click();p.locator('.save-tools input[type=file]').set_input_files(str(out/'completed-learning-save.json'));p.get_by_role('button',name='이 저장으로 이어하기',exact=True).click();p.locator('.pc-play').click()
+  before=state(p)['credits'];p.locator('.quest-next button').click();p.locator('.pc-tray-settings').click();p.get_by_role('button',name='타이틀로 돌아가기',exact=True).click();p.locator('.pc-play').click();p.get_by_test_id('open-wallet').click();p.get_by_test_id('wallet-tools').click();expect(p.locator('.career-shop')).to_be_visible()
   for item in ['recovery-kit','second-screen','studio-sign']:
    button=p.get_by_test_id('career-upgrade-'+item);button.click();expect(button).to_be_disabled()
   assert state(p)['credits']==before-1750

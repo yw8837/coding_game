@@ -74,3 +74,35 @@
 @media(max-width:420px){.pc-shell .pc-taskbar{gap:3px}.pc-shell .pc-start-apps{grid-template-columns:repeat(3,minmax(0,1fr))}.pc-start-heading>span:last-child{font-size:8px}.pc-shell .pc-task-apps{scrollbar-width:none}.pc-shell .pc-task-apps::-webkit-scrollbar{display:none}}
 @media(prefers-reduced-motion:reduce){.pc-shell .pc-calendar,.pc-shell .pc-start-menu{animation:none}}
 @media(prefers-reduced-transparency:reduce){.pc-shell .pc-taskbar,.pc-shell .pc-start-menu,.pc-shell .pc-calendar{background:#172737;backdrop-filter:none}}
+/* 창 정렬 · 트레이 플라이아웃 */
+.pc-shell .pc-task-tile{width:36px;flex-shrink:0;color:#b8c8d8}
+.pc-shell .pc-task-tile:hover,.pc-shell .pc-tray>button:hover{background:#d6be8d15}
+.pc-shell .pc-tray>button.selected{background:#d6be8d1a}
+.pc-shell .pc-tray>.pc-language{width:34px;font:600 11px var(--mono);letter-spacing:.04em}
+.pc-flyout{position:fixed;bottom:69px;right:96px;width:300px;max-width:calc(100vw - 24px);z-index:43;padding:16px 18px;border:1px solid #81929e80;background:#172737fa;box-shadow:0 16px 48px #020b1666;backdrop-filter:blur(20px);border-radius:8px;color:#dfe8ef;animation:pc-arrive .15s ease-out}
+.pc-flyout header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.pc-flyout h2{display:flex;align-items:center;gap:7px;margin:0;font-size:13px;font-weight:600}
+.pc-flyout footer{margin:14px -18px -16px;padding:8px 12px;border-top:1px solid #72869936;background:#102030;border-radius:0 0 8px 8px}
+.pc-flyout footer button{display:flex;align-items:center;gap:8px;width:100%;padding:8px;border-radius:4px;font-size:12px;color:#c6d3de}
+.pc-flyout footer button:hover{background:#d6be8d15}
+.pc-flyout-note{margin:10px 0 0;font-size:11px;line-height:1.6;color:#a9bbc9}
+.pc-mute{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #6d8196;border-radius:999px;font-size:11px;color:#dfe8ef}
+.pc-mute.is-muted{background:#e6c37a;border-color:#e6c37a;color:#1a2533}
+.pc-sound-sliders{display:flex;flex-direction:column;gap:12px}
+.pc-sound-sliders label{display:flex;flex-direction:column;gap:6px;font-size:12px}
+.pc-sound-sliders label.is-muted{opacity:.55}
+.pc-sound-sliders span{display:flex;align-items:center;gap:7px;color:#c6d3de}
+.pc-sound-sliders output{margin-left:auto;font:11px var(--mono);color:#ead8b1;font-variant-numeric:tabular-nums}
+.pc-sound-sliders input{width:100%;accent-color:#e6c37a}
+.pc-language-flyout{width:240px;right:62px}
+.pc-language-options{display:flex;flex-direction:column;gap:3px}
+.pc-language-options button{display:flex;align-items:center;gap:12px;width:100%;min-height:40px;padding:6px 10px;border-radius:4px;text-align:left;font-size:13px;color:#dfe8ef}
+.pc-language-options button:hover{background:#d6be8d15}
+.pc-language-options button[aria-pressed=true]{background:#d6be8d22}
+.pc-language-options b{width:38px;font:600 11px var(--mono);color:#ead8b1}
+.pc-language-options svg{margin-left:auto;color:#ead8b1}
+.pc-shell .pc-window.is-active{border-color:#e6c37acc;box-shadow:0 0 0 1px #e6c37a55,0 0 26px #e6c37a2b,0 20px 65px #0008}
+.pc-snap-preview{position:absolute;z-index:6;pointer-events:none;border:2px solid #e6c37a;background:#e6c37a1c;border-radius:8px;transition:inset .12s ease-out,width .12s ease-out}
+@media(max-width:759px){.pc-flyout{right:12px;bottom:66px}.pc-shell .pc-tray>.pc-tray-settings{display:none}}
+@media(prefers-reduced-motion:reduce){.pc-flyout{animation:none}.pc-snap-preview{transition:none}}
+@media(prefers-reduced-transparency:reduce){.pc-flyout{background:#172737;backdrop-filter:none}}

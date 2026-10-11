@@ -18,7 +18,7 @@ with sync_playwright() as pw:
             page.on('pageerror', lambda error: errors.append(str(error)))
             page.goto('http://127.0.0.1:5173/', wait_until='networkidle')
             page.locator('.pc-play').click()
-            page.locator('.pc-language').click()
+            page.locator('.pc-tray-settings').click()
             page.locator('.save-tools input[type=file]').set_input_files('output/pc-qa/completed-save.json')
             page.locator('.save-confirm .primary-button').click()
             page.locator('.settings-dialog').wait_for(state='hidden')

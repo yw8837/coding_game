@@ -37,6 +37,7 @@ export function terminalArgumentError(cmd:string,args:string[]):string|null{
   return bad?`ls: unsupported option '${bad}'. Supported: -a, -l, -h, -1 (combined forms such as -la).`:args.filter(a=>!a.startsWith('-')||end>=0&&args.indexOf(a)>end).length>1?'ls: list one path at a time. Usage: ls [-alh1] [path]':null;
  }
  if(cmd==='echo')return args[0]?.startsWith('-')&&args[0]!=='-n'?`echo: unsupported option '${args[0]}'. Supported: -n.`:null;
+ if(cmd==='grep'){const bad=args.find(a=>a.startsWith('-')&&!/^-[inv]+$/.test(a));return bad?`grep: unsupported option '${bad}'. Supported: -n, -i, -v.`:null;}
  if(['cat','touch','cp','mv','rm'].includes(cmd))return option([])||(['touch','rm'].includes(cmd)?count(1,`${cmd} <file>`):null);
  if(cmd==='mkdir')return option(['-p']);
  if(cmd==='uname')return option(['-a'])||count(1,'uname [-a]');

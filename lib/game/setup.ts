@@ -49,3 +49,9 @@ export function runSetupStep(state:GameState,step:SetupStep,edition:import('./ed
 }
 
 export function setupCommands(state:GameState,step:SetupStep):string[]{return runSetupStep(state,step).commands;}
+
+/** The single next command a player types to get from an empty PC to a running preview. */
+export function guidedSetupCommand(state:GameState):string|null{
+ for(const step of ['copy','prepare','preview'] as const){const command=nextSetupCommand(state,step);if(command)return command;}
+ return null;
+}

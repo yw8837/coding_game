@@ -44,6 +44,7 @@ export function editionAllowsCommand(s:GameState,args:readonly string[],redirect
    if(previous&&!editionAllowsPath(edition,previous))return false;
   }
  }
+ if(cmd==='grep'&&operands.filter(p=>!/^-[inv]+$/.test(p)).slice(1).some(p=>!editionAllowsPath(edition,p,cwd)))return false;
  if((cmd==='cp'||cmd==='mv')&&operands.length===2){
   const from=editionPath(cwd,operands[0]),destination=editionPath(cwd,operands[1]);
   const final=s.machines[s.machine].dirs.includes(destination)?destination+'/'+from.split('/').at(-1):destination;
