@@ -55,3 +55,17 @@ test('legacy manual setting avoids Steam detection and automatic choice persists
  await store.restore();assert.equal(store.getLanguage(),'ko');assert.equal(store.getPreference(),'ko');assert.equal(calls,0);
  await store.setPreference('auto');assert.equal(stored,'auto');assert.equal(store.getLanguage(),'en');assert.equal(calls,1);assert.ok(changes.includes('auto:en'));
 });
+
+test('Korean regional context (Seoul timezone or .kr domain) automatically defaults to Korean even if English is preferred in browser',async()=>{
+ assert.equal(resolveLanguage('auto',{browserLanguages:['en-US','ko-KR'],timeZone:'Asia/Seoul'}),'ko');
+ assert.equal(resolveLanguage('auto',{browserLanguages:['en-US'],hostname:'code.yeolmaeapps.kr'}),'ko');
+ assert.equal(resolveLanguage('auto',{browserLanguages:['en-US'],timeZone:'Asia/Seoul'}),'ko');
+ const store=createLocaleStore({
+  readPreference:()=>null,
+  writePreference:()=>{},
+  browserLanguages:()=>['en-US'],
+  clientContext:()=>({timeZone:'Asia/Seoul',hostname:'code.yeolmaeapps.kr'}),
+ });
+ assert.equal(store.getLanguage(),'ko');
+});
+

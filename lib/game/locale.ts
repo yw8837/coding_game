@@ -2,7 +2,7 @@ import type {Language} from './translations.ts';
 
 export type LanguagePreference='auto'|Language;
 export type LanguagePlatformInfo={steamLanguage?:string;osLanguages?:readonly string[]};
-export type LanguageContext=LanguagePlatformInfo&{browserLanguages?:readonly string[]};
+export type LanguageContext=LanguagePlatformInfo&{browserLanguages?:readonly string[];timeZone?:string;hostname?:string};
 export const LANGUAGE_PREFERENCE_KEY='codeshift-language';
 
 export function parseLanguagePreference(value:unknown):LanguagePreference{
@@ -27,6 +27,12 @@ export function resolveLanguage(preference:LanguagePreference,context:LanguageCo
  const os=Array.isArray(context.osLanguages)?context.osLanguages:[];
  const browser=Array.isArray(context.browserLanguages)?context.browserLanguages:[];
  const preferred=os.length?os:browser;
+ const tz=(context.timeZone||'').toLowerCase();
+ const host=(context.hostname||'').toLowerCase();
+ const isKoreaRegion=tz.includes('seoul')||host.endsWith('.kr')||host.includes('yeolmaeapps.kr');
+ const isJapanRegion=tz.includes('tokyo')||host.endsWith('.jp');
+ if(isKoreaRegion)return 'ko';
+ if(isJapanRegion)return 'ja';
  for(const value of preferred){const supported=normalizeLanguage(value);if(supported)return supported;}
  return 'en';
 }
@@ -35,6 +41,7 @@ type LocaleEnvironment={
  readPreference:()=>unknown;
  writePreference:(preference:LanguagePreference)=>void;
  browserLanguages:()=>readonly string[];
+ clientContext?:()=>{timeZone?:string;hostname?:string};
  platformInfo?:()=>Promise<LanguagePlatformInfo|null|undefined>;
  isDesktop?:()=>boolean;
  regionLanguage?:(signal:AbortSignal)=>Promise<Language|null>;
@@ -45,8 +52,11 @@ type LocaleEnvironment={
  * automatic response from replacing a manual choice or a newer detection request.
  */
 export function createLocaleStore(environment:LocaleEnvironment){
- let preference:LanguagePreference='auto',language:Language='en',revision=0,pending:AbortController|null=null;
  const browserLanguages=()=>{try{return environment.browserLanguages();}catch{return [];}};
+ const getContext=(browser:readonly string[]):LanguageContext=>{
+  try{return {browserLanguages:browser,...(environment.clientContext?.()??{})};}catch{return {browserLanguages:browser};}
+ };
+ let preference:LanguagePreference='auto',language:Language=resolveLanguage('auto',getContext(browserLanguages())),revision=0,pending:AbortController|null=null;
  const publish=(nextPreference:LanguagePreference,nextLanguage:Language)=>{
   preference=nextPreference;language=nextLanguage;
   // Also synchronize the host document's lang when the fallback is unchanged.
@@ -72,7 +82,7 @@ export function createLocaleStore(environment:LocaleEnvironment){
  };
  const setPreference=async(next:LanguagePreference)=>{
   const choice=parseLanguagePreference(next),token=cancel(),browser=browserLanguages();
-  publish(choice,resolveLanguage(choice,{browserLanguages:browser}));
+  publish(choice,resolveLanguage(choice,getContext(browser)));
   try{environment.writePreference(choice);}catch{/* The session choice still works without writable storage. */}
   if(choice==='auto')await detect(token,browser);
  };
@@ -80,7 +90,7 @@ export function createLocaleStore(environment:LocaleEnvironment){
   const token=cancel();let stored:unknown;
   try{stored=environment.readPreference();}catch{/* Missing or blocked storage means automatic detection. */}
   const choice=parseLanguagePreference(stored),browser=browserLanguages();
-  publish(choice,resolveLanguage(choice,{browserLanguages:browser}));
+  publish(choice,resolveLanguage(choice,getContext(browser)));
   if(choice==='auto')await detect(token,browser);
  };
  return {getLanguage:()=>language,getPreference:()=>preference,setPreference,restore};
