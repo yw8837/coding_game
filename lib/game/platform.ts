@@ -6,7 +6,9 @@ export type DesktopBridge={
  loadBackup:()=>Promise<{raw:string|null;recovered:boolean;error?:string}>;
  saveGame:(raw:string)=>Promise<{ok:boolean;error?:string}>;
  exportBackup:(raw:string)=>Promise<{ok:boolean;canceled?:boolean;error?:string}>;
- exportApp:(html:string)=>Promise<{ok:boolean;canceled?:boolean;error?:string}>;
+ exportApp:(html:string,name?:string)=>Promise<{ok:boolean;canceled?:boolean;error?:string}>;
+ /** Absent in desktop shells built before ZIP export. */
+ exportArchive?:(data:Uint8Array,name?:string)=>Promise<{ok:boolean;canceled?:boolean;error?:string}>;
  unlockAchievements:(ids:string[])=>Promise<{ok:boolean}>;
  onBeforeClose:(callback:()=>void)=>()=>void;
  confirmClose:()=>Promise<{ok:boolean}>;

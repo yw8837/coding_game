@@ -11,7 +11,7 @@ const rows=String.raw`
 수리 의뢰¦Repairs¦修理の依頼
 해결사 수첩¦My journal¦解決ノート
 작업실 꾸미기¦Customize desktop¦デスクトップを飾る
-CODE:SHIFT / 모노 카페 이야기¦CODE:SHIFT / The Mono Cafe story¦CODE:SHIFT / モノカフェの物語
+로컬호스트 히어로 / 모노 카페 이야기¦Localhost Hero / The Mono Cafe story¦ローカルホスト・ヒーロー / モノカフェの物語
 우리 동네에 불이 켜졌다.¦The cafe is open.¦カフェがオープンしました。
 작은 카페의 큰 시작.¦A new start for Mono Cafe.¦モノカフェの新しい一歩。
 / 3 준비 완료 ·¦/ 3 preparations done ·¦/ 3 準備完了 ·

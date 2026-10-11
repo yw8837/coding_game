@@ -4,7 +4,7 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const {SaveStore, validateRaw} = require('./save-store.cjs');
 const {writeBackup} = require('./export-backup.cjs');
-const {exportAppDocument} = require('./export-app.cjs');
+const {exportAppDocument, exportArchiveDocument, exportName} = require('./export-app.cjs');
 const {nativeLanguage, messages} = require('./native-i18n.cjs');
 const {createSteam, readConfig} = require('./steam.cjs');
 const {ENTRY, CSP, MIME, isAppURL, resolveAsset, isTrustedSender} = require('./security.cjs');
@@ -41,7 +41,7 @@ async function askToDiscard(message) {
   prompting = true;
   try {
     const choice = await dialog.showMessageBox(window, {
-      type: 'warning', title: 'CODE:SHIFT', message,
+      type: 'warning', title: 'Localhost Hero', message,
       detail: words().unsaved,
       buttons: [words().keepPlaying, words().discard], defaultId: 0, cancelId: 0, noLink: true,
     });
@@ -98,7 +98,7 @@ async function boot() {
   });
   window = new BrowserWindow({
     width: 1440, height: 960, minWidth: 960, minHeight: 640,
-    backgroundColor: '#0b121b', title: 'CODE:SHIFT', show: false,
+    backgroundColor: '#0b121b', title: 'Localhost Hero', show: false,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'), session: local,
@@ -144,14 +144,25 @@ async function boot() {
     finally { exporting = false; }
   });
   handle('desktop:achievements', ids => steam.unlock(ids));
-  handle('desktop:export-app', html => exportAppDocument(html, {
+  handle('desktop:export-app', (html, name) => exportAppDocument(html, {
     isBusy: () => exporting || closing,
     setBusy: busy => { exporting = busy; },
     words: words(),
     choose: () => dialog.showSaveDialog(window, {
         title: words().appExportTitle, buttonLabel: words().appExportButton,
-        defaultPath: path.join(app.getPath('documents'), 'my-neighborhood-app.html'),
+        defaultPath: path.join(app.getPath('documents'), exportName('html', name)),
         filters: [{name: 'HTML', extensions: ['html']}],
+        properties: ['showOverwriteConfirmation'],
+    }),
+  }));
+  handle('desktop:export-archive', (data, name) => exportArchiveDocument(data, {
+    isBusy: () => exporting || closing,
+    setBusy: busy => { exporting = busy; },
+    words: words(),
+    choose: () => dialog.showSaveDialog(window, {
+        title: words().archiveExportTitle, buttonLabel: words().archiveExportButton,
+        defaultPath: path.join(app.getPath('documents'), exportName('zip', name)),
+        filters: [{name: 'ZIP', extensions: ['zip']}],
         properties: ['showOverwriteConfirmation'],
     }),
   }));
@@ -171,7 +182,7 @@ async function boot() {
 
 if (profileError) {
   // Exit before acquiring a default-profile lock or creating a Chromium session.
-  dialog.showErrorBox('CODE:SHIFT', 'The game profile could not be prepared. ' +
+  dialog.showErrorBox('Localhost Hero', 'The game profile could not be prepared. ' +
     (qaBuild || process.argv.some(value => value.startsWith('--qa-user-data='))
       ? 'Use a new absolute QA directory outside the production profile.'
       : 'Check access to the game data directory.'));
