@@ -4,7 +4,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
 BASE=os.environ.get('CODESHIFT_QA_BASE','http://127.0.0.1:5173/')
-OUT=Path('output/title-save-state');OUT.mkdir(parents=True,exist_ok=True)
+OUT=Path(os.environ.get('CODESHIFT_QA_DIR','output/title-save-state'));OUT.mkdir(parents=True,exist_ok=True)
 report={'errors':[],'base':BASE}
 with sync_playwright() as pw:
  browser=pw.chromium.launch(channel='chrome',headless=True)
@@ -38,7 +38,7 @@ with sync_playwright() as pw:
   terminal.fill('echo my-first-draft > notes.txt');terminal.press('Enter')
   page.wait_for_function("JSON.parse(localStorage.getItem('codeshift-intro-demo-v1')).history.at(-1)?.command==='echo my-first-draft > notes.txt'")
   original=page.evaluate("localStorage.getItem('codeshift-intro-demo-v1')")
-  page.get_by_role('button',name='언어 설정',exact=True).click()
+  page.get_by_test_id('tray-settings').click()
   page.get_by_role('button',name='타이틀로 돌아가기',exact=True).click()
   expect(page.get_by_test_id('title-continue')).to_be_enabled()
   page.reload(wait_until='networkidle')
@@ -47,11 +47,11 @@ with sync_playwright() as pw:
   page.keyboard.press('Escape')
   assert page.evaluate("localStorage.getItem('codeshift-intro-demo-v1')")==original
   page.get_by_test_id('title-continue').click()
-  page.get_by_role('button',name='언어 설정',exact=True).click()
+  page.get_by_test_id('tray-settings').click()
   page.get_by_role('button',name='진행 기록 초기화',exact=True).click()
   page.get_by_role('alertdialog').get_by_role('button',name='초기화하고 다시 시작',exact=True).click()
   expect(page.locator('.pc-shortcuts')).to_be_visible()
-  page.get_by_role('button',name='언어 설정',exact=True).click()
+  page.get_by_test_id('tray-settings').click()
   page.get_by_role('button',name='타이틀로 돌아가기',exact=True).click()
   expect(page.get_by_test_id('title-continue')).to_be_disabled()
   page.reload(wait_until='networkidle');expect(page.get_by_test_id('title-new')).to_be_enabled()
