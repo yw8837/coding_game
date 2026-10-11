@@ -20,7 +20,7 @@ with sync_playwright() as pw:
    context=browser.new_context(viewport={'width':1440,'height':960},locale={'ko':'ko-KR','en':'en-US','ja':'ja-JP'}[lang],reduced_motion='reduce' if lang=='ja' else 'no-preference')
    context.add_init_script(instrument);page=context.new_page();page.set_default_timeout(12000);errors=[]
    page.on('pageerror',lambda e:errors.append(str(e)))
-   page.goto('http://127.0.0.1:5173/',wait_until='networkidle');page.locator('.pc-play').click();page.locator('.pc-language').click()
+   page.goto('http://127.0.0.1:5173/',wait_until='networkidle');page.locator('.pc-play').click();page.locator('.pc-tray-settings').click()
    settings=page.get_by_test_id('audio-settings');expect(settings).to_be_visible()
    expect(settings.get_by_role('slider',name=labels[0],exact=True)).to_have_value('85')
    settings.get_by_role('slider',name=labels[0],exact=True).fill('60');settings.get_by_role('slider',name=labels[1],exact=True).fill('0');settings.get_by_role('slider',name=labels[2],exact=True).fill('75')
@@ -46,7 +46,7 @@ with sync_playwright() as pw:
    assert page.get_by_test_id('credit-balance').inner_text()==format(after_credits,',')+' cr'
    page.screenshot(path=str(out/f'{lang}-credit-spent.png'))
    page.reload(wait_until='networkidle');page.locator('.pc-play').click();expect(page.get_by_test_id('credit-change')).to_have_count(0)
-   page.locator('.pc-language').click();settings=page.get_by_test_id('audio-settings')
+   page.locator('.pc-tray-settings').click();settings=page.get_by_test_id('audio-settings')
    for label,value in zip(labels[:3],['60','0','75']):expect(settings.get_by_role('slider',name=label,exact=True)).to_have_value(value)
    expect(settings.get_by_test_id('reduce-motion')).to_have_attribute('aria-pressed','true')
    expect(settings.get_by_role('button',name=labels[3],exact=True)).to_have_attribute('aria-pressed','false')

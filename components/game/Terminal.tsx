@@ -7,7 +7,7 @@ import {translateTerminalOutput} from '@/lib/game/terminal-translations';
 import {isKeystrokeKey} from '@/lib/game/audio-feedback';
 import type {GameProps} from './types';
 import {playFeedbackMotion,playGameFeedback} from './useGameFeedback';
-export function TerminalView({state,onCommand,queued,onQueued,compact=false}:GameProps&{queued:string;onQueued:()=>void;compact?:boolean}){
+export function TerminalView({state,onCommand,queued,onQueued,compact=false,expected}:GameProps&{queued:string;onQueued:()=>void;compact?:boolean;expected?:string}){
  const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='en'?en:ja;
  const [input,setInput]=useState(''),[index,setIndex]=useState(-1),[suggestions,setSuggestions]=useState<TerminalCompletion[]>([]),[selected,setSelected]=useState(-1);
  const draft=useRef(''),scroll=useRef<HTMLDivElement>(null),field=useRef<HTMLInputElement>(null),m=state.machines[state.machine],visible=visibleTerminalHistory(state.history);
@@ -16,6 +16,9 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false}:Gam
  const change=useCallback((value:string)=>{setInput(value);setIndex(-1);draft.current=value;setSuggestions([]);setSelected(-1);completion.current=null;pendingCaret.current=null;},[setInput,setIndex,setSuggestions,setSelected]);
  useLayoutEffect(()=>{if(pendingCaret.current!==null){field.current?.setSelectionRange(pendingCaret.current,pendingCaret.current);pendingCaret.current=null;}},[input,suggestions]);
  const latestCommand=state.history.at(-1)?.command;
+ // 따라 칠 명령이 있으면 맞게 친 앞부분을 밝히고, 처음 틀린 글자부터 표시한다.
+ let matched=0;if(expected)while(matched<input.length&&matched<expected.length&&input[matched]===expected[matched])matched++;
+ const typo=!!expected&&input.length>matched,ready=!!expected&&input===expected;
  // eslint-disable-next-line react-hooks/set-state-in-effect -- A parent command-queue event hydrates the editable input, consumes the queue and focuses the terminal without executing it.
  useLayoutEffect(()=>{if(queued){change(queued);onQueued();field.current?.focus();}},[queued,onQueued,change]);
  useEffect(()=>{if(scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;},[state.history.length,latestCommand]);
@@ -35,6 +38,7 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false}:Gam
  return localizeUI(<div className={'terminal-body '+(compact?'compact':'')}>
   <div className="terminal-output" ref={scroll} aria-live="polite" aria-label="터미널 출력"><div className="terminal-welcome"><TerminalSquare size={18}/><span>SHIFT SHELL<br/><span data-no-translate>{tr('Linux 개발 터미널','Linux development terminal','Linux開発ターミナル')}</span><br/><span data-no-translate>{tr('help · 명령과 옵션 / Tab · 경로 완성','help · commands and options / Tab · path completion','help · コマンドとオプション / Tab · パス補完')}</span></span></div>{visible.map((h,i)=><div className="terminal-entry" key={i}><div className="terminal-prompt"><span>dev@{h.machine==='local'?'workstation':'mono-server'}</span><span className="path">{h.cwd.replace('/home/dev','~')}</span><span>$</span><strong data-no-translate>{h.command}</strong></div>{h.output&&<pre className={h.error?'terminal-error':''}>{translateTerminalOutput(h.command,h.output,language)}</pre>}</div>)}</div>
   {!!suggestions.length&&<div className="terminal-completions" aria-label="명령어 자동완성 후보">{suggestions.map((c,i)=><button type="button" className={i===selected?'selected':''} key={c.value} onClick={()=>{close();applyCompletion(c);field.current?.focus();}}>{c.value}</button>)}</div>}
+  {expected&&<div className={'terminal-ghost'+(typo?' has-typo':'')+(ready?' is-ready':'')} data-testid="terminal-ghost" aria-hidden="true" data-no-translate><span className="ghost-done">{expected.slice(0,matched)}</span>{typo&&<span className="ghost-typo">{input.slice(matched)}</span>}<span className="ghost-rest">{typo?'':expected.slice(matched)}</span><small>{ready?'Enter ↵':typo?'Backspace ⌫':'Tab ⇥'}</small></div>}
   <form className="terminal-form" onSubmit={e=>{e.preventDefault();send();}}><label htmlFor={compact?'terminal-dock':'terminal-main'}><span>dev@{state.machine==='local'?'workstation':'mono-server'}</span><b>{m.cwd.replace('/home/dev','~')}</b><ChevronRight size={16}/></label><input id={compact?'terminal-dock':'terminal-main'} ref={field} value={input} onChange={e=>change(e.target.value)} onPointerDown={close} autoComplete="off" autoCapitalize="off" spellCheck={false} placeholder="명령어 입력 · Tab으로 완성" aria-label="가상 터미널 명령어" onKeyDown={e=>{
    if(e.key!=='Enter'&&isKeystrokeKey(e))playGameFeedback('keystroke');
    if(e.nativeEvent.isComposing||e.keyCode===229)return;

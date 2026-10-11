@@ -1,6 +1,7 @@
 'use client';
 import {useCallback,useEffect,useRef} from 'react';
-import {createFeedbackPlayer,type Feedback} from '@/lib/game/audio-feedback';
+import {createFeedbackPlayer,FEEDBACK_DUCK_DB,type Feedback} from '@/lib/game/audio-feedback';
+import {duckBackgroundMusic} from './useBackgroundMusic';
 export type {Feedback} from '@/lib/game/audio-feedback';
 import {DEFAULT_FEEDBACK_PREFERENCES,type FeedbackPreferences} from '@/lib/game/feedback-preferences';
 type PlayFeedback=(kind:Feedback,delay?:number)=>void;
@@ -22,6 +23,7 @@ export function useGameFeedback(enabled:boolean,mix:FeedbackPreferences=DEFAULT_
    const ctx=context.current??(context.current=new AudioContext({latencyHint:'interactive'}));
    const audio=player.current??(player.current=createFeedbackPlayer(ctx));
    audio.setEnabled(enabled);audio.setMix(mix);audio.play(kind,delay);
+   const duck=FEEDBACK_DUCK_DB[kind];if(duck)setTimeout(()=>duckBackgroundMusic(duck),Math.min(.5,Math.max(0,delay??0))*1000);
   }catch{/* Sound must never block a quest or an input. */}
  },[enabled,mix]);
  useEffect(()=>{activeFeedback=play;return()=>{if(activeFeedback===play)activeFeedback=null;};},[play]);

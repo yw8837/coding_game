@@ -24,7 +24,7 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  assert.equal(await page.evaluate(async()=>{try{await fetch('https://example.com');return false;}catch{return true;}}),true);
  await page.getByTestId('title-settings').click();await page.getByRole('combobox',{name:'Language'}).selectOption('ko');await page.keyboard.press('Escape');await page.locator('.pc-play').click();
  assert.equal(await page.locator('.pc-window:visible').count(),0);
- await page.locator('.pc-language').click();
+ await page.locator('.pc-tray-settings').click();
  const audioSettings=page.getByTestId('audio-settings');await audioSettings.getByRole('slider',{name:'전체 음량',exact:true}).fill('64');await audioSettings.getByRole('slider',{name:'조작음',exact:true}).fill('30');await audioSettings.getByTestId('reduce-motion').click();await audioSettings.getByRole('button',{name:'보상',exact:true}).click();
  assert.equal(await page.locator('html').getAttribute('data-game-reduced-motion'),'true');report.nativeFeedbackSettings=true;
  const guided=page.getByTestId('guided-mode-toggle');if(await guided.getAttribute('aria-pressed')==='true')await guided.click();await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
@@ -92,15 +92,15 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
 
  const first=await read();assert.equal(first.gameplay.lab.proofs.receipt.passed,true);assert.equal(first.accepted,true);assert.equal(first.gameplay.career.completed.length,18);report.closeSave=true;
  await launch();assert.equal(await page.locator('html').getAttribute('lang'),'ko');await page.locator('.pc-play').click();
- await page.locator('.pc-language').click();assert.equal(await page.getByTestId('audio-settings').getByRole('slider',{name:'전체 음량',exact:true}).inputValue(),'64');assert.equal(await page.getByTestId('audio-settings').getByRole('slider',{name:'조작음',exact:true}).inputValue(),'30');assert.equal(await page.getByTestId('reduce-motion').getAttribute('aria-pressed'),'true');report.nativeFeedbackPersist=true;await page.screenshot({animations:'disabled',path:path.join(out,'native-audio-settings.png')});await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
+ await page.locator('.pc-tray-settings').click();assert.equal(await page.getByTestId('audio-settings').getByRole('slider',{name:'전체 음량',exact:true}).inputValue(),'64');assert.equal(await page.getByTestId('audio-settings').getByRole('slider',{name:'조작음',exact:true}).inputValue(),'30');assert.equal(await page.getByTestId('reduce-motion').getAttribute('aria-pressed'),'true');report.nativeFeedbackPersist=true;await page.screenshot({animations:'disabled',path:path.join(out,'native-audio-settings.png')});await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
  await page.locator('.pc-shortcuts').getByRole('button',{name:'터미널',exact:true}).click();await command('code /home/dev/code-lab/receipt.js');await page.getByTestId('virtual-file-editor').waitFor({state:'visible'});
  // Import an actually UI-earned save from the browser edition through Settings.
- await page.locator('.pc-language').click();await page.locator('.save-tools input[type=file]').setInputFiles(path.join(out,'completed-career-save.json'));
+ await page.locator('.pc-tray-settings').click();await page.locator('.save-tools input[type=file]').setInputFiles(path.join(out,'completed-career-save.json'));
  await page.getByRole('button',{name:'이 저장으로 이어하기',exact:true}).click();await until(async()=>(await read()).gameplay.career.ending,'balanced');
  await page.locator('.pc-play').click();await page.locator('.pc-shortcuts').getByRole('button',{name:'에디터',exact:true}).click();assert.equal(await page.getByTestId('virtual-file-editor').count(),0);report.importClearsEditorTarget=true;await page.locator('.quest-next button').click();await page.locator('.career-conclusion').waitFor({state:'visible'});
  await page.screenshot({animations:'disabled',path:path.join(out,'native-ending.png')});
  await app.evaluate(({dialog},file)=>{dialog.showSaveDialog=async()=>({canceled:false,filePath:file});},path.join(profile,'exported.json'));
- await page.locator('.pc-language').click();await page.getByRole('button',{name:'백업 내보내기',exact:true}).click();
+ await page.locator('.pc-tray-settings').click();await page.getByRole('button',{name:'백업 내보내기',exact:true}).click();
  await until(async()=>JSON.parse(await fs.readFile(path.join(profile,'exported.json'),'utf8')).gameplay.career.ending,'balanced');report.nativeExport=true;await page.getByRole('combobox',{name:'Language'}).selectOption('en');await app.evaluate(({dialog})=>{dialog.showSaveDialog=async(_window,options)=>{globalThis.qaExportTitle=options.title;return {canceled:true};};});await page.getByRole('button',{name:'Export backup',exact:true}).click();await until(async()=>await app.evaluate(()=>globalThis.qaExportTitle),'Export CODE:SHIFT progress backup');report.manualNativeDialogLanguage=true;await page.getByRole('combobox',{name:'Language'}).selectOption('ko');
  await close();report.importAndEnding=true;
  // Corrupt primary after an orderly close; backup must restore real progress.

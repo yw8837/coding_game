@@ -93,3 +93,18 @@ test('/pwd stays an invalid absolute command name and offers localized pwd guida
  assert.match(translateTerminalOutput('/pwd',r.output,'ja'),/絶対パス/);
  assert.doesNotMatch(runCommand(createGame(),'help').output,/첫 버전|학습용|이 실습/);
 });
+
+test('grep finds lines in project files without touching state',()=>{
+ const run=(s:ReturnType<typeof createGame>,line:string)=>runCommand(s,line).state;
+ let s=createGame();for(const line of ['git clone https://cathub.dev/mono/menu-site.git','cd menu-site'])s=run(s,line);
+ const files=projectFiles(s),h1=files['index.html'].split('\n').findIndex(l=>l.includes('<h1'))+1;
+ const found=runCommand(s,'grep -n "<h1" index.html');
+ assert.equal(found.error,false);assert.ok(found.output.startsWith(h1+':'),found.output);
+ assert.equal(sourceHash(projectFiles(found.state)),sourceHash(files));
+ assert.match(runCommand(s,'grep -i MENU-GRID style.css').output,/menu-grid/);
+ assert.match(runCommand(s,'grep nothing-here index.html').output,/no lines match/);
+ assert.equal(runCommand(s,'grep -x h1 index.html').error,true);
+ assert.equal(runCommand(s,'grep h1').error,true);
+ assert.match(runCommand(s,'grep h1 missing.html').output,/No such file/);
+ assert.ok(terminalCompletions(s,'grep -n h1 ind').includes('grep -n h1 index.html'));
+});

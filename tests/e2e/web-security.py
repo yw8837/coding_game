@@ -61,7 +61,7 @@ console.log(JSON.stringify(state));
 
 
 def open_settings(page):
-    page.locator('.pc-language').click()
+    page.locator('.pc-tray-settings').click()
     expect(page.locator('.settings-dialog')).to_be_visible()
 
 

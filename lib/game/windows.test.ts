@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fitWindow,openWindow,focusedWindow,windowRect} from './windows.ts';
+import {fitWindow,openWindow,focusedWindow,windowRect,tileWindows,snapZone} from './windows.ts';
 test('windows open independently, restore one instance and keep focus bounded',()=>{
  const b={width:1100,height:720};let list=openWindow([],'messages',b);list=openWindow(list,'editor',b);
  list=list.map(w=>w.id==='messages'?{...w,minimized:true}:w);list=openWindow(list,'messages',b);
@@ -12,4 +12,20 @@ test('viewport shrink keeps complete titlebar and bottom controls on desktop',()
  const w=openWindow([],'editor',{width:1200,height:700})[0];
  assert.deepEqual(windowRect({...w,mode:'right'},{width:1000,height:600}),{x:500,y:0,width:500,height:600});
  assert.deepEqual(windowRect({...w,mode:'maximized'},{width:1000,height:600}),{x:0,y:0,width:1000,height:600});
+});
+test('tile puts the terminal beside the latest window and tucks the rest away',()=>{
+ const b={width:1200,height:700};let list=openWindow([],'messages',b);list=openWindow(list,'editor',b);
+ const tiled=tileWindows(list,b);
+ const by=(id:string)=>tiled.find(w=>w.id===id)!;
+ assert.equal(by('terminal').mode,'left');assert.equal(by('editor').mode,'right');assert.equal(by('messages').minimized,true);
+ assert.equal(focusedWindow(tiled),'terminal');
+ assert.deepEqual(windowRect(by('editor'),b),{x:600,y:0,width:600,height:700});
+ const alone=tileWindows([],b,'terminal','repair');
+ assert.deepEqual(alone.map(w=>[w.id,w.mode,w.minimized]),[['repair','right',false],['terminal','left',false]]);
+ const reopened=tileWindows(list.map(w=>({...w,minimized:true,closed:true})),b);
+ assert.equal(reopened.find(w=>w.id==='browser')?.mode,'right');assert.equal(reopened.find(w=>w.id==='editor')?.minimized,true);
+});
+test('dragging a titlebar to an edge picks a snap layout',()=>{
+ const b={width:1000,height:600};
+ assert.equal(snapZone(500,4,b),'maximized');assert.equal(snapZone(3,300,b),'left');assert.equal(snapZone(995,300,b),'right');assert.equal(snapZone(500,300,b),null);
 });

@@ -38,7 +38,7 @@ with sync_playwright() as pw:
   assert totals['visits']==initial['summary']['visits']+1,totals
   assert totals['starts']==initial['summary']['starts']+1,totals
   report['visitAndStartRecorded']=True
-  page.locator('.pc-language').click();consent.uncheck()
+  page.locator('.pc-tray-settings').click();consent.uncheck()
   page.locator('.demo-feedback-settings summary').click()
   textarea=page.locator('.demo-feedback-settings textarea')
   content='[Synthetic local QA] <script>window.badFeedback=true</script> The first step was unclear.'

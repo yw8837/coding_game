@@ -10,7 +10,7 @@ with sync_playwright() as pw:
   assert p.locator('.title-environment').evaluate('(e)=>e.complete&&e.naturalWidth>0')
   p.locator('.pc-play').click();assert p.locator('.pc-window:visible').count()==0;p.screenshot(path=str(out/'desktop.png'),animations='disabled')
   p.locator('.quest-next button').click();expect(p.locator('.message-conversation .character-portrait')).to_be_visible();p.screenshot(path=str(out/'messages.png'),animations='disabled')
-  p.locator('.pc-language').click();p.locator('.save-tools input[type=file]').set_input_files('output/pc-qa/completed-save.json');p.get_by_role('button',name='이 저장으로 이어하기',exact=True).click();p.locator('.pc-play').click()
+  p.locator('.pc-tray-settings').click();p.locator('.save-tools input[type=file]').set_input_files('output/pc-qa/completed-save.json');p.get_by_role('button',name='이 저장으로 이어하기',exact=True).click();p.locator('.pc-play').click()
   p.locator('.pc-shortcuts').get_by_role('button',name='의뢰 센터',exact=True).click();w=p.locator('.pc-window[data-active="true"]');w.locator('.pc-window-buttons button').nth(3).click()
   expect(p.get_by_test_id('neighborhood-map')).to_be_visible();p.screenshot(path=str(out/'map.png'),animations='disabled')
   p.locator('.map-chapters button').nth(1).click();expect(p.get_by_test_id('map-open-request')).to_be_disabled()

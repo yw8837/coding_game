@@ -16,7 +16,7 @@ async function launch(){
  await page.waitForFunction(()=>document.querySelector('[data-testid="title-continue"]')&&!document.querySelector('[data-testid="title-continue"]').disabled);
 }
 async function close(){const stopped=app.waitForEvent('close');await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].close());await stopped;app=null;}
-async function language(lang){await page.locator('.pc-language').click();await page.getByRole('combobox',{name:'Language'}).selectOption(lang);await page.keyboard.press('Escape');}
+async function language(lang){await page.locator('.pc-tray-settings').click();await page.getByRole('combobox',{name:'Language'}).selectOption(lang);await page.keyboard.press('Escape');}
 async function openStudio(){
  await page.locator('.pc-shortcuts').getByRole('button',{name:'Contracts',exact:true}).click();
  await page.getByTestId('career-release-button').click();await page.getByTestId('release-open-studio').click();

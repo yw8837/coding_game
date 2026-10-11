@@ -41,7 +41,7 @@ async function nav(id){
  const saved=async()=>JSON.parse(await fs.readFile(save,'utf8'));
  const cache=async()=>JSON.parse(careerFiles(await saved(),'photo-cache')['cache.json']);
  for(const lang of ['en','ko','ja']){
-  if(lang!=='en'){await page.locator('.pc-language').click();await page.getByRole('combobox',{name:'Language',exact:true}).selectOption(lang);await page.keyboard.press('Escape');await until(()=>page.locator('html').getAttribute('lang'),lang);}
+  if(lang!=='en'){await page.locator('.pc-tray-settings').click();await page.getByRole('combobox',{name:'Language',exact:true}).selectOption(lang);await page.keyboard.press('Escape');await until(()=>page.locator('html').getAttribute('lang'),lang);}
   for(const id of ids)await check(lang+': '+id+' asks for a decision without exposing an answer line',async()=>{
    await nav(id);const job=CAREER_JOBS.find(item=>item.id===id),steps=careerLearningSteps(id);
    for(let i=0;i<steps.length;i++){

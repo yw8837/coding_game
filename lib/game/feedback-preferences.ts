@@ -1,13 +1,13 @@
-export type FeedbackPreferences={master:number;ui:number;events:number;reducedMotion:boolean};
+export type FeedbackPreferences={master:number;ui:number;events:number;bgm:number;reducedMotion:boolean};
 export const FEEDBACK_PREFERENCES_KEY='codeshift-feedback-v1';
-export const DEFAULT_FEEDBACK_PREFERENCES:FeedbackPreferences={master:85,ui:80,events:100,reducedMotion:false};
+export const DEFAULT_FEEDBACK_PREFERENCES:FeedbackPreferences={master:85,ui:80,events:100,bgm:45,reducedMotion:false};
 
 export function readFeedbackPreferences(raw:string|null):FeedbackPreferences {
  const result={...DEFAULT_FEEDBACK_PREFERENCES};
  try {
   const value:unknown=JSON.parse(raw??'null');
   if(!value||typeof value!=='object')return result;
-  for(const key of ['master','ui','events'] as const){
+  for(const key of ['master','ui','events','bgm'] as const){
    const v=(value as Record<string,unknown>)[key];
    if(typeof v==='number'&&Number.isFinite(v))result[key]=Math.round(Math.max(0,Math.min(100,v)));
   }
@@ -20,4 +20,12 @@ export function readFeedbackPreferences(raw:string|null):FeedbackPreferences {
 export function feedbackVolumeGain(value:number):number {
  if(!Number.isFinite(value)||value<=0)return 0;
  return 10**((Math.min(100,value)-100)*.24/20);
+}
+
+/** The tray shows one effects slider. It reads the louder bus and rescales both, keeping their balance. */
+export function effectsVolume(value:FeedbackPreferences):number {return Math.max(value.ui,value.events);}
+export function withEffectsVolume(value:FeedbackPreferences,level:number):FeedbackPreferences {
+ const next=Math.round(Math.max(0,Math.min(100,Number.isFinite(level)?level:0))),current=effectsVolume(value);
+ if(current===0)return {...value,ui:next,events:next};
+ return {...value,ui:Math.round(value.ui*next/current),events:Math.round(value.events*next/current)};
 }

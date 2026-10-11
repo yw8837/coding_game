@@ -30,7 +30,7 @@ with sync_playwright() as pw:
   expect(w.locator('.career-code-input textarea')).to_be_visible()
   expect(w.locator('.career-file-tabs button[aria-pressed="true"]')).to_contain_text('clean.json')
   # Invalid JSON imports preserve current gameplay and show an actionable error.
-  p.locator('.pc-language').click();p.locator('.save-tools input[type=file]').set_input_files({'name':'bad.json','mimeType':'application/json','buffer':b'{invalid'})
+  p.locator('.pc-tray-settings').click();p.locator('.save-tools input[type=file]').set_input_files({'name':'bad.json','mimeType':'application/json','buffer':b'{invalid'})
   expect(p.locator('.save-tools [role=alert]')).to_be_visible()
   assert p.evaluate('JSON.parse(localStorage.getItem("codeshift-intro-demo-v1")).gameplay.career.accepted.includes("contacts-clean")')
   p.screenshot(path=str(out/'tools-import-guard.png'),animations='disabled')
