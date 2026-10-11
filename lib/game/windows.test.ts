@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fitWindow,openWindow,focusedWindow,windowRect,tileWindows,snapZone} from './windows.ts';
+import {fitWindow,openWindow,focusedWindow,windowRect,tileWindows,snapZone,resizeWindow} from './windows.ts';
 test('windows open independently, restore one instance and keep focus bounded',()=>{
  const b={width:1100,height:720};let list=openWindow([],'messages',b);list=openWindow(list,'editor',b);
  list=list.map(w=>w.id==='messages'?{...w,minimized:true}:w);list=openWindow(list,'messages',b);
@@ -28,4 +28,21 @@ test('tile puts the terminal beside the latest window and tucks the rest away',(
 test('dragging a titlebar to an edge picks a snap layout',()=>{
  const b={width:1000,height:600};
  assert.equal(snapZone(500,4,b),'maximized');assert.equal(snapZone(3,300,b),'left');assert.equal(snapZone(995,300,b),'right');assert.equal(snapZone(500,300,b),null);
+});
+test('directional window resize adjusts bounds safely across all edges and corners',()=>{
+ const b={width:1200,height:800};
+ const initial={x:100,y:100,width:500,height:400};
+ // Drag right edge (e): width grows
+ assert.deepEqual(resizeWindow(initial,50,0,'e',b),{x:100,y:100,width:550,height:400});
+ // Drag bottom edge (s): height grows
+ assert.deepEqual(resizeWindow(initial,0,60,'s',b),{x:100,y:100,width:500,height:460});
+ // Drag corner (se): both grow
+ assert.deepEqual(resizeWindow(initial,50,60,'se',b),{x:100,y:100,width:550,height:460});
+ // Drag left edge (w): moves x and adjusts width
+ assert.deepEqual(resizeWindow(initial,-40,0,'w',b),{x:60,y:100,width:540,height:400});
+ // Drag top edge (n): moves y and adjusts height
+ assert.deepEqual(resizeWindow(initial,0,-30,'n',b),{x:100,y:70,width:500,height:430});
+ // Min size constraints prevent window collapse (min 380x280)
+ const shrunk=resizeWindow(initial,400,0,'w',b);
+ assert.equal(shrunk.width,380);
 });
