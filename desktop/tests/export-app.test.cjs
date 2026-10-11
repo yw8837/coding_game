@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const {MAX_APP_BYTES, validateApp, writeApp, exportAppDocument} = require('../export-app.cjs');
+const {MAX_APP_BYTES, MAX_ARCHIVE_BYTES, exportName, validateApp, validateArchive, writeApp, writeArchive, exportAppDocument, exportArchiveDocument} = require('../export-app.cjs');
 
 const html = '<!doctype html><html lang="ko"><title>내 앱 日本語</title><body>☕</body></html>';
 test('app export validates type, document marker, NUL and UTF-8 byte limit', () => {
@@ -74,4 +74,36 @@ test('native export never reports a failed write as saved and releases the dialo
   assert.deepEqual(await exportAppDocument(html,{...services,write:async()=>{}}),{ok:true});
   assert.equal(dialogs,2);
   assert.equal(busy,false);
+});
+
+const zip = Uint8Array.from([0x50,0x4b,0x03,0x04,...new Array(40).fill(0)]);
+test('archive export accepts only bounded ZIP bytes and allow-listed suggested names', async t => {
+  for (const invalid of [null, 'PK', [0x50,0x4b,3,4], new Uint8Array(10), Uint8Array.from([0x4d,0x5a,0,0,...new Array(40).fill(0)]), new Uint8Array(MAX_ARCHIVE_BYTES+1).fill(0x50)]) {
+    assert.throws(() => validateArchive(invalid));
+  }
+  assert.doesNotThrow(() => validateArchive(zip));
+  assert.equal(exportName('zip','my-mono-cafe.zip'),'my-mono-cafe.zip');
+  assert.equal(exportName('html','my-mono-cafe.html'),'my-mono-cafe.html');
+  for (const hostile of ['../evil.zip', 'C:\\Windows\\x.zip', undefined, 'my-mono-cafe.exe']) assert.equal(exportName('zip',hostile),'my-neighborhood-app.zip');
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'codeshift-archive-export-'));
+  t.after(() => fs.rm(dir, {recursive:true, force:true}));
+  const file = path.join(dir, '내 카페.zip');
+  await writeArchive(file, zip);
+  assert.deepEqual(new Uint8Array(await fs.readFile(file)), zip);
+  await assert.rejects(writeArchive(path.join(dir,'wrong.html'), zip));
+  assert.deepEqual(await fs.readdir(dir), ['내 카페.zip']);
+});
+
+test('native archive export shares the busy gate and reports failures honestly', async () => {
+  let busy=false, dialogs=0;
+  const words={archiveExportInvalid:'invalid',archiveExportFailed:'failed'};
+  const services={isBusy:()=>busy,setBusy:value=>{busy=value;},words,choose:async()=>{dialogs++;return {filePath:path.join(os.tmpdir(),'x.zip')};},write:async()=>{throw Error('disk full');}};
+  assert.deepEqual(await exportArchiveDocument('nope',services),{ok:false,error:'invalid'});
+  assert.equal(dialogs,0);
+  assert.deepEqual(await exportArchiveDocument(zip,services),{ok:false,error:'failed'});
+  assert.equal(busy,false);
+  assert.deepEqual(await exportArchiveDocument(zip,{...services,write:async()=>{}}),{ok:true});
+  busy=true;
+  assert.deepEqual(await exportArchiveDocument(zip,services),{ok:false,canceled:true});
+  assert.equal(dialogs,2);
 });

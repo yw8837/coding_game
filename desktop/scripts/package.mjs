@@ -32,7 +32,7 @@ if (steamBuild) {
 const outputs = await packager({
   dir: desktop, name: qaBuild ? 'CODE-SHIFT-QA' : 'CODE-SHIFT', executableName: 'CODE-SHIFT',
   platform: 'win32', arch: 'x64', electronVersion: manifest.devDependencies.electron,
-  appVersion: manifest.version, buildVersion: '0.14.0.0', appCopyright: 'CODE:SHIFT',
+  appVersion: manifest.version, buildVersion: '0.14.0.0', appCopyright: 'Localhost Hero',
   out: path.join(desktop, 'release'), overwrite: true, prune: true,
   asar: {unpack: '**/*.{node,dll}'},
   afterCopy: [async ({buildPath}) => {
@@ -41,7 +41,8 @@ const outputs = await packager({
   ignore: [/[/\\](?:release|client|tests|scripts|steam|vendor)(?:[/\\]|$)/,
     /[/\\]vite\.config\.mjs$/, /[/\\]steam_appid\.txt$/,
     ...(!steamBuild ? [/[/\\]node_modules[/\\]steamworks\.js(?:[/\\]|$)/] : [])],
-  win32metadata: {ProductName: 'CODE:SHIFT', FileDescription: 'CODE:SHIFT offline game'},
+  // Executable and profile names stay CODE-SHIFT so existing installs keep their saves.
+  win32metadata: {ProductName: 'Localhost Hero', FileDescription: 'Localhost Hero offline game'},
 });
 for (const output of outputs) {
   // Electron and Chromium notices are part of the shipped runtime, never app code.

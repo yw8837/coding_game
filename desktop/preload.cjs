@@ -7,7 +7,8 @@ contextBridge.exposeInMainWorld('desktopBridge', Object.freeze({
   loadBackup: () => ipcRenderer.invoke('desktop:backup'),
   saveGame: raw => ipcRenderer.invoke('desktop:save', raw),
   exportBackup: raw => ipcRenderer.invoke('desktop:export', raw),
-  exportApp: html => ipcRenderer.invoke('desktop:export-app', html),
+  exportApp: (html, name) => ipcRenderer.invoke('desktop:export-app', html, name),
+  exportArchive: (data, name) => ipcRenderer.invoke('desktop:export-archive', data, name),
   unlockAchievements: ids => ipcRenderer.invoke('desktop:achievements', ids),
   onBeforeClose: callback => {
     if (typeof callback !== 'function') throw new TypeError('Callback required');

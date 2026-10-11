@@ -3,7 +3,7 @@
   "productName": "CODE:SHIFT",
   "version": "0.14.0-rc.0",
   "private": true,
-  "description": "Offline desktop shell for CODE:SHIFT",
+  "description": "Offline desktop shell for Localhost Hero",
   "main": "main.cjs",
   "engines": {
     "node": ">=22.13.0"

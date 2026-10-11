@@ -2,7 +2,7 @@
 
 영상 최신 수정: [2026-10-10 홍보영상·음악 QA](../QA-trailer-polish-2026-10-10.md). 게임·Windows 패키지 검증은 기존 0.13.2 기록과 구분한다.
 
-2026-10-10. 0.13.2 RC 제출 전 초안. CODE:SHIFT는 작업명이며 Steam에 등록·게시하지 않았다. 각 언어의 소개만 상점 입력 후보이고 편집 메모는 공개 본문에 포함하지 않는다. 구조화 원본은 [store-copy.json](store-copy.json)이다.
+2026-10-10. 0.13.2 RC 제출 전 초안. 게임 이름은 Localhost Hero(KO 로컬호스트 히어로, JA ローカルホスト・ヒーロー)로 변경했으며 이전 작업명은 CODE:SHIFT다. Steam에 등록·게시하지 않았다. 부제는 EN "A neighborhood coding sim", KO "우리 동네 코딩 시뮬레이터", JA "ご近所プログラミングシミュレーター"다. 각 언어의 소개만 상점 입력 후보이고 편집 메모는 공개 본문에 포함하지 않는다. 구조화 원본은 [store-copy.json](store-copy.json)이다.
 
 ## 한국어
 
@@ -14,7 +14,7 @@
 
 컴퓨터 한 대, 도착한 메시지 하나. 작은 카페가 당신의 도움이 필요합니다.
 
-CODE:SHIFT는 가상의 바탕화면에서 의뢰를 맡고, 파일을 고치고, 결과를 확인하는 싱글 플레이 개발자 시뮬레이터입니다. 메시지, 브라우저, 편집기와 터미널을 직접 열어 작은 수리를 완성하고 동네 사람들의 다음 부탁을 만나세요.
+로컬호스트 히어로는 가상의 바탕화면에서 의뢰를 맡고, 파일을 고치고, 결과를 확인하는 싱글 플레이 개발자 시뮬레이터입니다. 메시지, 브라우저, 편집기와 터미널을 직접 열어 작은 수리를 완성하고 동네 사람들의 다음 부탁을 만나세요.
 
 **직접 바꿔 보는 첫 코드**
 
@@ -46,7 +46,7 @@ Start a developer's story on your own virtual desktop. Spot a cafe's problems, r
 
 One computer. One new message. A small cafe needs your help.
 
-CODE:SHIFT is a single-player developer simulator played through a virtual desktop. Open messages, a browser, an editor and a terminal yourself. Repair files, check what changed, and meet the people behind the next neighborhood request.
+Localhost Hero is a single-player developer simulator played through a virtual desktop. Open messages, a browser, an editor and a terminal yourself. Repair files, check what changed, and meet the people behind the next neighborhood request.
 
 **Your first code changes**
 
@@ -78,7 +78,7 @@ The optional Code Lab offers 12 function puzzles using a limited subset of JavaS
 
 パソコン1台と、届いたメッセージ。小さなカフェがあなたの助けを待っています。
 
-CODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直し、結果を確かめるシングルプレイの開発者シミュレーターです。メッセージ、ブラウザー、エディター、ターミナルを自分で開き、小さな修正を完成させながら、まちの人々の次のお願いに出会いましょう。
+ローカルホスト・ヒーローは、仮想デスクトップで依頼を受け、ファイルを直し、結果を確かめるシングルプレイの開発者シミュレーターです。メッセージ、ブラウザー、エディター、ターミナルを自分で開き、小さな修正を完成させながら、まちの人々の次のお願いに出会いましょう。
 
 **自分で変える、初めてのコード**
 
@@ -104,7 +104,7 @@ CODE:SHIFTは、仮想デスクトップで依頼を受け、ファイルを直�
 
 현재 문구는 0.13.2 RC의 구현 범위를 설명하는 제출 전 초안이다. KO/EN/JA 원어민 감수, 사람의 이해·재미·플레이 시간, 별도 저사양 PC 및 실제 Steam 실행 검증은 미완료다. 제한된 JavaScript 함수와 게임 안의 배포를 일반 JavaScript 실행, 호스트 프로그램 실행 또는 실제 서비스 배포로 소개하지 않는다. 최종 Steam 빌드에 포함한 콘텐츠와 언어·저장 검증을 대조하며, Code Lab 미동봉 시 해당 단락을 제거한다. 모든 의뢰 18개를 완료하는 업적과 구역마다 4개를 선택하는 본편 진행은 구분한다.
 
-CODE:SHIFT는 작업명이다. 한국 정가 ₩11,000과 출시 첫 7일 20% 할인·₩8,800은 사용자 확정 사항이다. 할인은 2026-10-10 선택했으며 Steam에는 아직 적용·예약하지 않았다. 지역 가격은 Steam 가격 필드에서 별도 설정한다. 공식 할인 정책과 확인 날짜는 [현재 출시 계획](launch-start-2026-10-10.md)을 따른다.
+이전 작업명 CODE:SHIFT는 Localhost Hero로 변경했다(2026-10-11). 한국 정가 ₩11,000과 출시 첫 7일 20% 할인·₩8,800은 사용자 확정 사항이다. 할인은 2026-10-10 선택했으며 Steam에는 아직 적용·예약하지 않았다. 지역 가격은 Steam 가격 필드에서 별도 설정한다. 공식 할인 정책과 확인 날짜는 [현재 출시 계획](launch-start-2026-10-10.md)을 따른다.
 
 현재 웹은 전체 무료다. 실제 Steam 본편 구매가 가능해진 뒤 카페 입문 3장을 무료 홍보 데모로 남길 계획이며, 웹 제한은 아직 구현하지 않았다. 전환 전에 기존 저장 보존·내보내기·본편 가져오기와 실제 상점 링크를 확인한다.
 

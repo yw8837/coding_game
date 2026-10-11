@@ -1,11 +1,13 @@
-import {evaluateRelease,releaseHash} from './release.ts';
-import {studioSourceMapValid,type StudioSourceMap} from './studio.ts';
+import {evaluateRelease,releaseFiles,releaseHash,releasePublishedFresh} from './release.ts';
+import {STUDIO_FILE_NAMES,studioFiles,studioFresh,studioSourceMapValid,type StudioSourceMap} from './studio.ts';
+import {GAME_BRAND,GAME_NAME,GAME_VERSION_LABEL} from './brand.ts';
+import {buildZip} from './zip.ts';
 
 export type StudioExportLanguage='ko'|'en'|'ja';
 const WORDS={
- ko:{search:'목록 검색',category:'분류',all:'모두',empty:'조건에 맞는 항목이 없어요.',inquiry:'이 작품에 문의',item:'문의할 항목',project:'전체 작품',message:'문의 내용',save:'이 브라우저에 보관',saved:'이 브라우저에 보관했습니다. 서버로 전송되지 않습니다.',local:'문의는 이 파일을 연 브라우저에만 보관됩니다. 파일을 다른 사람에게 보내도 문의는 함께 전달되지 않습니다. 서버와 온라인 배포는 포함되지 않습니다.',unavailable:'브라우저 저장소를 사용할 수 없습니다. 문의는 보관되지 않았습니다.',corrupt:'저장된 문의 형식을 읽을 수 없습니다. 기존 자료를 덮어쓰지 않았습니다.',invalid:'문의는 공백이 아닌 1~1,000자여야 합니다.',limit:'문의 보관함이 가득 찼습니다 (최대 50개).',requests:'이 브라우저의 문의',source:'코드를 계속 편집하려면 이 HTML 파일을 텍스트 편집기에서 여세요. 아래의 CSS, app-data와 JavaScript를 수정할 수 있습니다. 지원 형태: 장소 목록 · 행사 안내 · 작품 모음.'},
- en:{search:'Search items',category:'Category',all:'All',empty:'No items match.',inquiry:'Ask about this project',item:'Item to ask about',project:'Whole project',message:'Your message',save:'Keep in this browser',saved:'Kept in this browser. Nothing was sent to a server.',local:'Inquiries stay only in the browser that opens this file. Sending the file does not send your inquiries. No server or online deployment is included.',unavailable:'Browser storage is unavailable. Your inquiry was not saved.',corrupt:'Stored inquiries could not be read. Existing data was not overwritten.',invalid:'Write a nonblank message of 1–1,000 characters.',limit:'The inquiry box is full (maximum 50).',requests:'Inquiries in this browser',source:'To continue coding, open this HTML file in a text editor. Edit the CSS, app-data and JavaScript below. Supported formats: directory, events and portfolio.'},
- ja:{search:'一覧を検索',category:'分類',all:'すべて',empty:'条件に合う項目がありません。',inquiry:'この作品について問い合わせ',item:'問い合わせる項目',project:'作品全体',message:'問い合わせ内容',save:'このブラウザに保存',saved:'このブラウザに保存しました。サーバーには送信していません。',local:'問い合わせはこのファイルを開いたブラウザだけに保存されます。ファイルを送っても問い合わせは一緒に送られません。サーバーやオンライン公開は含まれません。',unavailable:'ブラウザの保存領域を使えません。問い合わせは保存されませんでした。',corrupt:'保存された問い合わせを読めません。既存のデータは上書きしていません。',invalid:'空白以外の1～1,000文字で書いてください。',limit:'問い合わせが上限に達しました（最大50件）。',requests:'このブラウザの問い合わせ',source:'コードを続けて編集するには、このHTMLをテキストエディターで開いてください。下のCSS、app-data、JavaScriptを編集できます。対応形式：場所一覧・イベント案内・作品集。'},
+ ko:{search:'목록 검색',category:'분류',all:'모두',empty:'조건에 맞는 항목이 없어요.',inquiry:'이 작품에 문의',item:'문의할 항목',project:'전체 작품',message:'문의 내용',save:'이 브라우저에 보관',saved:'이 브라우저에 보관했습니다. 서버로 전송되지 않습니다.',local:'문의는 이 파일을 연 브라우저에만 보관됩니다. 파일을 다른 사람에게 보내도 문의는 함께 전달되지 않습니다. 서버와 온라인 배포는 포함되지 않습니다.',unavailable:'브라우저 저장소를 사용할 수 없습니다. 문의는 보관되지 않았습니다.',corrupt:'저장된 문의 형식을 읽을 수 없습니다. 기존 자료를 덮어쓰지 않았습니다.',invalid:'문의는 공백이 아닌 1~1,000자여야 합니다.',limit:'문의 보관함이 가득 찼습니다 (최대 50개).',requests:'이 브라우저의 문의',source:'코드를 계속 편집하려면 이 HTML 파일을 텍스트 편집기에서 여세요. 아래의 CSS, app-data와 JavaScript를 수정할 수 있습니다. 지원 형태: 장소 목록 · 행사 안내 · 작품 모음.',credit:'로컬호스트 히어로에서 만든 작품'},
+ en:{search:'Search items',category:'Category',all:'All',empty:'No items match.',inquiry:'Ask about this project',item:'Item to ask about',project:'Whole project',message:'Your message',save:'Keep in this browser',saved:'Kept in this browser. Nothing was sent to a server.',local:'Inquiries stay only in the browser that opens this file. Sending the file does not send your inquiries. No server or online deployment is included.',unavailable:'Browser storage is unavailable. Your inquiry was not saved.',corrupt:'Stored inquiries could not be read. Existing data was not overwritten.',invalid:'Write a nonblank message of 1–1,000 characters.',limit:'The inquiry box is full (maximum 50).',requests:'Inquiries in this browser',source:'To continue coding, open this HTML file in a text editor. Edit the CSS, app-data and JavaScript below. Supported formats: directory, events and portfolio.',credit:'Made in Localhost Hero'},
+ ja:{search:'一覧を検索',category:'分類',all:'すべて',empty:'条件に合う項目がありません。',inquiry:'この作品について問い合わせ',item:'問い合わせる項目',project:'作品全体',message:'問い合わせ内容',save:'このブラウザに保存',saved:'このブラウザに保存しました。サーバーには送信していません。',local:'問い合わせはこのファイルを開いたブラウザだけに保存されます。ファイルを送っても問い合わせは一緒に送られません。サーバーやオンライン公開は含まれません。',unavailable:'ブラウザの保存領域を使えません。問い合わせは保存されませんでした。',corrupt:'保存された問い合わせを読めません。既存のデータは上書きしていません。',invalid:'空白以外の1～1,000文字で書いてください。',limit:'問い合わせが上限に達しました（最大50件）。',requests:'このブラウザの問い合わせ',source:'コードを続けて編集するには、このHTMLをテキストエディターで開いてください。下のCSS、app-data、JavaScriptを編集できます。対応形式：場所一覧・イベント案内・作品集。',credit:'ローカルホスト・ヒーローで作った作品'},
 } as const;
 const escapeHtml=(value:string)=>value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
 const scriptJson=(value:unknown)=>JSON.stringify(value,null,2).replaceAll('&','\\u0026').replaceAll('<','\\u003c').replaceAll('>','\\u003e').replaceAll('\u2028','\\u2028').replaceAll('\u2029','\\u2029');
@@ -25,6 +27,7 @@ export function buildStudioExport(files:StudioSourceMap,language:StudioExportLan
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src data:; form-action 'none'; base-uri 'none'">
+<meta name="generator" content="${GAME_BRAND} ${GAME_VERSION_LABEL}">
 <title>${escapeHtml(title)}</title>
 <!-- This is a standalone file. Edit this CSS and the app-data/JavaScript below. -->
 <style>
@@ -50,7 +53,7 @@ li p { margin: .4rem 0; } small { color: #52635b; } section { margin-block: 2rem
 <section><h2>${escapeHtml(w.inquiry)}</h2><p class="note">${escapeHtml(w.local)}</p>
 <form id="inquiry"><label>${escapeHtml(w.item)}<select id="item"><option value="">${escapeHtml(w.project)}</option></select></label><label>${escapeHtml(w.message)}<textarea id="message" maxlength="1000" required></textarea></label><button type="submit">${escapeHtml(w.save)}</button></form>
 <p id="status" role="status" aria-live="polite"></p><h3>${escapeHtml(w.requests)}</h3><ol id="requests"></ol></section>
-<footer><p>${escapeHtml(w.source)}</p></footer>
+<footer><p>${escapeHtml(w.source)}</p><p><small>${escapeHtml(w.credit)} · ${escapeHtml(GAME_NAME[language])}</small></p></footer>
 </main>
 <!-- Readable content: all player fields are JSON text, never executable markup. -->
 <script id="app-data" type="application/json">${scriptJson(data)}</script>
@@ -127,4 +130,32 @@ byId('inquiry').addEventListener('submit', event => {
 </script>
 </body>
 </html>\n`;
+}
+
+export const STUDIO_EXPORT_NAME='my-neighborhood-app';
+const README={
+ ko:['# 내 동네 앱','','로컬호스트 히어로에서 직접 만들고 배포한 앱입니다.','','## 파일','- `my-neighborhood-app.html` — 더블클릭하면 브라우저에서 바로 열리는 한 파일짜리 앱입니다. 검색·분류와 이 브라우저 안의 문의 보관이 동작합니다.','- `source/index.html`, `source/style.css`, `source/project.json`, `source/server.json` — 게임에서 직접 고친 원본 파일입니다.','- `project.json` — 내보낸 작품 정보입니다.','','## 이어서 고치기','`my-neighborhood-app.html`을 텍스트 편집기로 열면 CSS, app-data, JavaScript를 바로 고칠 수 있어요.','','게임 속 서버·배포는 가상이었고, 이 파일은 인터넷에 올라가 있지 않습니다.',''],
+ en:['# My neighborhood app','','The app you built and released in Localhost Hero.','','## Files','- `my-neighborhood-app.html` — a single-file app. Double-click it to open it in a browser. Search, categories and browser-local inquiries work.','- `source/index.html`, `source/style.css`, `source/project.json`, `source/server.json` — the original files you edited in the game.','- `project.json` — information about this export.','','## Keep editing','Open `my-neighborhood-app.html` in a text editor to change its CSS, app-data and JavaScript.','','The servers and deployment in the game were virtual. This file is not online.',''],
+ ja:['# わたしの街のアプリ','','ローカルホスト・ヒーローで作って公開したアプリです。','','## ファイル','- `my-neighborhood-app.html` — ダブルクリックでブラウザに開ける1ファイルのアプリです。検索・分類とブラウザ内の問い合わせ保存が動きます。','- `source/index.html`、`source/style.css`、`source/project.json`、`source/server.json` — ゲームで直した元のファイルです。','- `project.json` — 書き出した作品の情報です。','','## 続けて編集する','`my-neighborhood-app.html`をテキストエディターで開くと、CSS、app-data、JavaScriptを編集できます。','','ゲーム内のサーバー・公開は仮想のものでした。このファイルはインターネットに公開されていません。',''],
+} as const;
+
+/** Original sources, the portable app, project info and a README, bundled as a ZIP. */
+export function buildStudioArchive(files:StudioSourceMap,language:StudioExportLanguage,appId?:string):Uint8Array{
+ const html=buildStudioExport(files,language,appId),title=evaluateRelease(files,true).preview.title;
+ const project={name:STUDIO_EXPORT_NAME,title,language,generator:`${GAME_BRAND} ${GAME_VERSION_LABEL}`,entry:`${STUDIO_EXPORT_NAME}.html`,source:STUDIO_FILE_NAMES.map(name=>'source/'+name)};
+ return buildZip([
+  {name:`${STUDIO_EXPORT_NAME}.html`,content:html},
+  ...STUDIO_FILE_NAMES.map(name=>({name:'source/'+name,content:files[name]})),
+  {name:'project.json',content:JSON.stringify(project,null,2)+'\n'},
+  {name:'README.md',content:README[language].join('\n')},
+ ]);
+}
+
+type WorkHost=Parameters<typeof studioFresh>[0]&Parameters<typeof releasePublishedFresh>[0];
+/** The newest checked work: a passing studio draft, otherwise the released 1.0.0 files. */
+export function exportableWork(state:WorkHost):{files:StudioSourceMap;appId:string}|null{
+ const published=state.gameplay.career.release.published;if(!published)return null;
+ const appId=state.gameplay.career.studio?.appId??published.hash;
+ const files=studioFresh(state)?studioFiles(state):releasePublishedFresh(state)?releaseFiles(state):null;
+ return files&&studioSourceMapValid(files,true)&&evaluateRelease(files,true).passed?{files,appId}:null;
 }
