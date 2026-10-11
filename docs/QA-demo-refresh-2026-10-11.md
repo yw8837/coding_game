@@ -8,6 +8,7 @@ Scope: inspect the user's latest Localhost Hero demo changes and redeploy the ex
 - Aligned the live About pages, structured game data, social metadata and site branding with Localhost Hero. Removed outdated title-voting/working-title copy. The English trailer description now correctly identifies its English UI. Internal save keys and media URLs remain compatible.
 - Updated the legacy-save regression to explicitly expect the new `studio: null` default while requiring exact equality for all existing career data. Updated the reset test to use the new dedicated settings control.
 - Added `tests/e2e/demo-refresh.py` for manual CLI setup, Tab/history/clear, tiling, language/sound flyouts and persisted audio controls, plus three-language About metadata and mobile layout.
+- Live follow-up found a client effect still replacing the browser tab title with CODE:SHIFT after hydration. It now reads the shared game brand/subtitle for all three languages; the refresh regression checks the hydrated title and language changes. This correction is isolated from concurrent window/title/locale development in the original C: and D: checkouts.
 
 ## Executed checks
 
