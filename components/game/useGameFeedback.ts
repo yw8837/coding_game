@@ -1,15 +1,17 @@
 'use client';
 import {useCallback,useEffect,useRef} from 'react';
-import {createFeedbackPlayer,FEEDBACK_DUCK_DB,type Feedback} from '@/lib/game/audio-feedback';
+import {createFeedbackPlayer,keyPackId,FEEDBACK_DUCK_DB,type Feedback} from '@/lib/game/audio-feedback';
 import {duckBackgroundMusic} from './useBackgroundMusic';
 export type {Feedback} from '@/lib/game/audio-feedback';
 import {DEFAULT_FEEDBACK_PREFERENCES,type FeedbackPreferences} from '@/lib/game/feedback-preferences';
 type PlayFeedback=(kind:Feedback,delay?:number)=>void;
 // GameShell이 가진 플레이어 하나를 터미널·코드 입력처럼 깊은 곳에서도 props 없이 부른다.
 let activeFeedback:PlayFeedback|null=null;
-export function useGameFeedback(enabled:boolean,mix:FeedbackPreferences=DEFAULT_FEEDBACK_PREFERENCES){
+/** keyPack: 'mechanical'(기본)·'soft'·'typewriter'·'retro'. 모르는 값은 mechanical. playGameFeedback('keystroke')도 이 묶음을 따른다. */
+export function useGameFeedback(enabled:boolean,mix:FeedbackPreferences=DEFAULT_FEEDBACK_PREFERENCES,keyPack?:string){
  const context=useRef<AudioContext|null>(null);
  const player=useRef<ReturnType<typeof createFeedbackPlayer>|null>(null);
+ const pack=keyPackId(keyPack);
  useEffect(()=>{player.current?.setEnabled(enabled&&!document.hidden);player.current?.setMix(mix);},[enabled,mix]);
  useEffect(()=>{
   const visible=()=>{player.current?.setEnabled(enabled&&!document.hidden);if(document.hidden)void context.current?.suspend().catch(()=>{});};
@@ -22,10 +24,10 @@ export function useGameFeedback(enabled:boolean,mix:FeedbackPreferences=DEFAULT_
   try{
    const ctx=context.current??(context.current=new AudioContext({latencyHint:'interactive'}));
    const audio=player.current??(player.current=createFeedbackPlayer(ctx));
-   audio.setEnabled(enabled);audio.setMix(mix);audio.play(kind,delay);
+   audio.setEnabled(enabled);audio.setMix(mix);audio.setKeyPack(pack);audio.play(kind,delay);
    const duck=FEEDBACK_DUCK_DB[kind];if(duck)setTimeout(()=>duckBackgroundMusic(duck),Math.min(.5,Math.max(0,delay??0))*1000);
   }catch{/* Sound must never block a quest or an input. */}
- },[enabled,mix]);
+ },[enabled,mix,pack]);
  useEffect(()=>{activeFeedback=play;return()=>{if(activeFeedback===play)activeFeedback=null;};},[play]);
  return play;
 }

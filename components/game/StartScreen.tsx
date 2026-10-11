@@ -33,7 +33,7 @@ export function TitleScreen({hasSave,language,onStart,onSettings,onNew,loading=f
   event.preventDefault();buttons[next]?.focus();
  };
  const blocked=!ready||loading||unavailable;
- return <section className="pc-title-screen title-home" data-no-translate data-paused={paused} data-motion={animate?'animated':'still'} aria-label={tr('타이틀 화면','Title screen','タイトル画面')} onPointerMove={event=>{
+ return <section suppressHydrationWarning className="pc-title-screen title-home" data-no-translate data-paused={paused} data-motion={animate?'animated':'still'} aria-label={tr('타이틀 화면','Title screen','タイトル画面')} onPointerMove={event=>{
   if(!animate||paused||event.pointerType!=='mouse'||window.matchMedia('(pointer: coarse)').matches)return;
   const bounds=event.currentTarget.getBoundingClientRect();
   moveRoom((event.clientX/bounds.width-.5)*-16,(event.clientY/bounds.height-.5)*-10);

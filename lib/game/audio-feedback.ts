@@ -1,9 +1,10 @@
 import {DEFAULT_FEEDBACK_PREFERENCES,feedbackVolumeGain,type FeedbackPreferences} from './feedback-preferences.ts';
 
 // Adapted from AI Tech Studio i147/i165/i499 (MIT); see public/licenses/ai-techstudio.txt.
-export type Feedback='click'|'open'|'close'|'save'|'command'|'purchase'|'success'|'retry'|'reward'|'opening'|'release'|'keystroke'|'eval-pulse'|'eval-pass';
+export type Feedback='click'|'open'|'close'|'save'|'command'|'purchase'|'success'|'retry'|'reward'|'opening'|'release'|'keystroke'|'eval-pulse'|'eval-pass'|'level-up'|'achievement';
 export type FeedbackBus='ui'|'events'|'sfx';
-type Note={midi:number;at:number;duration:number;peak:number;wave?:OscillatorType;endMidi?:number};
+/** cutoff/q를 비우면 기존 음색(저역 통과 4800 Hz, Q 0.5)을 그대로 쓴다. */
+type Note={midi:number;at:number;duration:number;peak:number;wave?:OscillatorType;endMidi?:number;cutoff?:number;q?:number};
 type Hit={at:number;peak:number;duration:number;high:number;low:number};
 type Cue={notes:readonly Note[];percussion:readonly Hit[]};
 const note=(midi:number,at:number,duration=.2,peak=.09,wave:OscillatorType='sine',endMidi?:number):Note=>({midi,at,duration,peak,wave,endMidi});
@@ -28,7 +29,26 @@ export const FEEDBACK_CUES:Record<Feedback,Cue>={
  'eval-pulse':{notes:[note(72,0,.1,.04,'triangle',84),note(91,.05,.07,.028)],percussion:[hit(0,.014,.03,3000,9000)]},
  // 실행 통과는 두 옥타브를 빠르게 올라 add9 반짝임으로 착지한다.
  'eval-pass':{notes:[note(72,0,.16,.055,'triangle'),note(76,.05,.16,.055,'triangle'),note(79,.1,.16,.055,'triangle'),note(84,.15,.18,.055),note(88,.2,.2,.05),note(86,.27,.3,.04),note(91,.27,.3,.04),note(96,.27,.32,.035)],percussion:[hit(.27,.016,.04,5000,11000)]},
+ // 레벨 업은 C 장조 아르페지오로 뛰어올라 E6·G6 팡파르에 착지하고, C7 반짝임으로 약 1.2초를 닫는다. 업적 차임과 함께 와도 12음 안에 든다.
+ 'level-up':{notes:[note(72,0,.18,.06,'triangle'),note(76,.08,.18,.06,'triangle'),note(79,.16,.18,.06,'triangle'),note(84,.24,.2,.065,'triangle'),note(88,.42,.32,.075,'triangle'),note(91,.42,.32,.06),note(96,.88,.32,.045)],percussion:[hit(.42,.018,.05,3000,9000)]},
+ // 업적은 E6→C7 두 음 차임 위로 G7에서 C8로 미끄러지는 반짝임을 얹는다. 약 0.8초.
+ achievement:{notes:[note(88,0,.3,.06),note(96,.14,.32,.06),{...note(103,.48,.32,.022,'triangle',108),cutoff:9000}],percussion:[hit(.48,.012,.08,6500,14000)]},
 };
+export type KeyPack='mechanical'|'soft'|'typewriter'|'retro';
+export const KEY_PACK_IDS:readonly KeyPack[]=['mechanical','soft','typewriter','retro'];
+/** 타건음 묶음. mechanical은 기존 keystroke 소리 그대로다. 모두 두 음 이하라 SFX 몫(4음)에 두 타건이 들어간다. */
+export const KEY_PACKS:Record<KeyPack,Cue>={
+ mechanical:FEEDBACK_CUES.keystroke,
+ // 먹먹하고 낮은 "톡". 고역을 깎은 노이즈에 짧게 떨어지는 저음 몸통.
+ soft:{notes:[{...note(60,0,.05,.032,'sine',55),cutoff:900}],percussion:[hit(0,.022,.03,280,1800)]},
+ // 타자기: 더 밝고 날카로운 금속 딸깍.
+ typewriter:{notes:[{...note(91,0,.018,.018,'square',86),cutoff:7000,q:1.2}],percussion:[hit(0,.04,.024,3200,12000)]},
+ // 8비트: 노이즈 없이 사각파 두 음 블립. 피치는 SFX 변주(±6%)로 매번 조금씩 흔들린다.
+ retro:{notes:[{...note(84,0,.03,.013,'square'),cutoff:6000},{...note(91,.03,.035,.011,'square'),cutoff:6000}],percussion:[]},
+};
+/** 타자기 묶음에서만 실행(command) 때 울리는 작은 종. 비화성 배음(×2.76)으로 금속 느낌을 낸다. */
+export const TYPEWRITER_BELL:Cue={notes:[{...note(96,.02,.32,.03),cutoff:9000},{...note(96+12*Math.log2(2.76),.02,.2,.008),cutoff:12000}],percussion:[]};
+export const keyPackId=(id?:string|null):KeyPack=>KEY_PACK_IDS.find(pack=>pack===id)??'mechanical';
 export const FEEDBACK_MASTER_DB=-8;
 export const FEEDBACK_MAX_VOICES=12;
 /** 버스 고정 트림. SFX는 조작음 슬라이더를 따르되 한 단계 작게 깔린다. */
@@ -37,7 +57,9 @@ export const FEEDBACK_BUS_DB:Record<FeedbackBus,number>={ui:0,events:0,sfx:-4};
 export const FEEDBACK_BUS_CONTROL:Record<FeedbackBus,'ui'|'events'>={ui:'ui',events:'events',sfx:'ui'};
 export const FEEDBACK_SFX_VOICES=4;
 /** 큰 성공이 울리는 동안 조작음·타건 버스를 잠시 눌렀다가 되돌린다. */
-export const FEEDBACK_DUCK_DB:Partial<Record<Feedback,number>>={success:-6,'eval-pass':-6,reward:-9,opening:-12,release:-12};
+export const FEEDBACK_DUCK_DB:Partial<Record<Feedback,number>>={success:-6,'eval-pass':-6,reward:-9,opening:-12,release:-12,'level-up':-9,achievement:-6};
+/** 버스 간격보다 길게 쉬어야 하는 큐. 팡파르와 차임이 연달아 겹쳐 쌓이지 않게 한다. */
+export const FEEDBACK_CUE_GAP:Partial<Record<Feedback,number>>={'level-up':.8,achievement:.3};
 export const FEEDBACK_DUCK_ATTACK=.012,FEEDBACK_DUCK_RELEASE=.12;
 export const FEEDBACK_PITCH_WOBBLE=.06;
 export const FEEDBACK_GAIN_WOBBLE_DB:Record<FeedbackBus,number>={ui:1,events:.75,sfx:1.5};
@@ -73,7 +95,7 @@ export function createFeedbackPlayer(ctx:AudioContext,random:()=>number=Math.ran
  for(const bus of DUCKED){ducks[bus].gain.value=1;buses[bus].connect(ducks[bus]);ducks[bus].connect(master);}
  buses.events.connect(master);
  const voices=new Map<()=>void,FeedbackBus>(),lastPlayed=new Map<Feedback,number>(),ducking={ui:{until:0,db:0},sfx:{until:0,db:0}};
- let enabled=true,disposed=false,generation=0,resuming=false;
+ let enabled=true,disposed=false,generation=0,resuming=false,keyPack:KeyPack='mechanical';
  let mix={...DEFAULT_FEEDBACK_PREFERENCES};
  const noise=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*NOISE_SECONDS),ctx.sampleRate),samples=noise.getChannelData(0);
  let seed=17;
@@ -98,7 +120,7 @@ export function createFeedbackPlayer(ctx:AudioContext,random:()=>number=Math.ran
   const source=ctx.createOscillator(),gain=ctx.createGain(),filter=ctx.createBiquadFilter();
   source.type=item.wave??'sine';source.frequency.setValueAtTime(midiFrequency(item.midi)*variation.pitch,start);
   if(item.endMidi!==undefined)source.frequency.exponentialRampToValueAtTime(midiFrequency(item.endMidi)*variation.pitch,start+item.duration);
-  filter.type='lowpass';filter.frequency.value=4800;filter.Q.value=.5;
+  filter.type='lowpass';filter.frequency.value=item.cutoff??4800;filter.Q.value=item.q??.5;
   gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(item.peak*variation.gain,start+.005);
   gain.gain.exponentialRampToValueAtTime(.0001,start+item.duration);gain.gain.setValueAtTime(0,start+item.duration+.005);
   source.connect(filter);filter.connect(gain);gain.connect(buses[bus]);source.start(start);track(source,[source,filter,gain],start+item.duration+.01,bus);
@@ -137,20 +159,25 @@ export function createFeedbackPlayer(ctx:AudioContext,random:()=>number=Math.ran
    if(value.master===0)generation++;
   },
   setEnabled(value:boolean){enabled=value;if(!value){generation++;lastPlayed.clear();stopVoices();}},
+  /** 타건음 묶음을 고른다. 모르는 id는 mechanical로 돌아간다. 이미 울리는 소리는 건드리지 않는다. */
+  setKeyPack(id?:string|null){keyPack=keyPackId(id);},
+  get keyPack(){return keyPack;},
   /** delay는 오디오 시계 기준 초. 실행 펄스 뒤에 결과음을 정확히 착지시킬 때 쓴다. */
   play(kind:Feedback,delay=0){
    const bus=feedbackBus(kind),control=FEEDBACK_BUS_CONTROL[bus];
    if(!enabled||disposed||mix.master===0||mix[control]===0)return;
-   if(ctx.currentTime-(lastPlayed.get(kind)??-Infinity)<GAP[bus])return;
+   if(ctx.currentTime-(lastPlayed.get(kind)??-Infinity)<(FEEDBACK_CUE_GAP[kind]??GAP[bus]))return;
    lastPlayed.set(kind,ctx.currentTime);
-   const token=generation,lead=Number.isFinite(delay)?Math.min(FEEDBACK_MAX_DELAY,Math.max(0,delay)):0;
+   const token=generation,lead=Number.isFinite(delay)?Math.min(FEEDBACK_MAX_DELAY,Math.max(0,delay)):0,pack=keyPack;
    const schedule=()=>{
     if(!enabled||disposed||generation!==token||ctx.state!=='running'||mix.master===0||mix[control]===0)return;
     if(bus==='events')stopVoices('ui');
-    const start=ctx.currentTime+.005+lead,cue=FEEDBACK_CUES[kind],variation=feedbackVariation(bus,random),depth=FEEDBACK_DUCK_DB[kind];
+    const start=ctx.currentTime+.005+lead,cue=kind==='keystroke'?KEY_PACKS[pack]:FEEDBACK_CUES[kind],variation=feedbackVariation(bus,random),depth=FEEDBACK_DUCK_DB[kind];
     if(depth!==undefined)duck(depth,start,cueLength(cue));
     for(const item of cue.notes)tone(item,start+item.at,bus,variation);
     for(const item of cue.percussion)percussion(item,start+item.at,bus,variation);
+    // 타자기 묶음은 Enter·실행 때 줄 끝 종을 작게 친다.
+    if(kind==='command'&&pack==='typewriter')for(const item of TYPEWRITER_BELL.notes)tone(item,start+item.at,bus,variation);
    };
    try{
     if(ctx.state==='suspended'){

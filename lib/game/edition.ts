@@ -5,7 +5,7 @@ import type {TerminalInput} from './terminal-shell.ts';
 export type GameEdition='full'|'demo';
 export const DEMO_LOCKED_MESSAGE='Web demo: Café chapters 1–3 and the OPEN ceremony are available. Client contracts, the final release, Code Lab and practice jobs belong to the full edition.';
 export function demoLockedMessage(language:'ko'|'en'|'ja'):string{return language==='ko'?'웹 데모에서는 카페 1~3장과 OPEN 행사를 플레이할 수 있어요. 동네 의뢰, 최종 프로젝트, 코드 실험실과 연습 의뢰는 본편 콘텐츠입니다.':language==='ja'?'Webデモではカフェの第1〜3章と開店イベントを遊べます。まちの依頼、最後のプロジェクト、コード実験室と練習の依頼は本編の内容です。':DEMO_LOCKED_MESSAGE;}
-const PRIVATE_ROOTS=['/home/dev/jobs','/home/dev/studio','/home/dev/code-lab'];
+const PRIVATE_ROOTS=['/home/dev/jobs','/home/dev/studio','/home/dev/code-lab','/home/dev/automation','/home/dev/database'];
 export function editionPath(cwd:string,path:string):string{
  let value=path||'/home/dev';
  if(value==='~'||value.startsWith('~/'))value='/home/dev'+value.slice(1);
@@ -21,21 +21,23 @@ export function editionAllowsProject(edition:GameEdition='full',root:string):boo
  const path=editionPath('/home/dev',root);
  return editionAllowsPath(edition,path)&&(edition!=='demo'||!PRIVATE_ROOTS.some(privateRoot=>privateRoot.startsWith(path==='/'?'/':path+'/')));
 }
-export function editionAllowsApp(edition:GameEdition='full',app:string):boolean{return edition!=='demo'||!['career','challenges'].includes(app);}
+export function editionAllowsApp(edition:GameEdition='full',app:string):boolean{return edition!=='demo'||!['career','challenges','python','sql'].includes(app);}
 export function isDemoComplete(s:GameState):boolean{return [0,1,2].every(i=>s.completed.includes(i))&&s.gameplay.openingCelebrated;}
 export function editionAllowsAction(s:GameState,action:Action,edition:GameEdition='full'):boolean{
  if(edition!=='demo')return true;
- if(/^(career|lab|practice)-/.test(action.type))return false;
+ if(/^(career|lab|practice|ops|finale)-/.test(action.type))return false;
  if(action.type==='genericfile-edit')return editionAllowsPath(edition,action.path,s.machines.local.cwd);
  if(action.type==='edit')return !s.repo||editionAllowsProject(edition,s.repo.root)&&editionAllowsPath(edition,action.path,s.repo.root);
  // A full save can carry its active repository into the demo.
  if(['open-pr','merge-pr','deploy','next-mission','request-tests','test-result'].includes(action.type)&&s.repo&&!editionAllowsProject(edition,s.repo.root))return false;
  return true;
 }
-export function editionAllowsCommand(s:GameState,args:readonly string[],redirect:TerminalInput['redirect'],edition:GameEdition='full'):boolean{
+export function editionAllowsCommand(s:GameState,args:readonly string[],redirect:TerminalInput['redirect'],edition:GameEdition='full',stdin:string|null=null):boolean{
  if(edition!=='demo')return true;
  const [cmd,...operands]=args,cwd=s.machines[s.machine].cwd;
  if(redirect&&!editionAllowsPath(edition,redirect.target,cwd))return false;
+ if(stdin!==null&&!editionAllowsPath(edition,stdin,cwd))return false;
+ if(cmd==='sqlite3'&&operands[0]&&!operands[0].startsWith('-')&&!editionAllowsPath(edition,operands[0],cwd))return false;
  if(cmd==='node'&&!(['--version','-v'].includes(operands[0])&&operands.length===1))return false;
  if(['cat','ls','cd','code','mkdir','touch','cp','mv','rm','python3'].includes(cmd)){
   if(operands.some(p=>!editionAllowsPath(edition,p,cwd)))return false;

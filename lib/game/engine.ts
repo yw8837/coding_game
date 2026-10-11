@@ -10,6 +10,10 @@ import {parseTerminalInput,terminalArgumentError} from './terminal-shell.ts';
 import {checkLabFileWrite,syncLabWorkspace,dispatchLabNode} from './code-lab-terminal.ts';
 import {dispatchCareerNode} from './career-code-terminal.ts';
 import {editionAllowsAction,editionAllowsCommand,editionAllowsPath,DEMO_LOCKED_MESSAGE,type GameEdition} from './edition.ts';
+import {applyOps,dispatchPython,dispatchSqlite,opsPathReadOnly,type OpsAction} from './ops.ts';
+import {applyFinale,type FinaleAction} from './finale.ts';
+import {LOADOUT_SLOTS,loadoutItem,itemUnlocked,type LoadoutSlot} from './progression.ts';
+import {suggestionLine} from './terminal-suggest.ts';
 
 export type Files = Record<string,string>;
 export type MachineId = 'local'|'server';
@@ -26,7 +30,7 @@ export type GameState = {
  orders:{id:number;item:string;quantity:number}[];localOrders:{id:number;item:string;quantity:number}[];apiEvidence:{menu:boolean;order:boolean};
  notice:string;logs:string[];history:{command:string;output:string;error:boolean;machine:MachineId;cwd:string}[];
 };
-export type Action = LabAction|CareerAction|{type:'genericfile-edit';path:string;content:string}|{type:'practice-submit'|'practice-draft';id:string;answer:string}|{type:'inspect-preview';mobile:boolean;quantity:number}|{type:'serve-customer';customer:number;quantity:number}|{type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
+export type Action = LabAction|CareerAction|OpsAction|FinaleAction|{type:'equip-loadout';slot:LoadoutSlot;id:string}|{type:'file-hint-seen'}|{type:'genericfile-edit';path:string;content:string}|{type:'practice-submit'|'practice-draft';id:string;answer:string}|{type:'inspect-preview';mobile:boolean;quantity:number}|{type:'serve-customer';customer:number;quantity:number}|{type:'celebrate-opening'}|{type:'accept'}|{type:'discover';what:'search'|'repo'|'preview'}|{type:'edit';path:string;content:string}|{type:'test-result';hash:string;checks:Check[];designChoice?:DesignId|null;designPassed?:boolean}|{type:'open-pr'}|{type:'merge-pr'}|{type:'deploy'}|{type:'next-mission'}|{type:'install-server'}|{type:'request-tests'}|{type:'clear-notice'}|{type:'read-message';id:string}|{type:'claim-bonus';id:string}|{type:'buy-cosmetic';id:string}|{type:'equip-cosmetic';id:string}|{type:'choose-design';id:string};
 export type CommandResult={state:GameState;output:string;error:boolean;openFile?:string};
 
 function machine():Machine{return {cwd:HOME,tools:['git'],updated:false,files:{[HOME+'/welcome.txt']:'CODE:SHIFT 작업실에 오신 것을 환영합니다.\nhelp로 지원 명령을 확인하세요.\n'},dirs:['/','/home',HOME],dependencies:[],pythonDeps:[],processes:{frontend:false,backend:false},frontendRoot:null,backendRoot:null,backendSource:null,cloned:false};}
@@ -41,7 +45,7 @@ function commandPath(cwd:string,path:string):string{return storedPath(resolvePat
 function validateFiles(root:string,files:Files):void{storedPath(root);for(const [p,c] of Object.entries(files))storedFile(root+'/'+p,c);}
 export function filesAt(m:Machine,root:string):Files{const r:Files={};for(const [p,c] of Object.entries(m.files))if(p.startsWith(root+'/'))r[p.slice(root.length+1)]=c;return r;}
 export function projectFiles(state:GameState):Files{return state.repo?filesAt(state.machines.local,state.repo.root):{};}
-function localPathReadOnly(s:GameState,path:string):boolean{return !s.gameplay.career.studio&&(path===STUDIO_ROOT||path.startsWith(STUDIO_ROOT+'/'))||s.gameplay.career.completed.some(id=>path==='/home/dev/jobs/'+id||path.startsWith('/home/dev/jobs/'+id+'/'))||!!s.gameplay.career.release.published&&(path===RELEASE_ROOT||path.startsWith(RELEASE_ROOT+'/'));}
+function localPathReadOnly(s:GameState,path:string):boolean{return opsPathReadOnly(path)||!s.gameplay.career.studio&&(path===STUDIO_ROOT||path.startsWith(STUDIO_ROOT+'/'))||s.gameplay.career.completed.some(id=>path==='/home/dev/jobs/'+id||path.startsWith('/home/dev/jobs/'+id+'/'))||!!s.gameplay.career.release.published&&(path===RELEASE_ROOT||path.startsWith(RELEASE_ROOT+'/'));}
 export function isProjectServerRunning(state:GameState):boolean{return !!state.repo&&state.machines.local.processes.frontend&&state.machines.local.frontendRoot===state.repo.root;}
 export function dirtyFiles(s:GameState):string[]{if(!s.repo)return [];const f=projectFiles(s),base=s.repo.commits.at(-1)!.files;return [...new Set([...Object.keys(f),...Object.keys(base)])].filter(k=>f[k]!==base[k]);}
 function putFiles(m:Machine,root:string,files:Files){validateFiles(root,files);m.dirs.push(...[root,...Object.keys(files).filter(f=>f.includes('/')).map(f=>root+'/'+f.slice(0,f.lastIndexOf('/')))].filter(x=>!m.dirs.includes(x)));for(const [p,c] of Object.entries(files))m.files[root+'/'+p]=c;}
@@ -79,6 +83,10 @@ export function act(state:GameState,action:Action,edition:GameEdition='full'):Ga
  const s=clone(state);s.notice='';
  if(action.type.startsWith('career-')){applyCareer(s,action as CareerAction);invalidateStudio(s);return s;}
  if(action.type.startsWith('lab-'))return applyLab(s,action as LabAction);
+ if(action.type.startsWith('ops-'))return applyOps(s,action as OpsAction);
+ if(action.type.startsWith('finale-'))return applyFinale(s,action as FinaleAction);
+ if(action.type==='equip-loadout'){const item=LOADOUT_SLOTS.includes(action.slot)?loadoutItem(action.slot,action.id):undefined;if(item&&itemUnlocked(s.xp,item))s.gameplay.loadout={...s.gameplay.loadout,[item.slot]:item.id};return s;}
+ if(action.type==='file-hint-seen'){s.gameplay.fileHintSeen=true;return s;}
  if(action.type==='practice-submit'||action.type==='practice-draft'){
   const job=practiceJob(action.id);
   if(!job||typeof action.answer!=='string'||action.answer.length>80)return s;
@@ -124,7 +132,7 @@ export function act(state:GameState,action:Action,edition:GameEdition='full'):Ga
  if(action.type==='discover'){s.discovered[action.what]=true;return s;}
  if(action.type==='genericfile-edit'){
   if(s.machine!=='local'){s.notice='File editing is available on workstation only. exit to return to local files.';return s;}
-  try{const path=commandPath(s.machines.local.cwd,action.path);if(!Object.hasOwn(s.machines.local.files,path)){s.notice='File not found. Open an existing local file.';return s;}if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}if(typeof action.content!=='string')return s;storedFile(path,action.content);if(path.startsWith('/home/dev/jobs/')&&action.content.length>20000)throw Error('Job files can contain up to 20,000 characters.');s.machines.local.files[path]=action.content;if(edition==='full'){syncLabWorkspace(s);invalidateRelease(s);invalidateStudio(s);}}catch(e){s.notice=(e as Error).message;}return s;
+  try{const path=commandPath(s.machines.local.cwd,action.path);if(!Object.hasOwn(s.machines.local.files,path)){s.notice='File not found. Open an existing local file.';return s;}if(opsPathReadOnly(path)){s.notice='의뢰 원본 데이터는 읽기 전용이에요. cp로 복사해서 실험해 보세요.';return s;}if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}if(typeof action.content!=='string')return s;storedFile(path,action.content);if(path.startsWith('/home/dev/jobs/')&&action.content.length>20000)throw Error('Job files can contain up to 20,000 characters.');s.machines.local.files[path]=action.content;if(edition==='full'){syncLabWorkspace(s);invalidateRelease(s);invalidateStudio(s);}}catch(e){s.notice=(e as Error).message;}return s;
  }
  if(action.type==='edit'){if(!s.repo)return s;if(action.content.length>60000){s.notice='파일은 60,000자까지 편집할 수 있어요.';return s;}if(!Object.hasOwn(projectFiles(s),action.path))return s;const path=s.repo.root+'/'+action.path;if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}try{storedFile(path,action.content);}catch(e){s.notice=(e as Error).message;return s;}s.machines.local.files[path]=action.content;if(edition==='full'){syncLabWorkspace(s);invalidateRelease(s);invalidateStudio(s);}return s;}
  if(action.type==='request-tests'){s.testRequest++;return s;}
@@ -150,14 +158,14 @@ export function act(state:GameState,action:Action,edition:GameEdition='full'):Ga
 export function runCommand(state:GameState,input:string,edition:GameEdition='full'):CommandResult{
  let s=clone(state);s.notice='';const origin=s.machine,cwd=s.machines[origin].cwd;let error=false;let output='';let openFile:string|undefined;
  const fail=(text:string)=>{error=true;output=text;};
- let args:string[],redirect:ReturnType<typeof parseTerminalInput>['redirect']=null;try{const parsed=parseTerminalInput(input,tokenize);args=tokenize(parsed.command);redirect=parsed.redirect;}catch(e){args=[];const message=(e as Error).message;fail(message.startsWith('shell:')?message:'shell: '+message);}
- if(!editionAllowsCommand(state,args,redirect,edition)){
+ let args:string[],redirect:ReturnType<typeof parseTerminalInput>['redirect']=null,stdin:string|null=null;try{const parsed=parseTerminalInput(input,tokenize);args=tokenize(parsed.command);redirect=parsed.redirect;stdin=parsed.stdin;}catch(e){args=[];const message=(e as Error).message;fail(message.startsWith('shell:')?message:'shell: '+message);}
+ if(!editionAllowsCommand(state,args,redirect,edition,stdin)){
   const output=DEMO_LOCKED_MESSAGE;s.notice=output;
   if(input.trim())s.history.push({command:input,output,error:true,machine:origin,cwd});s.history=s.history.slice(-100);
   return {state:s,output,error:true};
  }
  const m=s.machines[s.machine];const [cmd,...a]=args;const root=s.machine==='local'?(s.repo?.root??PROJECT):PROJECT;
- const protectDelivered=(path:string)=>{if(s.machine==='local'&&!s.gameplay.career.studio&&(path===STUDIO_ROOT||path.startsWith(STUDIO_ROOT+'/')))throw Error('Studio workspace is reserved. Publish your first app and create an editable draft in My app studio.');if(s.machine==='local'&&localPathReadOnly(s,path))throw Error('Read-only: this project has already been delivered. Copy it to a different folder to experiment.');};
+ const protectDelivered=(path:string)=>{if(s.machine==='local'&&opsPathReadOnly(path))throw Error('Read-only: this is the job’s source data. Copy it with cp to experiment.');if(s.machine==='local'&&!s.gameplay.career.studio&&(path===STUDIO_ROOT||path.startsWith(STUDIO_ROOT+'/')))throw Error('Studio workspace is reserved. Publish your first app and create an editable draft in My app studio.');if(s.machine==='local'&&localPathReadOnly(s,path))throw Error('Read-only: this project has already been delivered. Copy it to a different folder to experiment.');};
  const inProject=()=>m.cwd===root||m.cwd.startsWith(root+'/');
  const has=(t:string)=>m.tools.includes(t);
  const requireTool=(t:string)=>{if(!has(t)){fail(`${cmd}: command not found\n도구가 이 컴퓨터에 설치되어 있지 않습니다.`);return false;}return true;};
@@ -166,7 +174,7 @@ export function runCommand(state:GameState,input:string,edition:GameEdition='ful
  const argumentError=cmd?terminalArgumentError(cmd,a):null;
  if(argumentError)fail(argumentError);
  else if(!cmd){}else if(cmd==='clear')output='';
- else if(cmd==='help'||cmd==='man')output='FILES  pwd · ls [-alh1] [path] · cd [path|-] · cat <file...> · grep [-n] [-i] <text> <file> · mkdir [-p] <directory...> · cp · mv · rm <file> · touch\nWRITE  echo [-n] <text> · echo/cat > file · echo/cat >> file\nTOOLS  sudo apt update · sudo apt install nodejs npm git python3 python3-pip\nNODE   node --version · npm --version · npm install · npm run dev · npm test · npm run build\nLAB    cd /home/dev/code-lab · code receipt.js · node run.cjs receipt.js receipt.input.json · node --test receipt.test.cjs\nGIT    git clone <URL> · status · diff · add <file|.> · commit -m "message" · push · pull · log\nSERVER ssh dev@mono-server · exit · pip install -r requirements.txt · python3 server.py\nCHECK  curl <URL> · ps · pkill node · pkill python3\nKEYS   ↑↓ history · Tab completion · Ctrl+L / clear · Ctrl+C cancel input\nSHELL  Quotes and escaped characters supported. Run commands separately; no pipes or command substitution.';
+ else if(cmd==='help'||cmd==='man')output='FILES  pwd · ls [-alh1] [path] · cd [path|-] · cat <file...> · grep [-n] [-i] <text> <file> · mkdir [-p] <directory...> · cp · mv · rm <file> · touch\nWRITE  echo [-n] <text> · echo/cat > file · echo/cat >> file\nTOOLS  sudo apt update · sudo apt install nodejs npm git python3 python3-pip\nNODE   node --version · npm --version · npm install · npm run dev · npm test · npm run build\nLAB    cd /home/dev/code-lab · code receipt.js · node run.cjs receipt.js receipt.input.json · node --test receipt.test.cjs\nPYTHON python3 <file.py> · python3 -c "print(1 + 1)" · sudo apt install python3\nSQL    sqlite3 <db> "SELECT * FROM menu;" · sqlite3 <db> < query.sql · sqlite3 <db> .tables · sudo apt install sqlite3\nGIT    git clone <URL> · status · diff · add <file|.> · commit -m "message" · push · pull · log\nSERVER ssh dev@mono-server · exit · pip install -r requirements.txt · python3 server.py\nCHECK  curl <URL> · ps · pkill node · pkill python3\nKEYS   ↑↓ history · Tab completion · Ctrl+L / clear · Ctrl+C cancel input\nSHELL  Quotes and escaped characters supported. Run commands separately; no pipes or command substitution.';
  else if(cmd==='pwd')output=m.cwd;
  else if(cmd==='whoami')output='dev';
  else if(cmd==='uname')output='Linux '+(s.machine==='local'?'shift-workstation':'mono-server')+' 6.8.0 x86_64 (simulated)';
@@ -191,7 +199,7 @@ export function runCommand(state:GameState,input:string,edition:GameEdition='ful
   const apt=cmd==='sudo'?a[0]==='apt':true;const sub=cmd==='sudo'?a[1]:a[0],names=cmd==='sudo'?a.slice(2):a.slice(1);
   if(!apt)fail('이 실습의 sudo는 apt 명령을 지원합니다.');
   else if(sub==='update'){m.updated=true;output='Hit:1 http://archive.ubuntu.game noble InRelease\nReading package lists... Done\n패키지 목록을 갱신했습니다. [게임 내 시뮬레이션]';}
-  else if(sub==='install'){if(!m.updated)fail('E: Package lists are empty. Run sudo apt update first.');else{const packages=names.filter(x=>!x.startsWith('-'));const supported=['nodejs','npm','git','python3','python3-pip'];if(!packages.length)fail('E: 패키지 이름을 입력하세요.');else if(packages.some(x=>!supported.includes(x)))fail('E: 이 실습에서는 nodejs, npm, git, python3, python3-pip을 지원합니다.');else{const installed=[...packages];if(packages.includes('npm'))installed.push('nodejs');for(const t of installed)if(!m.tools.includes(t))m.tools.push(t);output=packages.map(t=>`Setting up ${t} ... done`).join('\n')+'\n가상 컴퓨터의 설치 상태가 갱신되었습니다.';}}}
+  else if(sub==='install'){if(!m.updated)fail('E: Package lists are empty. Run sudo apt update first.');else{const packages=names.filter(x=>!x.startsWith('-'));const supported=['nodejs','npm','git','python3','python3-pip','sqlite3'];if(!packages.length)fail('E: 패키지 이름을 입력하세요.');else if(packages.some(x=>!supported.includes(x)))fail('E: 이 실습에서는 nodejs, npm, git, python3, python3-pip, sqlite3을 지원합니다.');else{const installed=[...packages];if(packages.includes('npm'))installed.push('nodejs');for(const t of installed)if(!m.tools.includes(t))m.tools.push(t);output=packages.map(t=>`Setting up ${t} ... done`).join('\n')+'\n가상 컴퓨터의 설치 상태가 갱신되었습니다.';}}}
   else if(sub==='list')output=m.tools.map(x=>x+' [installed]').join('\n');else fail('지원 명령: sudo apt update / install / list');
  }
  else if(cmd==='code'){if(s.machine!=='local')fail('code: local workstation files only. exit to return to your local files.');else if(!a[0])fail('Usage: code <existing-file>');else{const path=commandPath(m.cwd,a[0]);if(!Object.hasOwn(m.files,path))fail(`code: file not found: ${a[0]}`);else{openFile=path;output=`Opening ${path}`;}}}
@@ -199,7 +207,7 @@ export function runCommand(state:GameState,input:string,edition:GameEdition='ful
  else if(cmd==='npm'){
   if(requireTool('npm')){if(a[0]==='--version'||a[0]==='-v')output='10.2.4 [simulated]';else{const pkg=manifest();if(pkg){
    if(a[0]==='install'||a[0]==='i'){if(a.length>1)fail('이 실습은 package.json의 의존성을 설치하는 npm install을 지원합니다.');else if(!pkg.devDependencies?.vite)fail('npm ERR! 이 프로젝트는 devDependencies.vite가 필요합니다.');else{if(!m.dependencies.includes(m.cwd))m.dependencies.push(m.cwd);output='added 11 packages, and audited 12 packages\nfound 0 vulnerabilities\n[게임] 이 프로젝트의 의존성이 준비됐습니다.';}}
-   else {const script=a[0]==='test'?'test':a[0]==='run'?a[1]:null;if(!script)fail('지원 명령: npm install / run dev / test / run build');else if(!pkg.scripts?.[script])fail(`npm ERR! Missing script: "${script}"`);else if(!m.dependencies.includes(m.cwd))fail('sh: 1: vite: not found\n프로젝트에서 npm install을 먼저 실행하세요.');else if(script==='dev'){if(pkg.scripts.dev!=='vite')fail('이 실습에서는 dev 스크립트의 vite 실행을 지원합니다.');else if(m.processes.frontend)fail('Error: listen EADDRINUSE: port 5173 is already in use');else{m.processes.frontend=true;m.frontendRoot=m.cwd;output='VITE v5.0.0  ready in 128 ms\n\n  Local: http://localhost:5173/\n\n[게임] 서버는 백그라운드에서 실행됩니다. pkill node로 종료.';log(s,'[local:5173] Vite 개발 서버 시작');}}
+   else {const script=a[0]==='test'?'test':a[0]==='run'?a[1]:null;if(!script){const hint=suggestionLine(input);fail((hint?hint+'\n':'')+'지원 명령: npm install / run dev / test / run build');}else if(!pkg.scripts?.[script])fail(`npm ERR! Missing script: "${script}"`);else if(!m.dependencies.includes(m.cwd))fail('sh: 1: vite: not found\n프로젝트에서 npm install을 먼저 실행하세요.');else if(script==='dev'){if(pkg.scripts.dev!=='vite')fail('이 실습에서는 dev 스크립트의 vite 실행을 지원합니다.');else if(m.processes.frontend)fail('Error: listen EADDRINUSE: port 5173 is already in use');else{m.processes.frontend=true;m.frontendRoot=m.cwd;output='VITE v5.0.0  ready in 128 ms\n\n  Local: http://localhost:5173/\n\n[게임] 서버는 백그라운드에서 실행됩니다. pkill node로 종료.';log(s,'[local:5173] Vite 개발 서버 시작');}}
    else if(script==='test'){s.testRequest++;output='CODE:SHIFT CHECK\n현재 저장한 파일을 검사합니다. 검사 결과 패널을 확인하세요.';}
    else if(script==='build'){output='vite building for production...\n✓ 4 modules transformed.\ndist/index.html       1.64 kB\n✓ built in 184 ms [simulated]';}
    else fail('이 실습에서 지원하지 않는 npm 스크립트입니다.');}
@@ -219,18 +227,19 @@ export function runCommand(state:GameState,input:string,edition:GameEdition='ful
    else if(a[0]==='pull')output='Already up to date.';
    else if(a[0]==='log')output=[...r.commits].reverse().map(c=>`commit ${c.id}\n    ${c.message}`).join('\n\n');
    else if(a[0]==='diff'){const names=dirtyFiles(s);output=names.length?names.map(k=>`diff --git a/${k} b/${k}\n--- committed\n${head.files[k]??''}\n+++ working\n${working[k]??''}`).join('\n'):'(변경 없음)';}
-   else fail('지원 명령: git clone / status / diff / add / commit -m / push / pull / log');
+   else {const hint=suggestionLine(input);fail((hint?`git: '${a[0]??''}' is not a git command.\n${hint}\n`:'')+'지원 명령: git clone / status / diff / add / commit -m / push / pull / log');}
   }}
  }
  else if(cmd==='ssh'){if(!s.serverReady)fail('ssh: connect to host mono-server port 22: Connection refused\n서버 앱에서 Ubuntu를 먼저 준비하세요.');else if(a[0]!=='dev@mono-server')fail('ssh: Could not resolve hostname. 지원 주소: dev@mono-server');else{s.machine='server';output='Welcome to Ubuntu 24.04 LTS [simulated]\nConnected to mono-server. exit로 내 PC에 돌아갑니다.';}}
  else if(cmd==='exit'){if(s.machine==='server'){s.machine='local';output='Connection to mono-server closed.';}else output='작업실을 종료하려면 창을 닫으세요. 진행 상황은 자동 저장됩니다.';}
  else if(cmd==='pip'||cmd==='pip3'){if(requireTool('python3-pip')){if(a.join(' ')!=='install -r requirements.txt')fail('지원 명령: pip install -r requirements.txt');else if(!m.files[m.cwd+'/requirements.txt'])fail("ERROR: Could not open requirements file: No such file or directory");else{if(!m.pythonDeps.includes(m.cwd))m.pythonDeps.push(m.cwd);output='Successfully installed flask-3.0.0 [simulated]';}}}
- else if(cmd==='python3'){if(requireTool('python3')){if(a[0]==='--version')output='Python 3.12.0 [simulated]';else if(a[0]!=='server.py')fail('이 실습에서는 python3 server.py를 지원합니다.');else if(!m.files[m.cwd+'/server.py'])fail("python3: can't open file 'server.py': [Errno 2] No such file or directory");else if(!m.pythonDeps.includes(m.cwd))fail("ModuleNotFoundError: No module named 'flask'");else if(m.processes.backend)fail('Address already in use\nPort 8000 is in use. pkill python3로 종료하세요.');else{try{parseBackend(m.files[m.cwd+'/server.py']);m.processes.backend=true;m.backendRoot=m.cwd;m.backendSource=m.files[m.cwd+'/server.py'];if(s.machine==='server'){s.orders=[];s.apiEvidence={menu:false,order:false};}else s.localOrders=[];output=` * Running on http://${s.machine==='server'?'mono-server':'localhost'}:8000\n[게임] 백그라운드 실행. pkill python3로 종료.`;log(s,`[${s.machine}:8000] Python API 시작`);}catch(e){fail((e as Error).message);}}}}
+ else if(cmd==='python3'){if(requireTool('python3')){if(a[0]==='--version')output='Python 3.12.0 [simulated]';else if(a[0]!=='server.py'){const result=dispatchPython(s,a,resolvePath);output=result.output;error=result.error;}else if(!m.files[m.cwd+'/server.py'])fail("python3: can't open file 'server.py': [Errno 2] No such file or directory");else if(!m.pythonDeps.includes(m.cwd))fail("ModuleNotFoundError: No module named 'flask'");else if(m.processes.backend)fail('Address already in use\nPort 8000 is in use. pkill python3로 종료하세요.');else{try{parseBackend(m.files[m.cwd+'/server.py']);m.processes.backend=true;m.backendRoot=m.cwd;m.backendSource=m.files[m.cwd+'/server.py'];if(s.machine==='server'){s.orders=[];s.apiEvidence={menu:false,order:false};}else s.localOrders=[];output=` * Running on http://${s.machine==='server'?'mono-server':'localhost'}:8000\n[게임] 백그라운드 실행. pkill python3로 종료.`;log(s,`[${s.machine}:8000] Python API 시작`);}catch(e){fail((e as Error).message);}}}}
+ else if(cmd==='sqlite3'){if(requireTool('sqlite3')){const result=dispatchSqlite(s,a,stdin,resolvePath);output=result.output;error=result.error;}}
  else if(cmd==='ps')output=['PID  COMMAND',...(m.processes.frontend?['1042 node vite --port 5173']:[]),...(m.processes.backend?['2081 python3 server.py']:[])].join('\n');
  else if(cmd==='pkill'){if(a[0]==='node'){m.processes.frontend=false;output='node process stopped. Port 5173 released.';}else if(a[0]==='python3'){m.processes.backend=false;m.backendSource=null;if(s.machine==='server'){s.orders=[];s.apiEvidence={menu:false,order:false};}else s.localOrders=[];output='python3 process stopped. Port 8000 released.';}else fail('지원 명령: pkill node / pkill python3');}
  else if(cmd==='curl'){const url=a.find(x=>x.startsWith('http'));if(!url)fail('사용법: curl http://mono-server:8000/api/menu');else{const result=apiRequest(s,'GET',url,'');s=result.state;output=`HTTP ${result.status||'CONNECTION ERROR'}\n`+JSON.stringify(result.data,null,2);error=result.status===0||result.status>=400;}}
  else if(cmd==='/pwd')fail('/pwd: command not found\npwd를 뜻했나요? /는 절대경로를 시작합니다.');
- else fail(`${cmd}: command not found\nhelp로 지원 명령과 사용법을 확인하세요.`);
+ else {const hint=suggestionLine(input);fail(`${cmd}: command not found\n`+(hint??'help로 지원 명령과 사용법을 확인하세요.'));}
  if(redirect&&!error){
   const target=commandPath(m.cwd,redirect.target),parent=target.slice(0,target.lastIndexOf('/'))||'/';protectDelivered(target);
   if(m.dirs.includes(target))throw Error(`shell: ${redirect.target}: Is a directory`);
@@ -241,7 +250,7 @@ export function runCommand(state:GameState,input:string,edition:GameEdition='ful
  }
  if(edition==='full')syncLabWorkspace(s);
  }catch(e){s=clone(state);s.notice='';openFile=undefined;fail((e as Error).message);}
- if(edition==='demo'&&(cmd==='help'||cmd==='man'))output=output.split('\n').filter(line=>!line.startsWith('LAB ')).join('\n');
+ if(edition==='demo'&&(cmd==='help'||cmd==='man'))output=output.split('\n').filter(line=>!line.startsWith('LAB ')&&!line.startsWith('SQL ')).join('\n');
  if(!error&&origin==='local'&&s.repo){
   if(cmd==='pwd'&&cwd===s.repo.root)s.gameplay.exploration.pwd=true;
   if(cmd==='ls'&&resolvePath(cwd,a.find(x=>!x.startsWith('-'))||'.')===s.repo.root)s.gameplay.exploration.ls=true;

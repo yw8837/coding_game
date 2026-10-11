@@ -16,26 +16,49 @@ const RESIZE_HANDLES:{dir:ResizeDir;className:string}[]=[
 ];
 export function DesktopWindow({window:w,bounds,active,compact,title,icon,children,onFocus,onChange,onClose}:Props){
  const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>lang==='ko'?ko:lang==='en'?en:ja;
- const drag=useRef<{x:number;y:number;original:WindowState;kind:'move'|'resize';dir?:ResizeDir}|null>(null);
+ const drag=useRef<{startX:number;startY:number;original:WindowState;kind:'move'|'resize';dir?:ResizeDir;wasArranged:boolean;ratio:number;restored:boolean;}|null>(null);
  const root=useRef<HTMLElement>(null);
  const [snap,setSnap]=useState<WindowState['mode']|null>(null),snapRef=useRef<WindowState['mode']|null>(null);
  useEffect(()=>{if(active&&!w.minimized&&!w.closed&&!root.current?.contains(document.activeElement))root.current?.focus({preventScroll:true});},[active,w.minimized,w.closed]);
  const rect=windowRect(w,bounds);
  const start=(e:PointerEvent<HTMLElement>,kind:'move'|'resize',dir:ResizeDir='se')=>{
-  if(e.button!==0||compact||w.mode!=='normal'||(e.target as HTMLElement).closest('button'))return;
-  e.preventDefault();onFocus();drag.current={x:e.clientX,y:e.clientY,original:{...w,...rect},kind,dir};e.currentTarget.setPointerCapture(e.pointerId);
+  if(e.button!==0||compact||(e.target as HTMLElement).closest('button'))return;
+  if(w.mode!=='normal'&&kind==='resize')return;
+  e.preventDefault();onFocus();
+  const ratio=Math.max(0.08,Math.min(0.92,(e.clientX-rect.x)/Math.max(1,rect.width)));
+  drag.current={startX:e.clientX,startY:e.clientY,original:{...w,...rect},kind,dir,wasArranged:w.mode!=='normal',ratio,restored:false};
+  e.currentTarget.setPointerCapture(e.pointerId);
  };
- const move=(e:PointerEvent<HTMLElement>)=>{const d=drag.current;if(!d)return;const dx=e.clientX-d.x,dy=e.clientY-d.y;
+ const move=(e:PointerEvent<HTMLElement>)=>{const d=drag.current;if(!d)return;
   if(d.kind==='move'){
-   const stage=root.current?.parentElement?.getBoundingClientRect(),zone=stage?snapZone(e.clientX-stage.left,e.clientY-stage.top,bounds):null;
+   const stage=root.current?.parentElement?.getBoundingClientRect();
+   const stageLeft=stage?.left??0,stageTop=stage?.top??0;
+   if(d.wasArranged&&!d.restored){
+    const dist=Math.hypot(e.clientX-d.startX,e.clientY-d.startY);
+    if(dist<6)return;
+    const restoreW=Math.min(Math.max(w.width||720,420),Math.max(420,bounds.width-40));
+    const restoreH=Math.min(Math.max(w.height||520,320),Math.max(320,bounds.height-40));
+    const newX=Math.round((e.clientX-stageLeft)-(restoreW*d.ratio));
+    const newY=Math.max(0,Math.round(e.clientY-stageTop-19));
+    const restoredState=fitWindow({x:newX,y:newY,width:restoreW,height:restoreH},bounds);
+    d.restored=true;
+    d.original={...w,mode:'normal',...restoredState};
+    d.startX=e.clientX;
+    d.startY=e.clientY;
+    onChange({...w,mode:'normal',...restoredState});
+    return;
+   }
+   const dx=e.clientX-d.startX,dy=e.clientY-d.startY;
+   const zone=stage?snapZone(e.clientX-stageLeft,e.clientY-stageTop,bounds):null;
    if(zone!==snapRef.current){snapRef.current=zone;setSnap(zone);}
-   onChange({...w,...fitWindow({...d.original,x:d.original.x+dx,y:d.original.y+dy},bounds)});
+   onChange({...w,mode:'normal',...fitWindow({...d.original,x:d.original.x+dx,y:d.original.y+dy},bounds)});
   }else{
+   const dx=e.clientX-d.startX,dy=e.clientY-d.startY;
    onChange({...w,...resizeWindow(d.original,dx,dy,d.dir??'se',bounds)});
   }
  };
- // 제목 표시줄을 화면 위·왼쪽·오른쪽 끝으로 끌면 그 배치로 붙는다.
- const end=()=>{const zone=drag.current?.kind==='move'?snapRef.current:null;drag.current=null;snapRef.current=null;setSnap(null);if(zone)onChange({...w,mode:zone});};
+ // 제목 표시줄을 화면 위·왼쪽·오른쪽 끝으로 끌면 그 배치로 붙는다. 복원 드래그 후 놓으면 그 위치에 안착한다.
+ const end=()=>{const d=drag.current;const zone=d?.kind==='move'?snapRef.current:null;drag.current=null;snapRef.current=null;setSnap(null);if(zone)onChange({...w,mode:zone});};
  const mode=(mode:WindowState['mode'])=>{onFocus();onChange({...w,mode:w.mode===mode?'normal':mode});};
  const preview=snap?windowRect({...w,mode:snap},bounds):null;
  return <>{preview&&<div className="pc-snap-preview" aria-hidden="true" style={{left:preview.x,top:preview.y,width:preview.width,height:preview.height}}/>}<section ref={root} tabIndex={-1} data-window={w.id} data-active={active} className={'pc-window '+(active?'is-active ':'')+(w.mode!=='normal'?'arranged':'')} aria-label={title} hidden={w.closed||w.minimized||(compact&&!active)} onPointerDownCapture={onFocus} onFocusCapture={onFocus} style={compact?undefined:{left:rect.x,top:rect.y,width:rect.width,height:rect.height}}>

@@ -1,39 +1,53 @@
-import {evaluateRelease,releaseFiles,releaseHash,releasePublishedFresh} from './release.ts';
+import {evaluateRelease,releaseFiles,releaseHash,releasePublishedFresh,type ReleaseEvaluation,type ReleaseStyle} from './release.ts';
 import {STUDIO_FILE_NAMES,studioFiles,studioFresh,studioSourceMapValid,type StudioSourceMap} from './studio.ts';
 import {GAME_BRAND,GAME_NAME,GAME_VERSION_LABEL} from './brand.ts';
 import {buildZip} from './zip.ts';
 
 export type StudioExportLanguage='ko'|'en'|'ja';
-const WORDS={
+export const STUDIO_EXPORT_WORDS={
  ko:{search:'목록 검색',category:'분류',all:'모두',empty:'조건에 맞는 항목이 없어요.',inquiry:'이 작품에 문의',item:'문의할 항목',project:'전체 작품',message:'문의 내용',save:'이 브라우저에 보관',saved:'이 브라우저에 보관했습니다. 서버로 전송되지 않습니다.',local:'문의는 이 파일을 연 브라우저에만 보관됩니다. 파일을 다른 사람에게 보내도 문의는 함께 전달되지 않습니다. 서버와 온라인 배포는 포함되지 않습니다.',unavailable:'브라우저 저장소를 사용할 수 없습니다. 문의는 보관되지 않았습니다.',corrupt:'저장된 문의 형식을 읽을 수 없습니다. 기존 자료를 덮어쓰지 않았습니다.',invalid:'문의는 공백이 아닌 1~1,000자여야 합니다.',limit:'문의 보관함이 가득 찼습니다 (최대 50개).',requests:'이 브라우저의 문의',source:'코드를 계속 편집하려면 이 HTML 파일을 텍스트 편집기에서 여세요. 아래의 CSS, app-data와 JavaScript를 수정할 수 있습니다. 지원 형태: 장소 목록 · 행사 안내 · 작품 모음.',credit:'로컬호스트 히어로에서 만든 작품'},
  en:{search:'Search items',category:'Category',all:'All',empty:'No items match.',inquiry:'Ask about this project',item:'Item to ask about',project:'Whole project',message:'Your message',save:'Keep in this browser',saved:'Kept in this browser. Nothing was sent to a server.',local:'Inquiries stay only in the browser that opens this file. Sending the file does not send your inquiries. No server or online deployment is included.',unavailable:'Browser storage is unavailable. Your inquiry was not saved.',corrupt:'Stored inquiries could not be read. Existing data was not overwritten.',invalid:'Write a nonblank message of 1–1,000 characters.',limit:'The inquiry box is full (maximum 50).',requests:'Inquiries in this browser',source:'To continue coding, open this HTML file in a text editor. Edit the CSS, app-data and JavaScript below. Supported formats: directory, events and portfolio.',credit:'Made in Localhost Hero'},
  ja:{search:'一覧を検索',category:'分類',all:'すべて',empty:'条件に合う項目がありません。',inquiry:'この作品について問い合わせ',item:'問い合わせる項目',project:'作品全体',message:'問い合わせ内容',save:'このブラウザに保存',saved:'このブラウザに保存しました。サーバーには送信していません。',local:'問い合わせはこのファイルを開いたブラウザだけに保存されます。ファイルを送っても問い合わせは一緒に送られません。サーバーやオンライン公開は含まれません。',unavailable:'ブラウザの保存領域を使えません。問い合わせは保存されませんでした。',corrupt:'保存された問い合わせを読めません。既存のデータは上書きしていません。',invalid:'空白以外の1～1,000文字で書いてください。',limit:'問い合わせが上限に達しました（最大50件）。',requests:'このブラウザの問い合わせ',source:'コードを続けて編集するには、このHTMLをテキストエディターで開いてください。下のCSS、app-data、JavaScriptを編集できます。対応形式：場所一覧・イベント案内・作品集。',credit:'ローカルホスト・ヒーローで作った作品'},
 } as const;
-const escapeHtml=(value:string)=>value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+export const escapeHtml=(value:string)=>value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
 const scriptJson=(value:unknown)=>JSON.stringify(value,null,2).replaceAll('&','\\u0026').replaceAll('<','\\u003c').replaceAll('>','\\u003e').replaceAll('\u2028','\\u2028').replaceAll('\u2029','\\u2029');
+
+export const STUDIO_EXPORT_CSP="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src data:; form-action 'none'; base-uri 'none'";
+export const STUDIO_ACCENT_COLORS={sage:'#356553',ocean:'#285c80',amber:'#8a561d'} as const;
+export const studioPortalCss=(style:ReleaseStyle)=>`.portal { width: ${style.width}; ${style.maxWidth?'max-width: '+style.maxWidth+';':''} box-sizing: ${style.boxSizing}; padding: ${style.padding}px; margin: ${style.margin??'0 auto'}; }`;
+/** Shared export gate: the complete source map, a supported language and every release check. */
+export function studioExportPreview(files:StudioSourceMap,language:StudioExportLanguage):ReleaseEvaluation['preview']{
+ if(!studioSourceMapValid(files,true)||!Object.hasOwn(STUDIO_EXPORT_WORDS,language))throw Error('Invalid studio export source');
+ const evaluation=evaluateRelease(files,true);if(!evaluation.passed)throw Error('Studio files must pass all checks before export');
+ return evaluation.preview;
+}
+/** Generated markup only (never player text): replaces the CSP and appends to the head and body. */
+export type StudioHtmlExtras={csp:string;head:string;tail:string};
 
 /** Compile supported fields to a readable portable app. Player HTML/CSS is never executed. */
 export function buildStudioExport(files:StudioSourceMap,language:StudioExportLanguage,appId?:string):string{
- if(!studioSourceMapValid(files,true)||!Object.hasOwn(WORDS,language))throw Error('Invalid studio export source');
- const evaluation=evaluateRelease(files,true);if(!evaluation.passed)throw Error('Studio files must pass all checks before export');
- const {title,product,style}=evaluation.preview,w=WORDS[language];
+ return buildStudioAppHtml(files,language,appId);
+}
+/** The portable app; extras (installable variant) leave the app markup and script unchanged. */
+export function buildStudioAppHtml(files:StudioSourceMap,language:StudioExportLanguage,appId?:string,extras?:StudioHtmlExtras):string{
+ const {title,product,style}=studioExportPreview(files,language),w=STUDIO_EXPORT_WORDS[language];
  // The game passes the immutable first-release identity, so edits retain this app's inquiries.
  const identity=appId??releaseHash({'app-title':title});if(!/^[a-f0-9]{16}$/.test(identity))throw Error('Invalid studio app identity');
- const color={sage:'#356553',ocean:'#285c80',amber:'#8a561d'}[product.accent];
+ const color=STUDIO_ACCENT_COLORS[product.accent];
  const data={title,product,storageKey:'codeshift-app-'+identity,words:w};
  return `<!doctype html>
 <html lang="${language}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src data:; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="${extras?.csp??STUDIO_EXPORT_CSP}">
 <meta name="generator" content="${GAME_BRAND} ${GAME_VERSION_LABEL}">
-<title>${escapeHtml(title)}</title>
+<title>${escapeHtml(title)}</title>${extras?.head??''}
 <!-- This is a standalone file. Edit this CSS and the app-data/JavaScript below. -->
 <style>
 :root { color-scheme: light; font-family: system-ui, sans-serif; color: #24332d; background: #f6f4ee; --accent: ${color}; }
 * { box-sizing: border-box; } body { margin: 0; } input, select, textarea, button { font: inherit; }
-.portal { width: ${style.width}; ${style.maxWidth?'max-width: '+style.maxWidth+';':''} box-sizing: ${style.boxSizing}; padding: ${style.padding}px; margin: ${style.margin??'0 auto'}; }
+${studioPortalCss(style)}
 h1 { overflow-wrap: anywhere; color: var(--accent); } p { line-height: 1.6; overflow-wrap: anywhere; }
 .filters, form { display: flex; flex-wrap: wrap; gap: 1rem; align-items: end; } label { display: grid; gap: .4rem; flex: 1 1 12rem; min-width: 0; }
 input, select, textarea { width: 100%; min-height: 2.8rem; padding: .6rem; border: 1px solid #9baaa2; border-radius: .4rem; background: white; color: #24332d; }
@@ -127,7 +141,7 @@ byId('inquiry').addEventListener('submit', event => {
   catch { byId('status').textContent = words.unavailable; return; }
   requests = next; byId('message').value = ''; byId('status').textContent = words.saved; renderRequests();
 });
-</script>
+</script>${extras?.tail??''}
 </body>
 </html>\n`;
 }

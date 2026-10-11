@@ -7,7 +7,7 @@ import {careerRouteReady} from './career-progress.ts';
 import {releaseFresh,releaseBuildFresh} from './release.ts';
 import type {Localized} from './career-content.ts';
 
-export type Task={id:string;phase:number;title:string;detail:string;app:'career'|'messages'|'browser'|'computer'|'editor'|'terminal'|'server'|'api'|'achievements';command?:string;url?:string;file?:string;find?:string;next?:boolean;localized?:{title:Localized;detail:Localized}};
+export type Task={id:string;phase:number;title:string;detail:string;app:'career'|'messages'|'browser'|'computer'|'editor'|'terminal'|'server'|'api'|'achievements';command?:string;url?:string;file?:string;find?:string;discover?:boolean;next?:boolean;localized?:{title:Localized;detail:Localized}};
 export const PHASES=['의뢰 읽기','작업 준비','문제 고치기','결과 확인','의뢰 전달'];
 const step=(id:string,phase:number,title:string,detail:string,app:Task['app'],extra:Partial<Task>={}):Task=>({id,phase,title,detail,app,...extra});
 const shell=(id:string,phase:number,title:string,detail:string,command:string)=>step(id,phase,title,detail,'terminal',{command});
@@ -56,9 +56,10 @@ export function currentTask(s:GameState,edition:import('./edition.ts').GameEditi
  if(m<2&&!s.gameplay.inspected.includes(m))return step('inspect',2,m===0?'브라우저에서 고장 난 메뉴판 보기':'계산대에서 커피 3잔 담아 보기',m===0?'360px 버튼을 눌러 휴대폰 화면을 보세요. 이름과 잘린 메뉴를 확인한 뒤 문제 확인 버튼을 누르세요.':'수량의 + 버튼으로 3잔을 담아 보세요. 13,500원이 나오는지 확인하고 문제 확인 버튼을 누르세요.','browser',{url:'http://localhost:5173'});
  if(m===0&&!facts.sign)return step('sign',2,'index.html에서 카페 이름 바꾸기','고칠 글자 찾기를 누르세요. 선택된 글자를 모노 카페로 바꾸면 돼요. <h1>과 </h1>은 남겨 주세요.','editor',{file:'index.html',find:'heading'});
  if(m===0&&!facts.size)return step('size',2,'style.css에서 메뉴 너비 고치기','고칠 글자 찾기로 960px을 선택한 뒤 100%를 입력하세요. 화면 너비에 맞춘다는 뜻이에요.','editor',{file:'style.css',find:'width'});
- if(m===1&&!facts.rule)return step('rule',2,'app.js에서 합계 계산 고치기','price는 한 잔 가격, quantity는 잔 수예요. return 줄의 +를 곱셈 기호 *로 바꿔 보세요.','editor',{file:'app.js',find:'operator'});
- if(m===2&&!facts.route)return step('route',2,'server.py에서 메뉴 주소 연결','MENU_PATH는 메뉴를 찾는 주소예요. /menu를 /api/menu로 바꾸세요. 따옴표는 남겨 주세요.','editor',{file:'server.py',find:'route'});
- if(m===2&&!facts.keep)return step('keep',2,'server.py에서 주문 보관 켜기','SAVE_ORDERS는 주문 보관 스위치예요. False를 True로 바꾸세요. 첫 글자는 대문자예요.','editor',{file:'server.py',find:'keep'});
+ // From the second request on, the player finds the file from the client's clue (no file name, no auto-open).
+ if(m===1&&!facts.rule)return step('rule',2,'합계를 계산하는 코드 찾아 고치기','3잔이 4,503원이 됐어요. 계산을 맡은 파일을 탐색기에서 직접 찾아 여세요. 컴퓨터 앱의 파일 설명이 단서예요. 찾았다면: price는 한 잔 가격, quantity는 잔 수예요. return 줄의 +를 곱셈 기호 *로 바꿔 보세요.','editor',{file:'app.js',find:'operator',discover:true});
+ if(m===2&&!facts.route)return step('route',2,'주문 서버 코드에서 메뉴 주소 연결','메뉴와 주문을 받는 서버 프로그램 파일을 탐색기에서 직접 찾아 여세요. MENU_PATH는 메뉴를 찾는 주소예요. /menu를 /api/menu로 바꾸세요. 따옴표는 남겨 주세요.','editor',{file:'server.py',find:'route',discover:true});
+ if(m===2&&!facts.keep)return step('keep',2,'주문 서버 코드에서 주문 보관 켜기','SAVE_ORDERS는 주문 보관 스위치예요. False를 True로 바꾸세요. 첫 글자는 대문자예요.','editor',{file:'server.py',find:'keep',discover:true});
  if(m===2){
   const transfer=upload(s,3);if(transfer)return transfer;
   if(!s.serverReady)return step('server',3,'서버 앱에서 컴퓨터 준비','내 PC 밖에서 주문을 받으려면 다른 컴퓨터가 필요해요. 서버 앱의 Ubuntu 설치를 누르세요.','server');

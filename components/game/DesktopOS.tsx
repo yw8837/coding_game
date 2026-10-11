@@ -1,7 +1,9 @@
 'use client';
 import {useCallback,useEffect,useRef,useState,type ReactNode} from 'react';
 import {editionAllowsApp,editionAllowsPath} from '@/lib/game/edition';
-import {Monitor,Code2,TerminalSquare,MessageCircle,FolderOpen,FileText,Settings2,Trophy,Palette,Server,Send,LayoutGrid,Search,Power,Volume2,VolumeX,Wifi,Check,Flag,Puzzle,Expand,ChevronLeft,ChevronRight,CalendarDays,Columns2} from 'lucide-react';
+import {Monitor,Code2,TerminalSquare,MessageCircle,FolderOpen,FileText,Settings2,Trophy,Palette,Server,Send,LayoutGrid,Search,Power,Volume2,VolumeX,Wifi,Check,Flag,Puzzle,Expand,ChevronLeft,ChevronRight,CalendarDays,Columns2,Sparkles,FileCode2,Database} from 'lucide-react';
+import {opsTrackUnlocked} from '@/lib/game/ops';
+import {LevelChip} from './LevelChip';
 import {useLanguage,t} from '@/lib/game/i18n';
 import {gameMessages} from '@/lib/game/gameplay';
 import {openWindow,focusedWindow,tileWindows,type WindowState,type Bounds} from '@/lib/game/windows';
@@ -29,6 +31,9 @@ export const DESKTOP_APPS=[
  {id:'api',ko:'요청 실험실',en:'API lab',ja:'APIラボ',icon:Send,color:'orange'},
  {id:'achievements',ko:'성취',en:'Achievements',ja:'実績',icon:Trophy,color:'gold'},
  {id:'workbench',ko:'꾸미기',en:'Personalize',ja:'個人設定',icon:Palette,color:'purple'},
+ {id:'profile',ko:'내 성장',en:'Growth',ja:'成長',icon:Sparkles,color:'purple'},
+ {id:'python',ko:'파이썬 자동화',en:'Python Automation',ja:'Python自動化',icon:FileCode2,color:'blue'},
+ {id:'sql',ko:'SQL 데이터베이스',en:'SQL Database',ja:'SQLデータベース',icon:Database,color:'green'},
 ] as const;
 
 export function useDesktopManager(){
@@ -67,18 +72,18 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
  useEffect(()=>{if(manager.app==='desktop')startRef.current?.focus({preventScroll:true});},[manager.app]);
  useEffect(()=>{if(!panel)return;const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePanel();}};const outside=(e:PointerEvent)=>{const target=e.target as Node;if([startPanel,calendarPanel,soundPanel,languagePanel,startRef,searchRef,clockRef,soundRef,languageRef].some(r=>r.current?.contains(target)))return;closePanel();};document.addEventListener('keydown',key,true);document.addEventListener('pointerdown',outside);return()=>{document.removeEventListener('keydown',key,true);document.removeEventListener('pointerdown',outside);};},[panel,closePanel]);
  const open=(id:AppId)=>{closePanel(false);props.onOpen(id);};
- const available=DESKTOP_APPS.filter(a=>editionAllowsApp(props.edition,a.id)&&(a.id!=='career'||props.state.gameplay.openingCelebrated)&&(advanced||!['server','api'].includes(a.id)||props.state.mission===2));
+ const available=DESKTOP_APPS.filter(a=>editionAllowsApp(props.edition,a.id)&&(a.id!=='career'||props.state.gameplay.openingCelebrated)&&(a.id!=='python'||opsTrackUnlocked(props.state,'python'))&&(a.id!=='sql'||opsTrackUnlocked(props.state,'sql'))&&(advanced||!['server','api'].includes(a.id)||props.state.mission===2));
  const label=(a:typeof DESKTOP_APPS[number])=>a[lang];
  const activeApps=manager.windows.filter(w=>!w.closed);
  const visibleApps=visibleQuestApps(manager.windows,manager.bounds,manager.compact);
  const toggleTask=(id:AppId)=>{const w=manager.windows.find(w=>w.id===id);if(w&&manager.app===id)manager.change({...w,minimized:true});else open(id);};
  return <>
-  <div className="pc-topbar"><span className="pc-session"><Monitor size={14}/> Localhost Hero <span>/</span> {tr('내 작업실','My workspace','マイデスク')}</span><div><span className="pc-save" data-testid="save-status" data-state={saveStatus} role="status">{saveStatus==='saved'&&<Check size={13}/>} {saveStatus==='saving'?tr('저장 중…','Saving…','保存中…'):saveStatus==='saved'?tr('저장됨','Saved','保存済み'):tr('저장 실패 · 설정에서 백업','Save failed · Back up in Settings','保存失敗 · 設定でバックアップ')}</span><button className="pc-wallet" data-testid="open-wallet" onClick={()=>props.onOpen('workbench')} title={tr('크레딧 사용 · 작업실 상점','Spend credits · Workspace shop','クレジットを使う · 作業場ショップ')}><CreditReadout amount={props.state.credits}/></button><button onClick={onSidebar} aria-expanded={sidebarOpen} aria-label={tr('퀘스트 열기 또는 접기','Toggle quest','クエストを開閉')}><Flag size={15}/>{tr('의뢰','Quest','依頼')}</button></div></div>
+  <div className="pc-topbar"><span className="pc-session"><Monitor size={14}/> Localhost Hero <span>/</span> {tr('내 작업실','My workspace','マイデスク')}</span><div><span className="pc-save" data-testid="save-status" data-state={saveStatus} role="status">{saveStatus==='saved'&&<Check size={13}/>} {saveStatus==='saving'?tr('저장 중…','Saving…','保存中…'):saveStatus==='saved'?tr('저장됨','Saved','保存済み'):tr('저장 실패 · 설정에서 백업','Save failed · Back up in Settings','保存失敗 · 設定でバックアップ')}</span><LevelChip xp={props.state.xp} onClick={()=>props.onOpen('profile')}/><button className="pc-wallet" data-testid="open-wallet" onClick={()=>props.onOpen('workbench')} title={tr('크레딧 사용 · 작업실 상점','Spend credits · Workspace shop','クレジットを使う · 作業場ショップ')}><CreditReadout amount={props.state.credits}/></button><button onClick={onSidebar} aria-expanded={sidebarOpen} aria-label={tr('퀘스트 열기 또는 접기','Toggle quest','クエストを開閉')}><Flag size={15}/>{tr('의뢰','Quest','依頼')}</button></div></div>
   <div className="pc-main">
    <div className="pc-workarea"><div className="pc-compact-quest"><QuestRibbon {...props} visibleApps={visibleApps}/></div><div className="pc-stage" ref={stage}>
     <Wallpaper/>
     <nav className="pc-shortcuts" aria-label={tr('바탕화면 바로가기','Desktop shortcuts','デスクトップのショートカット')}>
-     {available.filter(a=>['computer','messages','browser','editor','terminal','notes','challenges','career'].includes(a.id)).map(a=><button key={a.id} aria-label={label(a)} className={'pc-shortcut '+(a.id==='messages'&&welcomeUnread?'first-message':'')} onClick={()=>open(a.id)}><span className={'pc-app-icon '+a.color}><a.icon size={28}/>{a.id==='messages'&&unread>0&&<i>{unread}</i>}</span><span>{label(a)}</span></button>)}
+     {available.filter(a=>['computer','messages','browser','editor','terminal','notes','challenges','career','python','sql'].includes(a.id)).map(a=><button key={a.id} aria-label={label(a)} className={'pc-shortcut '+(a.id==='messages'&&welcomeUnread?'first-message':'')} onClick={()=>open(a.id)}><span className={'pc-app-icon '+a.color}><a.icon size={28}/>{a.id==='messages'&&unread>0&&<i>{unread}</i>}</span><span>{label(a)}</span></button>)}
     </nav>
     <div className="pc-desktop-caption"><span>{props.edition!=='demo'&&props.state.gameplay.career.upgrades.includes('studio-sign')?tr('나의 독립 작업실','Independent studio','自分の作業場'):'SHIFT OS'}</span><small>{tr('개인용 컴퓨터','Personal computer','パーソナルコンピューター')}</small></div>
     {manager.app==='desktop'&&welcomeUnread&&<button className="pc-mail-toast" onClick={()=>open('messages')}><CharacterPortrait name="지우"/><span><small>{tr('지우 · 새 메시지','Jiwoo · New message','ジウ · 新着メッセージ')}</small><strong>{tr('메뉴판이 이상해요. 한번 봐줄래요?','The menu is broken. Can you take a look?','メニューがおかしいんです。見てもらえますか？')}</strong><em>{tr('눌러서 읽기','Click to read','クリックして読む')} →</em></span></button>}
