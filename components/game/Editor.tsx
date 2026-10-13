@@ -15,7 +15,7 @@ function highlighted(line:string){return line.split(/("[^"\n]*"|'[^'\n]*'|\/\/.*
 
 export function EditorView(props:GameProps){
  if(props.state.repo&&!props.editorTarget?.file.startsWith('/')&&!editionAllowsProject(props.edition,props.state.repo.root))return <DemoBoundary/>;
- if(!editionAllowsPath(props.edition,props.editorTarget?.file??props.state.repo?.root??'/home/dev',props.state.repo?.root??props.state.machines.local.cwd))return <DemoBoundary/>;
+ if(!editionAllowsPath(props.edition,props.editorTarget?.file??props.state.repo?.root??'/home/dev',props.state.repo?.root??props.state.machines.local.cwd,props.state))return <DemoBoundary/>;
  return props.editorTarget?.file.startsWith('/')?<VirtualFileEditor {...props}/>:<ProjectEditorView {...props}/>;
 }
 

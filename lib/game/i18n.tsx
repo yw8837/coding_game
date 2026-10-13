@@ -33,7 +33,7 @@ export function setLanguagePreference(next:LanguagePreference){void locale.setPr
 /** Compatibility: selecting a concrete language always records a manual choice. */
 export function setLanguage(next:Language){setLanguagePreference(next);}
 export const restoreLanguage=locale.restore;
-export function useLanguage(){return useSyncExternalStore(subscribe,getLanguage,()=>getLanguage());}
+export function useLanguage(){return useSyncExternalStore(subscribe,getLanguage,()=> 'en' as Language);}
 export function useLanguagePreference(){return useSyncExternalStore(subscribe,getLanguagePreference,()=> 'auto' as LanguagePreference);}
 
 /** Translate display text only. State, commands, code and form values stay untouched.

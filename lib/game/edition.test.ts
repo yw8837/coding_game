@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createGame,act,runCommand,projectFiles,sourceHash,runCodeChecks,apiRequest,type GameState,type Action} from './engine.ts';
 import {assist} from './assisted.ts';
-import {editionAllowsApp,editionAllowsPath,editionAllowsProject,isDemoComplete,DEMO_LOCKED_MESSAGE} from './edition.ts';
+import {editionAllowsApp,editionAllowsPath,editionAllowsProject,isDemoComplete,isDemoCafeComplete,DEMO_SAMPLE_JOB,DEMO_LOCKED_MESSAGE} from './edition.ts';
+import {careerFiles} from './career.ts';
 import {CAREER_JOBS} from './career-content.ts';
 import {exampleSolution} from './career-evaluation.ts';
 import {LAB_JOBS} from './code-lab.ts';
@@ -40,12 +41,12 @@ test('demo app/path policy resolves aliases and traversal without extending part
   assert.equal(editionAllowsPath('full',`/home/dev/${root}/file`),true);
  }
  assert.equal(editionAllowsPath('demo','/home/dev/jobs-notes.txt'),true);
- for(const app of ['career','challenges']){assert.equal(editionAllowsApp('demo',app),false);assert.equal(editionAllowsApp('full',app),true);}
- for(const app of ['computer','editor','terminal','messages','workbench','repair','api','server','achievements'])assert.equal(editionAllowsApp('demo',app),true);
+ for(const app of ['challenges','python','sql']){assert.equal(editionAllowsApp('demo',app),false);assert.equal(editionAllowsApp('full',app),true);}
+ for(const app of ['computer','editor','terminal','messages','workbench','repair','api','server','achievements','career'])assert.equal(editionAllowsApp('demo',app),true);
 });
 
 test('every locked action family preserves imported full save content and rewards',()=>{
- const s=fullSave(),id=CAREER_JOBS[0].id;
+ const s=fullSave(),id=CAREER_JOBS[1].id;
  const actions:Action[]=[
   ...['career-accept','career-inspect','career-test','career-checkpoint','career-restore','career-upgrade'].map(type=>({type,id}) as Action),
   {type:'career-code-mode',id,mode:'javascript'},{type:'career-edit',id,file:'index.html',content:'blocked'},
@@ -68,7 +69,7 @@ test('protected terminal commands cannot read, write or execute full edition wor
   `echo changed > ${file}`,`echo changed >> ~/code-lab/receipt.js`,`cat ${file} > ~/copy.html`,
   `cat /home/dev/menu-site/../studio/launch/index.html`,`node --test /home/dev/code-lab/receipt.test.cjs`,
   `node run.cjs receipt.js receipt.input.json`,`node --test /home/dev/jobs/bakery-price/solve.test.cjs`,
-  `git clone https://cathub.dev/mono/menu-site ~/studio/copy`,`git add ~/jobs/bakery-price/index.html`];
+  `git clone https://cathub.dev/mono/menu-site ~/studio/copy`,`git add ~/jobs/library-loans/policy.json`];
  for(const command of commands){const result=runCommand(s,command,'demo');assert.equal(result.error,true,command);assert.equal(result.output,DEMO_LOCKED_MESSAGE,command);assert.equal(result.openFile,undefined);unchangedContent(s,result.state);}
  assert.equal(runCommand(s,`cat ${file}`,'full').error,false);
 });
@@ -84,7 +85,7 @@ test('imported private cwd is preserved and can be exited without damaging relea
  assert.deepEqual(escaped.state.gameplay,s.gameplay);assert.deepEqual(escaped.state.machines.local.files,s.machines.local.files);
  for(const command of ['pwd','ls','help','echo café','node --version']){
   const result=runCommand(escaped.state,command,'demo');assert.equal(result.error,false,command);assert.deepEqual(result.state.gameplay,s.gameplay);
-  if(command==='ls')assert.doesNotMatch(result.output,/jobs|studio|code-lab/);
+  if(command==='ls')assert.doesNotMatch(result.output,/studio|code-lab|library-loans/);
   if(command==='help')assert.doesNotMatch(result.output,/LAB |node --test/);
  }
  let stored='';writeSave({setItem:(_,value)=>{stored=value;}},escaped.state);
@@ -100,8 +101,8 @@ test('explicit full edition matches default career, practice, lab and terminal b
  const lab=act(s,{type:'lab-workspace',id:'receipt'});
  assert.deepEqual(runCommand(lab,'code /home/dev/code-lab/receipt.js','full'),runCommand(lab,'code /home/dev/code-lab/receipt.js'));
  assert.deepEqual(assist(createGame(),'prepare','full'),assist(createGame(),'prepare'));
- assert.equal(currentTask(s).app,'career');assert.equal(currentTask(s,'demo').id,'demo-complete');
- assert.equal(questProgress(s,'demo').kind,'cafe');assert.equal(questProgress(s).kind,'career');
+ assert.equal(currentTask(s).app,'career');assert.equal(currentTask(s,'demo').id,'demo-sample-accept');
+ assert.equal(questProgress(s,'demo').kind,'career');assert.equal(questProgress(s).kind,'career');
 });
 
 test('resolved copy destinations and imported ancestor repositories cannot expose private content',()=>{
@@ -134,10 +135,97 @@ test('all three café chapters and OPEN retain real commands, checks and rewards
  request=apiRequest(s,'POST','http://mono-server:8000/api/orders','{"item":"coffee","quantity":2}');assert.equal(request.status,201);s=request.state;
  s=act(s,{type:'test-result',hash:sourceHash(projectFiles(s)),checks:runCodeChecks(s)},'demo');s=assist(s,'publish','demo');
  assert.deepEqual(s.completed,[0,1,2]);assert.equal(s.credits,1720);assert.equal(s.xp,560);assert.equal(isDemoComplete(s),false);
- s=act(s,{type:'celebrate-opening'},'demo');assert.equal(isDemoComplete(s),true);assert.ok(s.badges.includes('동네 해결사'));
+ s=act(s,{type:'celebrate-opening'},'demo');assert.equal(isDemoCafeComplete(s),true);assert.equal(isDemoComplete(s),false);assert.ok(s.badges.includes('동네 해결사'));
  const again=act(s,{type:'celebrate-opening'},'demo');assert.equal(again.credits,s.credits);assert.deepEqual(again.badges,s.badges);
- assert.equal(currentTask(s,'demo').app,'achievements');assert.equal(questProgress(s,'demo').completed,4);
+ assert.equal(currentTask(s,'demo').app,'career');assert.equal(questProgress(s,'demo').completed,0);
  assert.equal(act(s,{type:'equip-cosmetic',id:'mint'},'demo').gameplay.equippedCosmetic,'mint');
  assert.deepEqual(s.gameplay.career,createGame().gameplay.career);assert.deepEqual(s.gameplay.lab,createGame().gameplay.lab);
  assert.deepEqual(s.gameplay.practice,createGame().gameplay.practice);assert.equal('edition' in s,false);
+});
+
+test('the demo sample unlocks only after cafe OPEN, tests changed orders, reloads and rewards once',()=>{
+ const job=CAREER_JOBS.find(j=>j.id===DEMO_SAMPLE_JOB)!;
+ const initial=createGame(),accept:Action={type:'career-accept',id:DEMO_SAMPLE_JOB};
+ unchangedContent(initial,act(initial,accept,'demo'));
+ let s=afterCafe();assert.equal(isDemoCafeComplete(s),true);assert.equal(isDemoComplete(s),false);
+ assert.equal(currentTask(s,'demo').app,'career');assert.equal(currentTask(s,'demo').id,'demo-sample-accept');
+ s=act(s,accept,'demo');assert.deepEqual(s.gameplay.career.accepted,[DEMO_SAMPLE_JOB]);
+ s=act(s,{type:'career-inspect',id:DEMO_SAMPLE_JOB},'demo');
+ s=act(s,{type:'career-test',id:DEMO_SAMPLE_JOB},'demo');assert.equal(s.gameplay.career.proofs[DEMO_SAMPLE_JOB]?.passed,false);
+ const credits=s.credits,xp=s.xp;
+ const early=act(s,{type:'career-deliver',id:DEMO_SAMPLE_JOB,choice:'care'},'demo');
+ assert.equal(isDemoComplete(early),false);assert.equal(early.credits,credits);
+ for(const [file,content] of Object.entries(exampleSolution(DEMO_SAMPLE_JOB)))s=act(s,{type:'career-edit',id:DEMO_SAMPLE_JOB,file,content},'demo');
+ s=act(s,{type:'career-test',id:DEMO_SAMPLE_JOB},'demo');assert.equal(s.gameplay.career.proofs[DEMO_SAMPLE_JOB]?.passed,true);
+ s=readSave(JSON.stringify(s));assert.equal(currentTask(s,'demo').id,'demo-sample-deliver');
+ s=act(s,{type:'career-deliver',id:DEMO_SAMPLE_JOB,choice:'care'},'demo');
+ assert.equal(isDemoComplete(s),true);assert.equal(s.credits,credits+job.credits);assert.equal(s.xp,xp+job.xp);
+ assert.equal(currentTask(s,'demo').id,'demo-complete');
+ const once=act(s,{type:'career-deliver',id:DEMO_SAMPLE_JOB,choice:'care'},'demo');assert.equal(once.credits,s.credits);assert.equal(once.xp,s.xp);
+ const restored=readSave(JSON.stringify(once));assert.equal(isDemoComplete(restored),true);assert.deepEqual(careerFiles(restored,DEMO_SAMPLE_JOB),careerFiles(s,DEMO_SAMPLE_JOB));
+ assert.equal(isDemoComplete(createGame()),false);
+});
+
+test('sample paths resolve within one contract only and cannot expose paid imported folders or bypass OPEN',()=>{
+ const s=afterCafe(),root='/home/dev/jobs/'+DEMO_SAMPLE_JOB;
+ for(const path of [root,root+'/pricing.json','~/jobs/'+DEMO_SAMPLE_JOB+'/solution.js','../jobs/'+DEMO_SAMPLE_JOB+'/pricing.json']){
+  assert.equal(editionAllowsPath('demo',path,'/home/dev/menu-site',s),true,path);
+  assert.equal(editionAllowsPath('demo',path,'/home/dev/menu-site',createGame()),false,path);
+ }
+ for(const path of ['/home/dev/jobs',root+'-extra/file',root+'/../library-loans/policy.json',root+'/../../studio/launch/index.html']){
+  assert.equal(editionAllowsPath('demo',path,'/home/dev',s),false,path);
+ }
+ const imported=fullSave();imported.gameplay.openingCelebrated=false;
+ for(const command of ['cat '+root+'/pricing.json','code '+root+'/pricing.json','ls '+root]){
+  const result=runCommand(imported,command,'demo');assert.equal(result.error,true,command);unchangedContent(imported,result.state);
+ }
+ const completed=fullSave();
+ for(const job of CAREER_JOBS.filter(j=>j.id!==DEMO_SAMPLE_JOB)){
+  for(const action of [{type:'career-accept',id:job.id},{type:'career-test',id:job.id},{type:'career-deliver',id:job.id,choice:'care'}] as Action[]){
+   const result=act(completed,action,'demo');assert.equal(result.notice,DEMO_LOCKED_MESSAGE);unchangedContent(completed,result);
+  }
+ }
+});
+
+test('demo sample supports authored JavaScript and its own terminal checks while paid runtimes remain locked',()=>{
+ let s=afterCafe();s=act(s,{type:'career-accept',id:DEMO_SAMPLE_JOB},'demo');
+ s=act(s,{type:'career-inspect',id:DEMO_SAMPLE_JOB},'demo');
+ s=act(s,{type:'career-code-mode',id:DEMO_SAMPLE_JOB,mode:'javascript'},'demo');
+ const source='function solve(input) { const packs = Math.floor(input.quantity / 6); const remainder = input.quantity % 6; return packs * 10000 + remainder * 1800; }';
+ s=act(s,{type:'career-edit',id:DEMO_SAMPLE_JOB,file:'solution.js',content:source},'demo');
+ s=runCommand(s,'sudo apt update','demo').state;s=runCommand(s,'sudo apt install nodejs','demo').state;
+ const root='/home/dev/jobs/'+DEMO_SAMPLE_JOB;
+ const entered=runCommand(s,'cd '+root,'demo');assert.equal(entered.error,false);s=entered.state;
+ const listing=runCommand(s,'ls','demo');assert.equal(listing.error,false);assert.match(listing.output,/solution.js/);
+ const result=runCommand(s,'node --test solution.js','demo');assert.equal(result.error,false,result.output);s=result.state;
+ assert.equal(s.gameplay.career.proofs[DEMO_SAMPLE_JOB]?.passed,true);assert.equal(currentTask(s,'demo').id,'demo-sample-deliver');
+ assert.equal(runCommand(s,'node --test ../library-loans/solution.js','demo').error,true);
+ assert.equal(runCommand(s,'node --test /home/dev/code-lab/receipt.test.cjs','demo').error,true);
+ const credits=s.credits;s=act(s,{type:'career-deliver',id:DEMO_SAMPLE_JOB,choice:'care'},'demo');assert.equal(isDemoComplete(s),true);
+ assert.equal(act(s,{type:'career-deliver',id:DEMO_SAMPLE_JOB,choice:'care'},'demo').credits,s.credits);assert.ok(s.credits>credits);
+});
+
+test('demo Python file access respects edition paths inside an imported virtual filesystem',()=>{
+ const s=afterCafe(),m=s.machines.local;
+ m.tools.push('python3');m.cwd='/home/dev';
+ m.files['/home/dev/note.txt']='public note';
+ m.files['/home/dev/jobs/bakery-price/pricing.json']='sample pricing';
+ const privatePaths=['jobs/library-loans/policy.json','studio/launch/index.html','automation/receipt/data.csv','database/query/orders.csv','code-lab/receipt.js'];
+ for(const relative of privatePaths){
+  m.files['/home/dev/'+relative]='full edition fixture';
+  for(const path of [relative,'/home/dev/'+relative]){
+   const command=`python3 -c "print(open('${path}').read())"`;
+   const result=runCommand(s,command,'demo');
+   assert.equal(result.error,true,path);assert.doesNotMatch(result.output,/full edition fixture/);
+   unchangedContent(s,result.state);
+   assert.equal(runCommand(s,command,'full').output,'full edition fixture');
+  }
+ }
+ for(const [path,expected] of [['note.txt','public note'],['jobs/bakery-price/pricing.json','sample pricing']]){
+  const result=runCommand(s,`python3 -c "print(open('${path}').read())"`,'demo');
+  assert.equal(result.error,false,result.output);assert.equal(result.output,expected);
+ }
+ const before=structuredClone(s);before.gameplay.openingCelebrated=false;
+ const locked=runCommand(before,`python3 -c "print(open('jobs/bakery-price/pricing.json').read())"`,'demo');
+ assert.equal(locked.error,true);assert.doesNotMatch(locked.output,/sample pricing/);
 });

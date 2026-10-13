@@ -2,10 +2,12 @@ import {dirtyFiles,projectFiles,sourceHash,type GameState} from './engine.ts';
 import {lessonFacts} from './lesson.ts';
 import {PROJECT,REPO_URL,MISSIONS} from './content.ts';
 import {setupReadiness} from './setup.ts';
-import {careerCurrent,careerFresh,careerNext} from './career.ts';
+import {careerCurrent,careerFresh,careerNext,careerFiles} from './career.ts';
+import {careerCodeModeSafe} from './career-code.ts';
 import {careerRouteReady} from './career-progress.ts';
 import {releaseFresh,releaseBuildFresh} from './release.ts';
 import type {Localized} from './career-content.ts';
+import {DEMO_SAMPLE_JOB,isDemoCafeComplete,isDemoComplete} from './edition.ts';
 
 export type Task={id:string;phase:number;title:string;detail:string;app:'career'|'messages'|'browser'|'computer'|'editor'|'terminal'|'server'|'api'|'achievements';command?:string;url?:string;file?:string;find?:string;discover?:boolean;next?:boolean;localized?:{title:Localized;detail:Localized}};
 export const PHASES=['의뢰 읽기','작업 준비','문제 고치기','결과 확인','의뢰 전달'];
@@ -24,7 +26,15 @@ function upload(s:GameState,phase:number):Task|null{
  return null;
 }
 export function currentTask(s:GameState,edition:import('./edition.ts').GameEdition='full'):Task{
- if(edition==='demo'&&s.gameplay.openingCelebrated)return step('demo-complete',5,'카페 데모 완료!','완성한 카페를 다시 살펴보거나 설정에서 저장 파일을 백업하세요.','achievements');
+ if(edition==='demo'&&isDemoCafeComplete(s)){
+  const l=(ko:string,en:string,ja:string)=>({ko,en,ja}),c=s.gameplay.career,file=careerCodeModeSafe(careerFiles(s,DEMO_SAMPLE_JOB))==='javascript'?'solution.js':'pricing.json';
+  const sample=(id:string,phase:number,title:Localized,detail:Localized,app:Task['app']='career'):Task=>({id,phase,title:title.ko,detail:detail.ko,app,...(phase>=2&&phase<4?{file}:{}),localized:{title,detail}});
+  if(isDemoComplete(s))return sample('demo-complete',5,l('카페와 첫 고객 의뢰 완료!','Café and first client case complete!','カフェと最初の顧客の依頼をクリア！'),l('새벽빵집에도 고친 파일과 답장을 전달했어요. 작업을 돌아보거나 설정에서 저장 파일을 백업하세요.','Your repaired files and reply reached Dawn Bakery too. Revisit your work or back up your save in Settings.','夜明けベーカリーにも修正したファイルと返事を届けました。仕事を振り返ったり設定でセーブを保存できます。'),'achievements');
+  if(!c.accepted.includes(DEMO_SAMPLE_JOB))return sample('demo-sample-accept',0,l('첫 새 고객: 새벽빵집의 부탁','First new client: Dawn Bakery','最初の新しい顧客：夜明けベーカリー'),l('카페를 연 소문이 퍼졌어요. 여섯 개 상자 가격이 틀린 새벽빵집의 파일을 받아 독립 의뢰에 도전하세요.','Word of the café’s opening has spread. Take Dawn Bakery’s files and solve its incorrect six-roll box pricing.','カフェ開店のうわさが広まりました。夜明けベーカリーのファイルを受け取り、6個箱の価格の間違いを解決しましょう。'));
+  if(!c.inspected.includes(DEMO_SAMPLE_JOB))return sample('demo-sample-inspect',1,l('상자와 낱개 가격 비교하기','Compare box and single prices','箱と単品の価格を比べる'),l('현재 결과를 0개, 6개, 8개 주문과 비교하고 문제 확인을 누르세요.','Compare the current output for zero, six and eight rolls, then confirm your inspection.','0個・6個・8個の今の結果を比べ、確認ボタンを押しましょう。'));
+  if(!careerFresh(s,DEMO_SAMPLE_JOB))return sample('demo-sample-edit',2,l('내 가격 설정을 고치고 검사하기','Repair your pricing and run checks','価格設定を直して検査する'),l('pricing.json을 직접 수정하거나 JavaScript 함수로 해결하세요. 다른 주문에서도 맞는지 검사하고, 막히면 힌트를 여세요.','Edit pricing.json or solve it with a JavaScript function. Check changed orders; open a hint if you need a clue.','pricing.jsonを直接直すかJavaScript関数で解決します。別の注文でも検査し、困ったらヒントを開きましょう。'));
+  return sample('demo-sample-deliver',4,l('해나에게 결과와 답장 전달하기','Deliver your result and reply to Hana','ハナに結果と返事を届ける'),l('검사를 통과했어요. 고객에게 보낼 답장을 고르고 직접 만든 파일을 전달하세요.','Your checks passed. Choose a client reply and deliver your repaired files.','検査に合格しました。返信を選び、自分で直したファイルを届けましょう。'));
+ }
  if(s.gameplay.openingCelebrated){
   const c=s.gameplay.career,job=careerCurrent(s),next=careerNext(s);
   const career=(id:string,phase:number,title:Localized,detail:Localized):Task=>({id,phase,title:title.ko,detail:detail.ko,app:'career',localized:{title,detail}});

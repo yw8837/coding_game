@@ -58,7 +58,12 @@ test('python3 runs the player script, shows a CPython-like error, then completes
  s=commands(s,['cd '+folder]);
  assert.match(run(s,'python3 receipt.py').output,/python3: command not found/);
  s=withTools(s);s=commands(s,['cd '+folder]);
- const broken=run(s,'python3 receipt.py');assert.equal(broken.error,true);assert.match(broken.output,/Croissant x3 = 3,503/);assert.match(broken.output,/── 의뢰 검사 ──\n✘ 공개 데이터: 1번째 줄이 달라요\n {2}기대: Croissant x3 = 10,500\n {2}실제: Croissant x3 = 3,503\n힌트: /);
+ const broken=run(s,'python3 receipt.py');assert.equal(broken.error,true);assert.match(broken.output,/Croissant x3 = 3,503/);assert.match(broken.output,/── 의뢰 검사 ──\n✘ 공개 데이터: 1번째 줄이 달라요\n {2}기대: Croissant x3 = 10,500\n {2}실제: Croissant x3 = 3,503/);
+ for(const lang of ['ko','en','ja'] as const){
+  const output=translateTerminalOutput('python3 receipt.py',broken.output,lang);
+  assert.doesNotMatch(output,/힌트:|Hint:|ヒント[:：]/);
+  for(const hint of job.hints)assert.ok(!output.includes(hint[lang]),'Failed runs must not open hints');
+ }
  assert.equal(broken.state.gameplay.ops.completed.length,0);assert.equal(broken.state.gameplay.ops.runs[job.id].passed,false);
  assert.match(translateTerminalOutput('python3 receipt.py',broken.output,'en'),/── Job check ──\n✘ visible data: line 1 differs\n {2}expected: Croissant x3 = 10,500/);
  const hardcoded=edit(broken.state,folder+'/receipt.py',runPython(job.reference,{files:job.data[0]}).stdout.split('\n').filter(Boolean).map(line=>`print(${JSON.stringify(line)})`).join('\n'));

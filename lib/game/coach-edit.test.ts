@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {act,createGame,projectFiles,calculateTotal} from './engine.ts';
 import {assist} from './assisted.ts';
-import {coachEdit,coachEditIssue,type CoachEdit} from './coach-edit.ts';
+import {coachEdit,coachEditIssue,coachDraftEdit,coachRepairSelection,type CoachEdit} from './coach-edit.ts';
 import {coachStage} from './coach.ts';
 
 test('novice edits write typed values to actual files without granting completion or replacing other work',()=>{
@@ -55,4 +55,31 @@ test('math-class multiply signs and a missing leading slash get a named reason b
  assert.equal(projectFiles(s)['server.py'],server);
  for(const value of ['/api/menu','/api menu','',' '])assert.equal(coachEditIssue('route',value),null);
  for(const [key,value] of [['sign','x'],['size','x'],['keep','x']] as [CoachEdit,string][])assert.equal(coachEditIssue(key,value),null);
+});
+
+test('repair buttons cannot change a source file until the player authors a different draft',()=>{
+ const s=assist(createGame(),'prepare'),before=projectFiles(s);
+ for(const stage of ['sign','size','rule','route','keep'] as const){
+  const file=stage==='sign'?'index.html':stage==='size'?'style.css':stage==='rule'?'app.js':'server.py';
+  assert.equal(coachDraftEdit(s,stage,before[file]),null);
+  const selection=coachRepairSelection(stage,before[file]);assert.ok(selection);
+  assert.deepEqual(projectFiles(s),before);
+ }
+ assert.equal(coachDraftEdit(s,'trial','anything'),null);
+ assert.equal(coachDraftEdit(createGame(),'sign','anything'),null);
+ assert.equal(coachDraftEdit(s,'sign','x'.repeat(60001)),null);
+});
+
+test('authored source preserves alternate solutions and uses behavioral checks instead of answer tokens',()=>{
+ let s=assist(createGame(),'prepare');s.mission=1;s.gameplay.inspected.push(1);
+ s=act(s,{type:'edit',path:'app.js',content:'function calculateTotal(price, quantity) { return price + quantity; }'});
+ const source='// a different implementation\nfunction calculateTotal(price, quantity) { const cups = quantity; const amount = cups * price; return amount; }';
+ const action=coachDraftEdit(s,'rule',source);assert.ok(action);
+ assert.equal(action.content,source);s=act(s,action);
+ assert.equal(calculateTotal(projectFiles(s)['app.js'],5000,2),10000);
+ assert.equal(calculateTotal(projectFiles(s)['app.js'],4500,0),0);
+ assert.equal(coachStage(s),'serve');assert.deepEqual(s.completed,[]);
+ assert.equal(coachDraftEdit(s,'rule',source),null);
+ const wrong=coachDraftEdit(s,'rule',source.replace('cups * price','cups + price'));assert.ok(wrong);
+ s=act(s,wrong);assert.equal(coachStage(s),'rule');
 });

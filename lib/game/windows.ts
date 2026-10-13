@@ -3,14 +3,31 @@ export type Bounds={width:number;height:number};
 export type Rect={x:number;y:number;width:number;height:number};
 export type WindowState=Rect&{id:string;minimized:boolean;closed?:boolean;mode:'normal'|'maximized'|'left'|'right'};
 export type ResizeDir='e'|'w'|'s'|'n'|'se'|'sw'|'ne'|'nw';
+const WINDOW_MIN_SIZE={width:380,height:280} as const;
 export function fitWindow(rect:Rect,b:Bounds):Rect{
- const width=Math.min(Math.max(380,rect.width),Math.max(1,b.width));
- const height=Math.min(Math.max(280,rect.height),Math.max(1,b.height));
+ const width=Math.min(Math.max(WINDOW_MIN_SIZE.width,rect.width),Math.max(1,b.width));
+ const height=Math.min(Math.max(WINDOW_MIN_SIZE.height,rect.height),Math.max(1,b.height));
  return {width,height,x:Math.max(0,Math.min(rect.x,b.width-width)),y:Math.max(0,Math.min(rect.y,b.height-height))};
 }
+
+/** Restore the stored normal size under a dragged titlebar without changing its resize limits. */
+export function restoreDraggedWindow(w:WindowState,x:number,y:number,ratio:number,b:Bounds):Rect{
+ const size=fitWindow(w,b);
+ return fitWindow({...size,x:Math.round(x-size.width*Math.max(0,Math.min(1,ratio))),y:Math.round(y-19)},b);
+}
+/** App-order cycling avoids reversing direction when focus changes the stacking order. */
+export function cycleWindow(list:readonly WindowState[],current:string,order:readonly string[],reverse=false):string|null{
+ const ids=order.filter(id=>list.some(w=>w.id===id&&!w.closed));
+ if(!ids.length)return null;
+ const index=ids.indexOf(current);
+ if(index<0)return reverse?ids.at(-1)!:ids[0];
+ return ids[(index+(reverse?-1:1)+ids.length)%ids.length];
+}
 export function resizeWindow(rect:Rect,dx:number,dy:number,dir:ResizeDir,b:Bounds):Rect{
+ // A resize may begin just after zooming or shrinking the desktop.
+ rect=fitWindow(rect,b);
  let {x,y,width,height}=rect;
- const minW=Math.min(380,b.width),minH=Math.min(280,b.height);
+ const minW=Math.min(WINDOW_MIN_SIZE.width,b.width),minH=Math.min(WINDOW_MIN_SIZE.height,b.height);
  if(dir.includes('e'))width=Math.min(Math.max(minW,rect.width+dx),b.width-rect.x);
  if(dir.includes('s'))height=Math.min(Math.max(minH,rect.height+dy),b.height-rect.y);
  if(dir.includes('w')){const rawW=rect.width-dx,clampedW=Math.min(Math.max(minW,rawW),rect.x+rect.width);width=clampedW;x=rect.x+(rect.width-clampedW);}

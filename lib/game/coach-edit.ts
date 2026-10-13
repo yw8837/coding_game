@@ -1,4 +1,5 @@
 import {projectFiles,type Action,type GameState} from './engine.ts';
+import {coachRepair,type CoachStage} from './coach.ts';
 
 export type CoachEdit='sign'|'size'|'rule'|'route'|'keep';
 /** Direct controls edit one real source token; they never complete a mission. */
@@ -35,4 +36,18 @@ export function coachEditIssue(key:CoachEdit,value:string):CoachEditIssue|null {
  if(key==='rule'&&['×','x','X','✕'].includes(typed))return 'multiply-sign';
  if(key==='route'&&typed&&!typed.startsWith('/'))return 'route-slash';
  return null;
+}
+
+/** Saving a repair never chooses an answer: the submitted source is the player's complete draft. */
+export function coachDraftEdit(state:GameState,stage:CoachStage,draft:string):Extract<Action,{type:'edit'}>|null {
+ const repair=coachRepair(stage);if(!repair||typeof draft!=='string'||draft.length>60000)return null;
+ const source=projectFiles(state)[repair.file];
+ if(source===undefined||source===draft)return null;
+ return {type:'edit',path:repair.file,content:draft};
+}
+/** Locating selects existing source only, so it works without writing a solution. */
+export function coachRepairSelection(stage:CoachStage,source:string):[number,number]|null {
+ const pattern=stage==='sign'?/<h1\b[^>]*>([^<]*)<\/h1>/i:stage==='size'?/\.menu-grid\s*\{[^}]*?\bwidth\s*:\s*([^;]+)/:stage==='rule'?/return\s+([^;\n}]+)/:stage==='route'?/^MENU_PATH\s*=\s*(.*)$/m:stage==='keep'?/^SAVE_ORDERS\s*=\s*(.*)$/m:null;
+ const match=pattern?.exec(source);if(!match)return null;
+ const start=match.index+match[0].lastIndexOf(match[1]);return [start,start+match[1].length];
 }

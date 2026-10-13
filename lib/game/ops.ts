@@ -52,7 +52,7 @@ function report(s:GameState,job:OpsJob,source:string,mismatch:Mismatch|null,show
   lines.push(`✔ ${datasetLabel(i)} 결과 일치`);
  }
  ops.runs[job.id]={hash:opsHash(source),passed,output:shownStdout.slice(0,MAX_RUN_OUTPUT)};
- if(!passed){const hint=job.hints[Math.min(job.hints.length-1,1)];lines.push('힌트: '+hint.ko);return lines;}
+ if(!passed)return lines;
  if(ops.completed.includes(job.id)){lines.push('★ 이미 완료한 의뢰예요. 마음껏 더 고쳐 보세요.');return lines;}
  ops.completed.push(job.id);s.credits+=job.credits;s.xp+=job.xp;
  lines.push(`★ 의뢰 완료! +${job.credits} cr · +${job.xp} XP`);
@@ -80,12 +80,12 @@ function pythonMismatch(job:PythonJob,source:string):Mismatch|null{
  return null;
 }
 /** Files visible to a script: everything under its working directory, by relative and absolute path. */
-function scriptFiles(s:GameState,cwd:string):Record<string,string>{
+function scriptFiles(s:GameState,cwd:string,canRead:(path:string)=>boolean):Record<string,string>{
  const files:Record<string,string>={},prefix=cwd==='/'?'/':cwd+'/';
- for(const [path,content] of Object.entries(s.machines[s.machine].files))if(path.startsWith(prefix)){files[path.slice(prefix.length)]=content;files[path]=content;}
+ for(const [path,content] of Object.entries(s.machines[s.machine].files))if(path.startsWith(prefix)&&canRead(path)){files[path.slice(prefix.length)]=content;files[path]=content;}
  return files;
 }
-export function dispatchPython(s:GameState,args:readonly string[],resolve:(cwd:string,path:string)=>string):{output:string;error:boolean}{
+export function dispatchPython(s:GameState,args:readonly string[],resolve:(cwd:string,path:string)=>string,canRead:(path:string)=>boolean=()=>true):{output:string;error:boolean}{
  const m=s.machines[s.machine];
  if(!args.length)return {output:'Python 3.12.0 [simulated]\n대화형 모드 대신 python3 파일.py 또는 python3 -c "코드"를 사용하세요.',error:false};
  let source:string,filename='<string>',path:string|null=null;
@@ -95,7 +95,7 @@ export function dispatchPython(s:GameState,args:readonly string[],resolve:(cwd:s
   if(content===undefined)return {output:`python3: can't open file '${path}': [Errno 2] No such file or directory`,error:true};
   source=content;filename=args[0].split('/').at(-1)!;
  }
- const run=runPython(source,{files:scriptFiles(s,m.cwd),filename});
+ const run=runPython(source,{files:scriptFiles(s,m.cwd,canRead),filename});
  const parts=[run.stdout.replace(/\n$/,'')];
  if(run.error)parts.push(formatPyError(run.error,filename));
  let output=parts.filter(part=>part!=='').join('\n'),error=!run.ok;

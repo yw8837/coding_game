@@ -6,6 +6,7 @@ import {useLanguage,type Language} from '@/lib/game/i18n';
 import {opsJobs,opsFolder,opsDataFiles,type OpsJob,type OpsScene} from '@/lib/game/ops-content';
 import {createOps,opsDone,opsHash,opsJobUnlocked,opsTrackUnlocked,SQL_UNLOCK_PYTHON} from '@/lib/game/ops';
 import {runPython} from '@/lib/game/py-runtime';
+import {workCommandSeen} from '@/lib/game/work-context';
 import {executeSql,formatSqlCell} from '@/lib/game/sql-engine';
 import type {GameProps} from './types';
 
@@ -208,24 +209,27 @@ const sceneTitle=(scene:OpsScene,tr:Tr)=>({
 function World({job,accepted,completed,passed,stale,missing,current,goal,start,nextCommand,onQueue,tr,lang}:{job:OpsJob;accepted:boolean;completed:boolean;passed:boolean;stale:boolean;missing:boolean;current:Outcome|null;goal:Outcome;start:Outcome;nextCommand:string;onQueue:(command:string)=>void;tr:Tr;lang:Language}){
  const [view,setView]=useState<'now'|'goal'>('now');
  const mode:Mode=view==='goal'?'goal':current?'live':'idle',out=view==='goal'?goal:current??start;
- const match=!!current&&sameResult(job,current,goal),status=completed?'done':current?'live':'idle';
+ const match=!!current&&sameResult(job,current,goal),verified=completed&&passed&&!stale&&!missing&&match;
+ const status=verified?'done':current?'live':'idle';
  const chip=status==='done'?tr('완료','Delivered','納品済み'):status==='live'?tr('실시간','Live','ライブ'):tr('실행 전','Not run yet','未実行');
  const message=view==='goal'?tr('목표 화면이에요. 공개 데이터로 정답 코드를 돌린 결과예요.','This is the goal: the reference solution run on the visible data.','目標の画面です。公開データで正解コードを動かした結果です。')
   :!accepted?tr('의뢰를 수락하면 이 화면이 내 코드와 연결돼요.','Accept the job to connect this screen to your code.','依頼を受けるとこの画面があなたのコードとつながります。')
   :missing?tr('작업 파일이 사라졌어요. 아래 복구 버튼으로 되살릴 수 있어요.','The job file is missing. Use the restore button below to bring it back.','作業ファイルが消えました。下の復元ボタンで戻せます。')
   :!current?tr('지금은 고장 난 모습이에요. 터미널에서 처음 실행하는 순간부터 이 화면이 실시간으로 바뀌어요.','This is how it looks broken. From your first run in the terminal, this screen updates live.','今は壊れた状態です。ターミナルで最初に実行した瞬間から、この画面がリアルタイムで変わります。')
-  :completed?tr('납품 완료! 이제 이 화면은 당신의 코드로 움직여요.','Delivered! This screen now runs on your code.','納品完了！この画面はあなたのコードで動いています。')
+  :stale?tr('검사 후 코드를 바꿨어요. 현재 코드는 아직 검증되지 않았어요. 터미널에서 다시 실행하세요.','You changed the code after checking. Run it in the terminal to verify this version.','検査後にコードを変更しました。現在のコードをターミナルでもう一度実行して確認しましょう。')
+  :current.error?tr('지금 코드는 실행 오류가 있어요. 터미널에서 오류를 확인하세요.','The current code has a runtime error. Check the terminal for details.','現在のコードに実行エラーがあります。ターミナルで詳細を確認しましょう。')
+  :verified?tr('납품 완료! 이제 이 화면은 당신의 코드로 움직여요.','Delivered! This screen now runs on your code.','納品完了！この画面はあなたのコードで動いています。')
   :match&&(stale||!passed)?(stale?tr('공개 데이터에서는 목표와 똑같아요! 터미널에서 다시 실행해 납품하세요.','It matches the goal on the visible data! Run it again in the terminal to deliver.','公開データでは目標と同じです！ターミナルでもう一度実行して納品しましょう。'):tr('공개 데이터는 맞지만 숨은 데이터에서 달라요. 터미널의 ✘ 줄을 확인하세요.','The visible data matches, but a hidden dataset differs. Check the ✘ line in the terminal.','公開データは合っていますが、隠しデータで違います。ターミナルの✘行を確認しましょう。'))
   :tr('아직 목표와 달라요. 주황색으로 표시된 부분을 고쳐 보세요.','Not matching the goal yet. Fix the parts marked in amber.','まだ目標と違います。オレンジ色の部分を直しましょう。');
  return <section className={'ops-world is-'+status+(mode==='idle'?' is-idle':'')} aria-label={sceneTitle(job.scene,tr)}>
   <header className="ops-world-head"><h3><Sparkles size={15} aria-hidden="true"/>{sceneTitle(job.scene,tr)}</h3><span className="ops-live"><i aria-hidden="true"/>{chip}</span></header>
   <div className="ops-view" role="group" aria-label={tr('화면 보기','Screen view','画面の表示')}><button type="button" aria-pressed={view==='now'} onClick={()=>setView('now')}>{current?tr('지금 내 코드','My code now','今のコード'):tr('지금 (고장)','Now (broken)','今（故障中）')}</button><button type="button" aria-pressed={view==='goal'} onClick={()=>setView('goal')}>{tr('목표','Goal','目標')}</button></div>
   <div className="ops-stage">
-   <div className="ops-scene"><SceneView job={job} out={out} goal={goal} start={start} mode={mode} done={completed} tr={tr} lang={lang}/></div>
+   <div className="ops-scene"><SceneView job={job} out={out} goal={goal} start={start} mode={mode} done={verified} tr={tr} lang={lang}/></div>
    {out.error&&mode!=='idle'&&job.scene!=='notices'&&<p className="ops-scene-error">{out.error}</p>}
    {mode==='idle'&&accepted&&!missing&&<button type="button" className="ops-teaser" onClick={()=>onQueue(nextCommand)}><Play size={22} aria-hidden="true"/><span><b>{tr('터미널에서 실행하면 여기가 바뀌어요','Run it in the terminal and this comes alive','ターミナルで実行するとここが動き出します')}</b><small>{tr('다음 명령을 터미널에 넣기','Put the next command in the terminal','次のコマンドをターミナルに入れる')}</small><code>$ {nextCommand}</code></span></button>}
   </div>
-  <p className={'ops-world-status'+(completed||match?' is-match':'')} aria-live="polite">{message}</p>
+  <p className={'ops-world-status'+(verified?' is-match':'')} aria-live="polite">{message}</p>
  </section>;
 }
 
@@ -236,18 +240,20 @@ export function OpsLabView({props,track}:{props:GameProps;track:'python'|'sql'})
  const unlocked=opsTrackUnlocked(state,track),doneCount=opsDone(state,track);
  const [picked,setPicked]=useState(()=>(jobs.find(item=>opsJobUnlocked(state,item)&&!(state.gameplay.ops?.completed??[]).includes(item.id))??jobs[0]).id);
  const [hints,setHints]=useState<Record<string,number>>({});
- const job=jobs.find(item=>item.id===picked)??jobs[0];
+ const remembered=props.workSelections?.[track],selected=remembered?.kind==='ops'?remembered.id:picked;
+ const job=jobs.find(item=>item.id===selected)??jobs[0];
+ const pick=(id:string)=>{setPicked(id);props.onWorkContext?.({kind:'ops',id});};
  const folder=opsFolder(job),mainPath=folder+'/'+job.main,source=m.files[mainPath];
  const run=ops.runs[job.id],hasRun=!!run,accepted=ops.accepted.includes(job.id),completed=ops.completed.includes(job.id),jobOpen=opsJobUnlocked(state,job);
  const goal=useMemo(()=>outcome(job,job.reference),[job]);
  const start=useMemo(()=>outcome(job,job.files[job.main]??''),[job]);
  const current=useMemo(()=>hasRun&&source!==undefined?outcome(job,source):null,[job,source,hasRun]);
- const stale=!!run&&source!==undefined&&opsHash(source)!==run.hash,missing=accepted&&source===undefined;
+ const stale=!!run&&(source===undefined||opsHash(source)!==run.hash),missing=accepted&&source===undefined;
  const tool=job.track==='python'?'python3':'sqlite3',hasTool=m.tools.includes(tool),local=state.machine==='local',here=local&&m.cwd===folder;
  const dataName=opsDataFiles(job)[0],table=/FROM\s+(\w+)/i.exec(job.reference)?.[1]??'';
  const cdCommand=`cd ${home(folder)}`,runCommand=job.track==='python'?`python3 ${job.main}`:`sqlite3 ${job.db} < ${job.main}`;
- const nextCommand=!hasTool?(m.updated?`sudo apt install ${tool}`:'sudo apt update'):!local?'exit':!here?cdCommand:runCommand;
- const ran=(test:(command:string)=>boolean)=>state.history.some(entry=>entry.machine==='local'&&!entry.error&&test(entry.command.trim()));
+ const nextCommand=!local?'exit':!hasTool?(m.updated?`sudo apt install ${tool}`:'sudo apt update'):!here?cdCommand:runCommand;
+ const ran=(test:(command:string)=>boolean)=>workCommandSeen(state,folder,test);
  const steps:Step[]=[
   {label:tr('작업 폴더로 이동','Go to the job folder','作業フォルダーへ移動'),commands:[cdCommand],done:here},
   job.track==='python'?{label:tr('데이터 먼저 살펴보기','Look at the data first','まずデータを見る'),commands:[`cat ${dataName}`],done:ran(command=>/^(cat|head|tail|less|more)\s/.test(command)&&command.includes(dataName))}
@@ -287,7 +293,7 @@ export function OpsLabView({props,track}:{props:GameProps;track:'python'|'sql'})
 
  return <div className="ops-lab" data-no-translate data-track={track} data-testid={'ops-lab-'+track}>{header}
   <div className="ops-layout">
-   <nav className="ops-jobs" aria-label={tr('의뢰 목록','Jobs','依頼一覧')}><ol>{jobs.map((item,index)=>{const phase=status(item);return <li key={item.id}><button type="button" data-testid={'ops-job-'+item.id} aria-current={item.id===job.id?'true':undefined} className={'ops-job is-'+phase} onClick={()=>setPicked(item.id)}>
+   <nav className="ops-jobs" aria-label={tr('의뢰 목록','Jobs','依頼一覧')}><ol>{jobs.map((item,index)=>{const phase=status(item);return <li key={item.id}><button type="button" data-testid={'ops-job-'+item.id} aria-current={item.id===job.id?'true':undefined} className={'ops-job is-'+phase} onClick={()=>pick(item.id)}>
     <span className="ops-job-mark" aria-hidden="true">{phase==='done'?<Check size={13}/>:phase==='locked'?<Lock size={12}/>:index+1}</span>
     <span><strong>{item.title[lang]}</strong><small>{item.client[lang]} · {statusText[phase]}</small></span>
    </button></li>;})}</ol></nav>
@@ -306,14 +312,14 @@ export function OpsLabView({props,track}:{props:GameProps;track:'python'|'sql'})
       <header>{avatar(job.client[lang])}<div><small>{tr('고객의 답장','Client reply','お客さんの返事')}</small><strong>{job.client[lang]}</strong></div></header>
       <blockquote>{job.thanks[lang]}</blockquote>
       <p className="ops-reward"><Coins size={16} aria-hidden="true"/>+{job.credits} cr · +{job.xp} XP</p>
-      {nextJob?<button type="button" className="primary-button" onClick={()=>setPicked(nextJob.id)}>{tr('다음 의뢰','Next job','次の依頼')}: {nextJob.title[lang]}<ChevronRight size={16} aria-hidden="true"/></button>
+      {nextJob?<button type="button" className="primary-button" onClick={()=>pick(nextJob.id)}>{tr('다음 의뢰','Next job','次の依頼')}: {nextJob.title[lang]}<ChevronRight size={16} aria-hidden="true"/></button>
        :trackDone&&<div className="ops-clear"><Trophy size={22} aria-hidden="true"/><p>{track==='python'?tr('STAGE 3 클리어! 동네의 반복 작업을 전부 자동화했어요.','STAGE 3 clear! You automated every chore in the neighborhood.','STAGE 3クリア！まちの繰り返し作業をすべて自動化しました。'):tr('STAGE 4 클리어! 이제 데이터에게 원하는 질문을 할 수 있어요.','STAGE 4 clear! Now you can ask data any question you want.','STAGE 4クリア！データに好きな質問ができるようになりました。')}</p>{track==='python'&&sqlOpen&&<button type="button" className="primary-button" onClick={()=>props.onOpen('sql')}>{tr('STAGE 4 · SQL 데이터베이스 열기','Open STAGE 4 · SQL database','STAGE 4 · SQLデータベースを開く')}</button>}</div>}
      </section>}
     </div>
 
     <div className="ops-work">
      {!accepted?<section className="ops-accept">
-      {jobOpen?<><p>{tr(`수락하면 내 PC의 ${home(folder)} 폴더에 작업 파일이 생겨요. 그다음부터는 터미널에서 일해요.`,`Accept to get the work files in ${home(folder)} on your PC. From there, you work in the terminal.`,`受けるとPCの${home(folder)}フォルダーに作業ファイルが届きます。そこからはターミナルで作業します。`)}</p><button type="button" className="primary-button ops-accept-button" data-testid="ops-accept" onClick={()=>onAction({type:'ops-accept',id:job.id})}><FolderDown size={18} aria-hidden="true"/>{tr('의뢰 수락 · 작업 폴더 받기','Accept job · get the work folder','依頼を受ける · 作業フォルダーを受け取る')}</button></>
+      {jobOpen?<><p>{tr(`수락하면 내 PC의 ${home(folder)} 폴더에 작업 파일이 생겨요. 그다음부터는 터미널에서 일해요.`,`Accept to get the work files in ${home(folder)} on your PC. From there, you work in the terminal.`,`受けるとPCの${home(folder)}フォルダーに作業ファイルが届きます。そこからはターミナルで作業します。`)}</p><button type="button" className="primary-button ops-accept-button" data-testid="ops-accept" onClick={()=>{props.onWorkContext?.({kind:'ops',id:job.id});onAction({type:'ops-accept',id:job.id});}}><FolderDown size={18} aria-hidden="true"/>{tr('의뢰 수락 · 작업 폴더 받기','Accept job · get the work folder','依頼を受ける · 作業フォルダーを受け取る')}</button></>
        :<p className="ops-muted"><Lock size={15} aria-hidden="true"/>{tr('바로 앞 의뢰를 끝내면 열려요.','Finish the previous job to unlock this one.','直前の依頼を終えると開きます。')}</p>}
      </section>:<>
       {!hasTool&&<section className="ops-panel ops-tools" aria-label={tr('도구 확인','Tool check','ツール確認')}><h3><Wrench size={16} aria-hidden="true"/>{tr(`도구 확인 · ${tool}이(가) 아직 없어요`,`Tool check · ${tool} is not installed yet`,`ツール確認 · ${tool}がまだありません`)}</h3><p className="ops-muted">{tr('가상 PC에만 설치돼요. 실제 컴퓨터에는 아무것도 설치되지 않아요.','It installs on the virtual PC only. Nothing is installed on your real computer.','仮想PCにだけインストールされます。実際のPCには何も入りません。')}</p>{stepList(toolSteps)}</section>}
@@ -324,8 +330,8 @@ export function OpsLabView({props,track}:{props:GameProps;track:'python'|'sql'})
        {!local&&<p className="ops-warn">{tr('터미널이 서버에 접속 중이에요. exit 로 내 PC로 돌아오세요.','The terminal is connected to the server. Type exit to return to your PC.','ターミナルはサーバーに接続中です。exitでPCに戻りましょう。')} <button type="button" className="ops-cmd" onClick={()=>queueCommand('exit')}><span aria-hidden="true">$</span><code>exit</code></button></p>}
        {stepList(steps)}
       </section>
-      {run&&<section className={'ops-panel ops-run '+(run.passed?'is-pass':'is-fail')} role="status" aria-live="polite">
-       <h3><span className="ops-badge">{run.passed?tr('통과','Passed','合格'):tr('다시 확인','Needs a fix','要修正')}</span>{run.passed?tr('3개 데이터 검사를 모두 통과했어요','All 3 dataset checks passed','3つのデータ検査にすべて合格'):tr('검사에서 다른 결과가 나왔어요','A check found a different result','検査で違う結果が出ました')}</h3>
+      {run&&<section className={'ops-panel ops-run '+(stale?'is-stale':run.passed?'is-pass':'is-fail')} role="status" aria-live="polite">
+       <h3><span className="ops-badge">{stale?tr('재검사 필요','Not checked','要再検査'):run.passed?tr('통과','Passed','合格'):tr('다시 확인','Needs a fix','要修正')}</span>{stale?tr('아래는 변경 전 코드의 실행 기록이에요','The output below is from the previous code','以下は変更前のコードの実行記録です'):run.passed?tr('3개 데이터 검사를 모두 통과했어요','All 3 dataset checks passed','3つのデータ検査にすべて合格'):tr('검사에서 다른 결과가 나왔어요','A check found a different result','検査で違う結果が出ました')}</h3>
        <pre>{run.output||tr('(출력 없음)','(no output)','(出力なし)')}</pre>
        {!run.passed&&<p className="ops-muted">{tr('어떤 데이터에서 무엇이 달랐는지는 터미널의 ✘ 줄에 나와요.','The ✘ line in the terminal shows which dataset differed and how.','どのデータで何が違ったかはターミナルの✘行に出ます。')}</p>}
        {stale&&<p className="ops-stale"><RotateCcw size={14} aria-hidden="true"/>{tr('파일이 바뀌었어요 · 다시 실행해 보세요','The file changed · run it again','ファイルが変わりました · もう一度実行しましょう')}<button type="button" className="ops-cmd" onClick={()=>queueCommand(runCommand)}><span aria-hidden="true">$</span><code>{runCommand}</code></button></p>}

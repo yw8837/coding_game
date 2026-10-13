@@ -28,9 +28,9 @@ export function resolveLanguage(preference:LanguagePreference,context:LanguageCo
  const browser=Array.isArray(context.browserLanguages)?context.browserLanguages:[];
  const preferred=os.length?os:browser;
  const tz=(context.timeZone||'').toLowerCase();
- const host=(context.hostname||'').toLowerCase();
- const isKoreaRegion=tz.includes('seoul')||host.endsWith('.kr')||host.includes('yeolmaeapps.kr');
- const isJapanRegion=tz.includes('tokyo')||host.endsWith('.jp');
+ // A website's domain describes its publisher, not the visitor's location.
+ const isKoreaRegion=tz==='asia/seoul';
+ const isJapanRegion=tz==='asia/tokyo';
  if(isKoreaRegion)return 'ko';
  if(isJapanRegion)return 'ja';
  for(const value of preferred){const supported=normalizeLanguage(value);if(supported)return supported;}
@@ -56,7 +56,8 @@ export function createLocaleStore(environment:LocaleEnvironment){
  const getContext=(browser:readonly string[]):LanguageContext=>{
   try{return {browserLanguages:browser,...(environment.clientContext?.()??{})};}catch{return {browserLanguages:browser};}
  };
- let preference:LanguagePreference='auto',language:Language=resolveLanguage('auto',getContext(browserLanguages())),revision=0,pending:AbortController|null=null;
+ // Server render and first client render must agree; restore detects after mount.
+ let preference:LanguagePreference='auto',language:Language='en',revision=0,pending:AbortController|null=null;
  const publish=(nextPreference:LanguagePreference,nextLanguage:Language)=>{
   preference=nextPreference;language=nextLanguage;
   // Also synchronize the host document's lang when the fallback is unchanged.

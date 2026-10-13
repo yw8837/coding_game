@@ -1,0 +1,26 @@
+{
+  "status": "planned-requires-new-build-capture",
+  "title": "Localhost Hero",
+  "durationSeconds": 36,
+  "sourceLanguages": ["en", "ko"],
+  "captureNotes": "Separate actual EN/KO UI recordings. Automated character input; retimed montage disclosed in evidence. Preserve originals.",
+  "music": {"title":"Realizer","artist":"Kevin MacLeod (incompetech.com)","license":"CC BY 4.0","source":"https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024","sha256":"6ec41cbd5fef962ec258492693c6cc050c6b27403dbbca1f42dd48af8eba409e","tempo":125},
+  "shots": [
+    {"id":"broken","duration":2,"en":"SIX ROLLS. WRONG TOTAL.","ko":"빵 여섯 개. 틀린 계산."},
+    {"id":"code","duration":5.5,"en":"WRITE THE FIX.","ko":"직접 코드를 고치고."},
+    {"id":"terminal-run","duration":2.5,"en":"RUN IT. CHECK THE TOTAL.","ko":"실행하고, 계산을 확인."},
+    {"id":"receipt-six","duration":2,"en":"THEIR TILL WORKS AGAIN.","ko":"다시 맞게 돌아가는 계산대."},
+    {"id":"receipt-eight","duration":1.5,"en":"TRY ANOTHER ORDER.","ko":"다른 주문도 정확하게."},
+    {"id":"terminal-pass","duration":2.5,"en":"TEST MORE THAN ONE ORDER.","ko":"다른 주문도 검사."},
+    {"id":"delivery","duration":2.5,"en":"DELIVER A WORKING FIX.","ko":"고친 결과를 고객에게."},
+    {"id":"cathub","duration":2.5,"en":"TRACK YOUR WORK IN CATHUB.","ko":"CatHub에 남는 작업 기록."},
+    {"id":"cafe-code","duration":2,"en":"START SMALL. WRITE REAL CHANGES.","ko":"작은 수정부터, 직접 작성."},
+    {"id":"project","duration":3.5,"en":"MAKE YOUR FIRST PROJECT.","ko":"이번엔, 내 첫 프로젝트."},
+    {"id":"project-filter","duration":2.5,"en":"TRY YOUR SEARCH AND FILTERS.","ko":"검색과 분류도 직접 확인."},
+    {"id":"release","duration":4,"en":"YOUR FIRST 1.0.0 RELEASE.","ko":"내 첫 1.0.0 배포."},
+    {"id":"title","duration":3,"en":"LOCALHOST HERO","ko":"로컬호스트 히어로"}
+  ],
+  "poster": {"width":1920,"height":1080,"source":"Extract exact frame from finished actual gameplay video, preferably visible corrected customer totals with little editorial text."},
+  "encode": {"width":1920,"height":1080,"fps":30,"video":"H.264 yuv420p","videoBitrateKbps":8000,"audio":"AAC","audioBitrateKbps":192},
+  "honesty": "In-game first release of a prepared project; no unrestricted webapp or professional-mastery promise. Terminal/CatHub are simulated. No pretend human typing."
+}

@@ -1,0 +1,90 @@
+{
+  "status": "draft-not-published",
+  "date": "2026-10-13",
+  "working_title": "Localhost Hero",
+  "official_names": {
+    "en": "Localhost Hero",
+    "ko": "로컬호스트 히어로",
+    "ja": "ローカルホスト・ヒーロー"
+  },
+  "korea_price_proposal_krw": 11000,
+  "launch_discount_proposal_percent": 20,
+  "discounted_korea_price_proposal_krw": 8800,
+  "languages": {
+    "ko": {
+      "short_description": "가상 PC에서 시작하는 개발자 이야기. 코드를 고치고 실행해 동네 사람들의 문제를 해결하세요. 의뢰로 번 크레딧으로 작업실을 꾸미고, 첫 프로젝트를 만들어 게임 안에서 1.0을 배포하세요.",
+      "short_description_characters": 105,
+      "long_description": "컴퓨터 한 대, 도착한 메시지 하나. 작은 카페가 당신의 도움이 필요합니다.\n\n로컬호스트 히어로는 가상의 바탕화면에서 파일을 고치고, 코드를 실행하고, 고객에게 결과를 전달하는 싱글 플레이 개발자 시뮬레이터입니다. 메시지, 브라우저, 편집기와 터미널을 열어 코드가 만드는 변화를 확인하세요.\n\n[b]고친 코드가 사람들에게 닿습니다[/b]\n\n카페 이름과 모바일 메뉴를 고치고, 잘못된 주문 금액을 바로잡고, 메뉴와 주문 API를 연결하세요. 뒤이어 빵집의 상자 가격, 도서 대출, 예약과 배송, 행사 보고서 등 동네의 18개 의뢰가 기다립니다. 현재 파일을 다른 상황에서 실행해 보고, 고객 화면과 검사 결과로 수정 내용을 확인하세요. 각 구역에서 6개 중 4개씩 골라 전달하면 마지막 프로젝트로 이어집니다.\n\n[b]직접 써 보고, 실행하고, 다시 고칩니다[/b]\n\n안내를 따라 한 부분씩 수정하거나 전체 파일을 편집하세요. 동네 의뢰 9개는 제한된 JavaScript 함수로도 해결할 수 있습니다. 별도 선택 콘텐츠에는 JavaScript 함수 실험실 12개, Python 자동화 의뢰 5개, SQL 조회 의뢰 5개와 규칙 연습 6개가 있습니다. 출력값, 다른 입력과 검사 결과를 비교하며 풀이를 다듬으세요. 게임 속 런타임은 지원되는 문법과 파일만 실행합니다.\n\n[b]내 작업실, 내 첫 출시[/b]\n\n의뢰로 번 크레딧으로 배경과 장비를 마련하세요. 최종 제작에서는 장소 안내, 행사 목록 또는 포트폴리오를 골라 준비된 프로젝트의 제목, 설명, 항목과 분류, 색과 배치를 작성합니다. 검색·분류·문의 기능을 미리보기와 검사로 확인한 뒤 게임 안에서 1.0.0을 배포하고, 지원되는 웹 결과물을 내보낼 수 있습니다. 동네 사람들에게 보낸 답장은 마지막 편지에 남습니다.\n\n[b]당신의 속도로[/b]\n\n힌트와 예시는 필요할 때 열 수 있으며 보상을 줄이지 않습니다. 실패에 시간 제한이나 크레딧 손실은 없습니다. 한국어·영어·일본어로 플레이하고, 로컬 저장으로 이어서 진행하세요. 이야기 진행과 모든 선택 실습 이수는 서로 다른 목표입니다."
+    },
+    "en": {
+      "short_description": "Start a developer's story on a virtual desktop. Write fixes, run code, and solve your neighbors' problems. Spend earned credits on your workspace, then create a first project and ship version 1.0 inside the game.",
+      "short_description_characters": 212,
+      "long_description": "One computer. One new message. A small cafe needs your help.\n\nLocalhost Hero is a single-player developer simulator on a virtual desktop. Open messages, a browser, an editor and a terminal. Repair files, run your code, and deliver results to the people who need them.\n\n[b]Your fixes make a visible difference[/b]\n\nRepair a cafe's name and mobile menu, correct its order totals, and connect its menu and order API. Then choose from 18 neighborhood jobs involving bakery prices, lending rules, bookings, deliveries and event reports. Run the current files against different situations and inspect the customer view and test results. Deliver four of six jobs in each district to reach your final project.\n\n[b]Write. Run. Check. Refine.[/b]\n\nFollow guided edits or work in the full file editor. Nine neighborhood jobs also accept a function written in a limited subset of JavaScript. Optional activities include 12 JavaScript function puzzles, five Python automation jobs, five SQL query jobs and six rule exercises. Compare outputs, different inputs and checks as you improve a solution. The in-game runtimes execute supported syntax and files within the simulation.\n\n[b]Your workspace. Your first release.[/b]\n\nUse earned credits to buy wallpapers and equipment. For your final project, choose a directory, event list or portfolio and edit its prepared project: title, description, entries, categories, colors and layout. Check search, filters and inquiries in the preview, ship version 1.0.0 inside the game, and export supported web outputs. Your replies to clients shape the final letter.\n\n[b]Play at your own pace[/b]\n\nOpen hints and examples when you need them without reducing rewards. Failed attempts carry no time limit or credit penalty. Play in Korean, English or Japanese and continue with local saves. Completing the story and finishing every optional activity are separate goals."
+    },
+    "ja": {
+      "short_description": "仮想デスクトップから始まる開発者の物語。コードを直して実行し、まちの人々の困りごとを解決しましょう。稼いだクレジットで作業場を整え、初めての作品をゲーム内で1.0として公開します。",
+      "short_description_characters": 90,
+      "long_description": "パソコン1台と、届いたメッセージ。小さなカフェがあなたの助けを待っています。\n\nローカルホスト・ヒーローは、仮想デスクトップでファイルを直し、コードを実行して、お客さんへ結果を届けるシングルプレイの開発者シミュレーターです。メッセージ、ブラウザー、エディター、ターミナルを開き、自分の修正で何が変わったかを確かめましょう。\n\n[b]コードの修正が、まちに届く[/b]\n\nカフェの名前とモバイルメニュー、注文金額、メニューと注文のAPIを修正します。その後はパンの価格、図書貸出、予約、配送、イベント報告など18件の依頼から仕事を選べます。異なる場面で実行し、お客さんの画面と検査結果を確認しましょう。各エリアの6件から4件ずつ提出すると、最後の作品へ進めます。\n\n[b]書いて、実行して、確かめる[/b]\n\nガイドに沿った部分修正と、ファイル全体の編集を選べます。まちの依頼9件では、限られたJavaScript構文で関数を書く方法も使えます。任意のコンテンツにはJavaScriptの関数パズル12個、Python自動化の依頼5件、SQL検索の依頼5件、ルールの練習6個があります。出力と異なる入力、検査結果を比べて解き方を調整しましょう。実行できる構文とファイルはゲーム内の対応範囲に限られます。\n\n[b]自分の作業場と、初めての公開[/b]\n\n稼いだクレジットで壁紙や機材を購入できます。最後は場所案内、イベント一覧、ポートフォリオのいずれかを選び、用意されたプロジェクトのタイトル、説明、項目、分類、色、レイアウトを編集します。検索、分類、問い合わせを確認して、ゲーム内で1.0.0を公開し、対応するWeb成果物を書き出せます。お客さんへの返事は最後の手紙に反映されます。\n\n[b]自分のペースで[/b]\n\nヒントや例は必要なときに開けて、報酬は減りません。失敗に時間制限やクレジットのペナルティはありません。韓国語、英語、日本語とローカル保存に対応しています。物語の完了と、任意の実習をすべて終えることは別の目標です。"
+    }
+  },
+  "content": {
+    "cafe_chapters": 3,
+    "career_jobs": 18,
+    "career_javascript_alternative_jobs": 9,
+    "optional_python_jobs": 5,
+    "optional_sql_jobs": 5,
+    "optional_javascript_labs": 12,
+    "optional_rule_practice": 6,
+    "total_tasks_excluding_alternative_modes": 49,
+    "career_jobs_required_for_story": 12,
+    "final_project": "Prepared directory, event-list or portfolio project; supported web exports; no arbitrary-app claim"
+  },
+  "steam_app_id": null,
+  "available_app_credits": 0,
+  "excluded_other_game_app_id": 5336990,
+  "new_promo_media_status": "final-en-ko-verified-not-uploaded",
+  "limits": [
+    "Actual Steam achievements and Cloud unverified",
+    "No separate low-spec minimum-spec measurement",
+    "No novice-learning or playtime guarantee",
+    "Japanese draft has no native-speaker review"
+  ],
+  "evidence_source": "C:/codex-workspaces/codeshift-release-20261012/output/curriculum-20261013/inventory.json",
+  "final_build_verification": "Parent agent confirmed final pnpm verify and desktop renderer build; trailer capture is independently bound to 2026-10-13T09:15:07.178Z served build",
+  "promo_media": {
+    "resolution": [
+      1920,
+      1080
+    ],
+    "attribution_file": "ATTRIBUTION.txt",
+    "directory": "D:/코딩게임/출시자료/출시마감-2026-10-13/영상",
+    "verification": "verification.json",
+    "audio_codec": "AAC",
+    "duration_seconds": 36,
+    "music": "Realizer — Kevin MacLeod (incompetech.com), CC BY4.0",
+    "actual_ui_languages": [
+      "en",
+      "ko"
+    ],
+    "video_codec": "H.264",
+    "files": [
+      "localhost-hero-gameplay-en-20261013.mp4",
+      "localhost-hero-gameplay-ko-20261013.mp4"
+    ],
+    "poster": "Exact completed-video corrected receipt frame at10.65sec, clean title frame at34sec",
+    "fps": 30,
+    "provenance_files": [
+      "localhost-hero-gameplay-en-provenance.json",
+      "localhost-hero-gameplay-ko-provenance.json"
+    ],
+    "source_build": "2026-10-13T09:15:07.178Z",
+    "capture": "Automated character input in actual game UI. Separate career, fresh cafe and supplemental matched-receipt takes; retimed montage, not continuous human play. No completion state injection.",
+    "video_bitrate_mbps": 8
+  },
+  "demo_scope": {
+    "new_demo_build_validation": "Parent owner handles final build/installer verification",
+    "after_open_sample": "Dawn Bakery — Six in a box",
+    "other_career_python_sql_finale": "Full edition",
+    "cafe_chapters": 3
+  }
+}

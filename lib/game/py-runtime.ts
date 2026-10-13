@@ -150,7 +150,9 @@ function excIs(type:string,base:string):boolean{let c:string|null=type;while(c){
 const ids=new WeakMap<object,number>();let nextId=1;
 function objectId(v:object):number{let id=ids.get(v);if(!id){id=nextId++;ids.set(v,id);}return id;}
 const address=(v:object)=>'0x'+(0x7f3a2c000000+objectId(v)*0x40).toString(16);
-function keyOf(v:Value):string{
+function keyOf(v:Value,state:{cache:Map<PyTuple,string>;visits:number}={cache:new Map(),visits:0},depth=0):string{
+ if(depth>LIMIT.depth)throw new PyLimit('RecursionError','maximum recursion depth exceeded (simulated Python limit)');
+ if(++state.visits>LIMIT.steps)throw limit('tuple key expansion grew too large');
  if(v===null)return 'N';
  switch(typeof v){
   case 'boolean':return v?'n1':'n0';
@@ -158,7 +160,12 @@ function keyOf(v:Value):string{
   case 'number':return Number.isInteger(v)?'n'+BigInt(v).toString():'f'+v;
   case 'string':return 's'+v;
  }
- if(v instanceof PyTuple)return 't'+JSON.stringify(v.items.map(keyOf));
+ if(v instanceof PyTuple){
+  const cached=state.cache.get(v);if(cached!==undefined)return cached;
+  const out=new BoundedText();out.append('t[');let first=true;
+  for(const x of v.items){if(!first)out.append(',');first=false;out.append(jsonStr(keyOf(x,state,depth+1),false));}
+  out.append(']');const key=out.finish();state.cache.set(v,key);return key;
+ }
  if(v instanceof PyList||v instanceof PyDict||v instanceof PySet)throw err('TypeError',`unhashable type: '${typeName(v)}'`);
  return 'o'+objectId(v);
 }
@@ -187,6 +194,18 @@ function intArg(v:Value):number{if(!isInt(v))throw err('TypeError',`'${typeName(
 function bigArg(v:Value):bigint{if(!isInt(v))throw err('TypeError',`'${typeName(v)}' object cannot be interpreted as an integer`);return toBig(v);}
 function checkBig(v:bigint):bigint{if(v>BIG_LIMIT||v< -BIG_LIMIT)throw limit('integer grew too large');return v;}
 function checkText(s:string):string{if(s.length>LIMIT.string)throw limit(`string grew past ${group(LIMIT.string)} characters`);return s;}
+
+/** Check growth before allocating the final text, including shared-container expansion. */
+class BoundedText{
+ length=0;private chunks:string[]=[];private pending:string[]=[];private pendingLength=0;
+ append(text:string){
+  if(text.length>LIMIT.string-this.length)throw limit(`string grew past ${group(LIMIT.string)} characters`);
+  this.length+=text.length;this.pending.push(text);this.pendingLength+=text.length;
+  if(this.pendingLength>=4096)this.flush();
+ }
+ private flush(){if(this.pending.length){this.chunks.push(this.pending.join(''));this.pending=[];this.pendingLength=0;}}
+ finish():string{this.flush();return this.chunks.join('');}
+}
 function checkItems(n:number){if(n>LIMIT.items)throw limit(`container grew past ${group(LIMIT.items)} items`);}
 function floorDiv(a:bigint,b:bigint):bigint{const q=a/b;return a%b!==ZERO&&(a<ZERO)!==(b<ZERO)?q-ONE:q;}
 function floorMod(a:bigint,b:bigint):bigint{const r=a%b;return r!==ZERO&&(r<ZERO)!==(b<ZERO)?r+b:r;}
@@ -209,43 +228,52 @@ function floatRepr(x:number):string{
  return sign+digits[0]+(digits.length>1?'.'+digits.slice(1):'')+'e'+(exp<0?'-':'+')+String(Math.abs(exp)).padStart(2,'0');
 }
 function strRepr(s:string):string{
- const q=s.includes("'")&&!s.includes('"')?'"':"'";let out=q;
+ const q=s.includes("'")&&!s.includes('"')?'"':"'",out=new BoundedText();out.append(q);
  for(const ch of s){
   const c=ch.codePointAt(0)!;
-  if(ch==='\\')out+='\\\\';else if(ch===q)out+='\\'+q;else if(ch==='\n')out+='\\n';else if(ch==='\r')out+='\\r';else if(ch==='\t')out+='\\t';
-  else if(c<0x20||(c>=0x7f&&c<0xa0))out+='\\x'+c.toString(16).padStart(2,'0');else out+=ch;
+  if(ch==='\\')out.append('\\\\');else if(ch===q)out.append('\\'+q);else if(ch==='\n')out.append('\\n');else if(ch==='\r')out.append('\\r');else if(ch==='\t')out.append('\\t');
+  else if(c<0x20||(c>=0x7f&&c<0xa0))out.append('\\x'+c.toString(16).padStart(2,'0'));else out.append(ch);
  }
- return out+q;
+ out.append(q);return out.finish();
 }
-function pyRepr(v:Value,seen:Set<object>=new Set()):string{
- if(v===null)return 'None';
- switch(typeof v){case 'boolean':return v?'True':'False';case 'bigint':return intStr(v);case 'number':return floatRepr(v);case 'string':return strRepr(v);}
- if(v instanceof PyList||v instanceof PyTuple||v instanceof PyDict||v instanceof PySet||v instanceof PyView){
-  if(seen.has(v))return v instanceof PyList?'[...]':v instanceof PyDict?'{...}':'(...)';
-  seen.add(v);
-  try{
-   const r=(x:Value)=>pyRepr(x,seen);
-   if(v instanceof PyList)return '['+v.items.map(r).join(', ')+']';
-   if(v instanceof PyTuple)return v.items.length===1?'('+r(v.items[0])+',)':'('+v.items.map(r).join(', ')+')';
-   if(v instanceof PyDict)return '{'+[...v.map.values()].map(([k,x])=>r(k)+': '+r(x)).join(', ')+'}';
-   if(v instanceof PySet)return v.map.size?'{'+v.values().map(r).join(', ')+'}':'set()';
-   const entries=[...v.dict.map.values()],shown=v.kind==='keys'?entries.map(([k])=>r(k)):v.kind==='values'?entries.map(([,x])=>r(x)):entries.map(([k,x])=>'('+r(k)+', '+r(x)+')');
-   return `dict_${v.kind}([${shown.join(', ')}])`;
-  }finally{seen.delete(v);}
- }
- if(v instanceof PyRange)return v.step===ONE?`range(${v.start}, ${v.stop})`:`range(${v.start}, ${v.stop}, ${v.step})`;
- if(v instanceof PySlice)return `slice(${pyRepr(v.lo)}, ${pyRepr(v.hi)}, ${pyRepr(v.step)})`;
- if(v instanceof PyFunc)return `<function ${v.name} at ${address(v)}>`;
- if(v instanceof PyBuiltin)return v.type?`<class '${v.type}'>`:v.owner?`<built-in method ${v.name} of ${v.owner} object at ${address(v)}>`:`<built-in function ${v.name}>`;
- if(v instanceof PyModule)return v.file?`<module '${v.name}' from '${v.file}'>`:`<module '${v.name}' (built-in)>`;
- if(v instanceof PyFile)return `<_io.TextIOWrapper name=${strRepr(v.name)} mode='r' encoding='utf-8'>`;
- if(v instanceof PyIter)return `<${v.name} object at ${address(v)}>`;
- return v.type+'('+v.args.map(x=>pyRepr(x,seen)).join(', ')+')';
+function pyRepr(v:Value,seen:Set<object>=new Set(),tick?:()=>void):string{
+ const out=new BoundedText();
+ const visit=(v:Value,depth:number):void=>{
+  tick?.();
+  if(depth>LIMIT.depth)throw new PyLimit('RecursionError','maximum recursion depth exceeded (simulated Python limit)');
+  if(v===null){out.append('None');return;}
+  switch(typeof v){
+   case 'boolean':out.append(v?'True':'False');return;
+   case 'bigint':out.append(intStr(v));return;
+   case 'number':out.append(floatRepr(v));return;
+   case 'string':out.append(strRepr(v));return;
+  }
+  const each=(values:Iterable<Value>)=>{let first=true;for(const x of values){if(!first)out.append(', ');first=false;visit(x,depth+1);}};
+  if(v instanceof PyList||v instanceof PyTuple||v instanceof PyDict||v instanceof PySet||v instanceof PyView||v instanceof PyExc){
+   if(seen.has(v)){out.append(v instanceof PyList?'[...]':v instanceof PyDict?'{...}':'(...)');return;}
+   seen.add(v);
+   try{
+    if(v instanceof PyList||v instanceof PyTuple){out.append(v instanceof PyList?'[':'(');each(v.items);if(v instanceof PyTuple&&v.items.length===1)out.append(',');out.append(v instanceof PyList?']':')');return;}
+    if(v instanceof PyDict){out.append('{');let first=true;for(const [k,x] of v.map.values()){if(!first)out.append(', ');first=false;visit(k,depth+1);out.append(': ');visit(x,depth+1);}out.append('}');return;}
+    if(v instanceof PySet){if(!v.size){out.append('set()');return;}out.append('{');each(v.values());out.append('}');return;}
+    if(v instanceof PyView){out.append(`dict_${v.kind}([`);let first=true;for(const [k,x] of v.dict.map.values()){if(!first)out.append(', ');first=false;if(v.kind==='items'){out.append('(');visit(k,depth+1);out.append(', ');visit(x,depth+1);out.append(')');}else visit(v.kind==='keys'?k:x,depth+1);}out.append('])');return;}
+    out.append(v.type+'(');each(v.args);out.append(')');return;
+   }finally{seen.delete(v);}
+  }
+  if(v instanceof PyRange){out.append(v.step===ONE?`range(${v.start}, ${v.stop})`:`range(${v.start}, ${v.stop}, ${v.step})`);return;}
+  if(v instanceof PySlice){out.append('slice(');each([v.lo,v.hi,v.step]);out.append(')');return;}
+  if(v instanceof PyFunc){out.append(`<function ${v.name} at ${address(v)}>`);return;}
+  if(v instanceof PyBuiltin){out.append(v.type?`<class '${v.type}'>`:v.owner?`<built-in method ${v.name} of ${v.owner} object at ${address(v)}>`:`<built-in function ${v.name}>`);return;}
+  if(v instanceof PyModule){out.append(v.file?`<module '${v.name}' from '${v.file}'>`:`<module '${v.name}' (built-in)>`);return;}
+  if(v instanceof PyFile){out.append(`<_io.TextIOWrapper name=${strRepr(v.name)} mode='r' encoding='utf-8'>`);return;}
+  if(v instanceof PyIter){out.append(`<${v.name} object at ${address(v)}>`);return;}
+ };
+ visit(v,0);return out.finish();
 }
-function pyStr(v:Value):string{
+function pyStr(v:Value,tick?:()=>void):string{
  if(typeof v==='string')return v;
- if(v instanceof PyExc){if(v.type==='KeyError'&&v.args.length===1)return pyRepr(v.args[0]);return v.args.length===0?'':v.args.length===1?pyStr(v.args[0]):pyRepr(new PyTuple(v.args));}
- return pyRepr(v);
+ if(v instanceof PyExc){if(v.type==='KeyError'&&v.args.length===1)return pyRepr(v.args[0],new Set(),tick);return v.args.length===0?'':v.args.length===1?pyStr(v.args[0],tick):pyRepr(new PyTuple(v.args),new Set(),tick);}
+ return pyRepr(v,new Set(),tick);
 }
 
 // ---------- number formatting (format spec mini-language) ----------
@@ -291,6 +319,7 @@ function formatValue(v:Value,spec:string):string{
  if(!m)throw err('ValueError',`Invalid format specifier '${spec}' for object of type '${tn}'`);
  const [,fillGiven,alignGiven,sign,z,alt,zero,widthText,sep,precText,type]=m;
  const width=widthText?Number(widthText):0,prec=precText!==undefined?Number(precText):null;
+ if(width>LIMIT.string)throw limit('format width is too large');if(prec!==null&&prec>LIMIT.string)throw limit('format precision is too large');
  if(typeof v==='string'){
   if(type&&type!=='s')throw err('ValueError',`Unknown format code '${type}' for object of type 'str'`);
   if(sign)throw err('ValueError','Sign not allowed in string format specifier');
@@ -304,14 +333,14 @@ function formatValue(v:Value,spec:string):string{
  const fill=fillGiven??(zero&&!alignGiven?'0':' '),align=alignGiven??(zero?'=':'>');
  const finish=(neg:boolean,prefix:string,digits:string)=>{
   const signText=neg?'-':sign==='+'?'+':sign===' '?' ':'';
-  let content=signText+prefix+digits;
-  if(content.length>=width)return content;
+  const content=signText+prefix+digits;
+  if(content.length>=width)return checkText(content);
   if(align!=='=')return padText(content,width,fill,align);
   if(fill==='0'&&sep){
    const at=digits.search(/[^\d,_]/),head=(at<0?digits:digits.slice(0,at)).replace(/[,_]/g,''),rest=at<0?'':digits.slice(at),size=sep==='_'&&'boxX'.includes(type??'')?4:3;
-   let raw=head;for(;;){content=signText+prefix+groupDigits(raw,sep,size)+rest;if(content.length>=width)return content;raw='0'+raw;}
+   let lo=head.length,hi=Math.max(lo,width);const fixed=signText.length+prefix.length+rest.length;while(lo<hi){const mid=Math.floor((lo+hi)/2);if(fixed+mid+Math.floor((mid-1)/size)>=width)hi=mid;else lo=mid+1;}return checkText(signText+prefix+groupDigits('0'.repeat(lo-head.length)+head,sep,size)+rest);
   }
-  return signText+prefix+fill.repeat(width-content.length)+digits;
+  return checkText(signText+prefix+fill.repeat(width-content.length)+digits);
  };
  if(type==='s')throw err('ValueError',`Unknown format code 's' for object of type '${tn}'`);
  const floatType=type!==undefined&&'eEfFgG%'.includes(type);
@@ -341,7 +370,7 @@ function formatValue(v:Value,spec:string):string{
 }
 function percentFormat(fmt:string,arg:Value):string{
  const mapping=arg instanceof PyDict?arg:null,values=arg instanceof PyTuple?arg.items:[arg];
- let used=0,out='',last=0,m:RegExpExecArray|null;
+ const out=new BoundedText();let used=0,last=0,m:RegExpExecArray|null;
  const re=/%(?:\(([^)]*)\))?([-+ #0]*)(\*|\d+)?(?:\.(\*|\d+))?([\s\S]?)/g;
  const take=(key?:string):Value=>{
   if(key!==undefined){if(!mapping)throw err('TypeError','format requires a mapping');const v=mapping.get(key);if(v===undefined)throw keyError(key);return v;}
@@ -349,16 +378,16 @@ function percentFormat(fmt:string,arg:Value):string{
   return values[used++];
  };
  while((m=re.exec(fmt))){
-  out+=fmt.slice(last,m.index);last=re.lastIndex;
+  out.append(fmt.slice(last,m.index));last=re.lastIndex;
   const [whole,key,flags,w,p,conv]=m;
-  if(conv==='%'&&whole==='%%'){out+='%';continue;}
+  if(conv==='%'&&whole==='%%'){out.append('%');continue;}
   if(!conv)throw err('ValueError','incomplete format');
   const width=w==='*'?intArg(take()):Number(w??0),prec=p===undefined?null:p==='*'?intArg(take()):Number(p);
   const v=take(key),left=flags.includes('-');
   if(conv==='s'||conv==='r'||conv==='a'||conv==='c'){
    let text=conv==='s'?pyStr(v):conv==='c'?(isInt(v)?String.fromCodePoint(intArg(v)):typeof v==='string'&&v.length===1?v:(()=>{throw err('TypeError','%c requires an int or a unicode character, not '+typeName(v));})()):pyRepr(v);
    if(prec!==null&&conv!=='c')text=text.slice(0,prec);
-   out+=padText(text,width,' ',left?'<':'>');continue;
+   out.append(padText(text,width,' ',left?'<':'>'));continue;
   }
   if(!'diouxXeEfFgG'.includes(conv))throw err('ValueError',`unsupported format character '${conv}' (0x${conv.charCodeAt(0).toString(16)}) at index ${m.index+whole.length-1}`);
   const n=asNum(v);
@@ -371,11 +400,11 @@ function percentFormat(fmt:string,arg:Value):string{
   const value:Value='diu'.includes(conv)?(typeof n==='number'?BigInt(Math.trunc(n)):n):'eEfFgG'.includes(conv)?Number(n):n;
   const type='diu'.includes(conv)?'d':conv;
   const spec=(left?'<':flags.includes('0')?'0':'')+(flags.includes('+')?'+':flags.includes(' ')?' ':'')+(flags.includes('#')?'#':'')+(width?String(width):'')+(prec!==null&&type!=='d'?'.'+prec:'')+type;
-  out+=formatValue(value,spec);
+  out.append(formatValue(value,spec));
  }
- out+=fmt.slice(last);
+ out.append(fmt.slice(last));
  if(!mapping&&used<values.length)throw err('TypeError','not all arguments converted during string formatting');
- return checkText(out);
+ return out.finish();
 }
 
 // ---------- set algebra (CPython iteration order) ----------
@@ -392,28 +421,47 @@ function numEq(x:Num,y:Num):boolean{
  const f=(typeof x==='number'?x:y) as number,i=(typeof x==='bigint'?x:y) as bigint;
  return Number.isInteger(f)&&BigInt(f)===i;
 }
-function pyEq(a:Value,b:Value):boolean{
+
+type ComparisonState={equal:Map<object,Set<object>>;visits:number;tick?:()=>void};
+function comparisonState(tick?:()=>void):ComparisonState{return {equal:new Map(),visits:0,tick};}
+function visitComparison(state:ComparisonState):void{
+ state.tick?.();
+ if(++state.visits>LIMIT.steps)throw limit('comparison expanded too many items');
+}
+function pyEq(a:Value,b:Value,state:ComparisonState=comparisonState(),depth=0):boolean{
+ visitComparison(state);
  if(a===b)return true;
+ if(depth>LIMIT.depth)throw new PyLimit('RecursionError','maximum recursion depth exceeded (simulated Python limit)');
  const x=asNum(a),y=asNum(b);
  if(x!==undefined&&y!==undefined)return numEq(x,y);
- if((a instanceof PyList&&b instanceof PyList)||(a instanceof PyTuple&&b instanceof PyTuple))return a.items.length===b.items.length&&a.items.every((v,i)=>pyEq(v,b.items[i]));
- if(a instanceof PyDict&&b instanceof PyDict){if(a.size!==b.size)return false;for(const [key,[,v]] of a.map){const o=b.map.get(key);if(!o||!pyEq(v,o[1]))return false;}return true;}
- if(a instanceof PySet&&b instanceof PySet)return a.map.size===b.map.size&&[...a.map.keys()].every(k=>b.map.has(k));
+ const sequences=(a instanceof PyList&&b instanceof PyList)||(a instanceof PyTuple&&b instanceof PyTuple);
+ if(sequences||(a instanceof PyDict&&b instanceof PyDict)){
+  const left=a as PyList|PyTuple|PyDict,right=b as PyList|PyTuple|PyDict;
+  if(state.equal.get(left)?.has(right))return true;
+  let same:boolean;
+  if(left instanceof PyDict&&right instanceof PyDict){same=left.size===right.size;if(same)for(const [key,[,v]] of left.map){const other=right.map.get(key);if(!other||!pyEq(v,other[1],state,depth+1)){same=false;break;}}}
+  else{const l=left as PyList|PyTuple,r=right as PyList|PyTuple;same=l.items.length===r.items.length&&l.items.every((v,i)=>pyEq(v,r.items[i],state,depth+1));}
+  if(same){let pairs=state.equal.get(left);if(!pairs){pairs=new Set();state.equal.set(left,pairs);}pairs.add(right);}
+  return same;
+ }
+ if(a instanceof PySet&&b instanceof PySet)return a.map.size===b.map.size&&[...a.map.keys()].every(k=>{visitComparison(state);return b.map.has(k);});
  if(a instanceof PyRange&&b instanceof PyRange){const n=a.length;return n===b.length&&(n===0||(a.start===b.start&&(n===1||a.step===b.step)));}
  return false;
 }
-function order(op:string,a:Value,b:Value):boolean{
+function order(op:string,a:Value,b:Value,state:ComparisonState=comparisonState(),depth=0):boolean{
+ visitComparison(state);
+ if(depth>LIMIT.depth)throw new PyLimit('RecursionError','maximum recursion depth exceeded (simulated Python limit)');
  const rel=(c:number)=>op==='<'?c<0:op==='<='?c<=0:op==='>'?c>0:c>=0;
  const x=asNum(a),y=asNum(b);
  if(x!==undefined&&y!==undefined)return rel(x<y?-1:x>y?1:numEq(x,y)?0:NaN);
  if(typeof a==='string'&&typeof b==='string')return rel(a<b?-1:a>b?1:0);
  if((a instanceof PyList&&b instanceof PyList)||(a instanceof PyTuple&&b instanceof PyTuple)){
   const n=Math.min(a.items.length,b.items.length);
-  for(let i=0;i<n;i++)if(!pyEq(a.items[i],b.items[i]))return order(op,a.items[i],b.items[i]);
+  for(let i=0;i<n;i++)if(!pyEq(a.items[i],b.items[i],state,depth+1))return order(op,a.items[i],b.items[i],state,depth+1);
   return rel(a.items.length-b.items.length);
  }
  if(a instanceof PySet&&b instanceof PySet){
-  const sub=(p:PySet,q:PySet)=>[...p.map.keys()].every(k=>q.map.has(k));
+  const sub=(p:PySet,q:PySet)=>[...p.map.keys()].every(k=>{visitComparison(state);return q.map.has(k);});
   return op==='<='?sub(a,b):op==='>='?sub(b,a):op==='<'?a.map.size<b.map.size&&sub(a,b):b.map.size<a.map.size&&sub(b,a);
  }
  throw err('TypeError',`'${op}' not supported between instances of '${typeName(a)}' and '${typeName(b)}'`);
@@ -1044,7 +1092,7 @@ class Interp{
   this.installBuiltins();
  }
  tick(){if(++this.steps>this.maxSteps){this.steps=this.maxSteps;throw new PyLimit('TimeoutError',`script stopped after ${group(this.maxSteps)} steps — is a loop never ending? (simulated Python limit)`);}}
- write(text:string){this.out+=text;if(this.out.length>LIMIT.output){this.out=this.out.slice(0,LIMIT.output);throw limit(`output passed ${group(LIMIT.output)} characters`);}}
+ write(text:string){const available=LIMIT.output-this.out.length;this.out+=text.slice(0,available);if(text.length>available)throw limit(`output passed ${group(LIMIT.output)} characters`);}
  snapshot():PyFrame[]{return this.stack.map(f=>({line:f.line,scope:f.scope}));}
  attach(e:unknown){if(e instanceof PyRaise&&!e.exc.trace)e.exc.trace=this.snapshot();else if(e instanceof PyLimit&&!e.trace)e.trace=this.snapshot();}
  run(body:Stmt[]){this.stack.push({scope:'<module>',line:1});try{this.block(body,this.globals);}catch(e){this.attach(e);throw e;}}
@@ -1199,7 +1247,7 @@ class Interp{
  }
  inplace(op:string,a:Value,b:Value):Value{
   if(a instanceof PyList&&op==='+'){const items=this.toArray(b);checkItems(a.items.length+items.length);a.items.push(...items);return a;}
-  if(a instanceof PyList&&op==='*'){const n=Math.max(0,intArg(b));checkItems(a.items.length*n);a.items=Array.from({length:n},()=>a.items).flat();return a;}
+  if(a instanceof PyList&&op==='*'){const n=Math.max(0,intArg(b));checkItems(a.items.length*n);const items:Value[]=[];if(a.items.length)for(let i=0;i<n;i++){this.tick();for(const v of a.items)items.push(v);}a.items=items;return a;}
   return this.binop(op,a,b);
  }
  del(t:Expr,scope:Scope){
@@ -1256,13 +1304,13 @@ class Interp{
   checkItems(out.length);return out;
  }
  fstr(parts:FPart[],scope:Scope):string{
-  let out='';
+  const out=new BoundedText();
   for(const p of parts){
-   if(typeof p==='string'){out+=p;continue;}
+   if(typeof p==='string'){out.append(p);continue;}
    const v=this.eval(p.e,scope),spec=p.spec?this.fstr(p.spec,scope):'',conv=p.conv||(p.debug&&!p.spec?'r':'');
-   out+=p.debug+formatValue(conv==='r'||conv==='a'?pyRepr(v):conv==='s'?pyStr(v):v,spec);
+   out.append(p.debug);out.append(formatValue(conv==='r'||conv==='a'?pyRepr(v,new Set(),()=>this.tick()):conv==='s'?pyStr(v,()=>this.tick()):v,spec));
   }
-  return checkText(out);
+  return out.finish();
  }
  comp(e:Extract<Expr,{k:'comp'}>,scope:Scope):Value{
   const inner=new Scope('comp',scope),out:Value[]=[],dict=e.kind==='dict'?new PyDict():null;
@@ -1351,14 +1399,14 @@ class Interp{
    case '+':
     if(typeof a==='string'){if(typeof b!=='string')throw err('TypeError',`can only concatenate str (not "${typeName(b)}") to str`);return checkText(a+b);}
     if(a instanceof PyList){if(!(b instanceof PyList))throw err('TypeError',`can only concatenate list (not "${typeName(b)}") to list`);checkItems(a.items.length+b.items.length);return new PyList([...a.items,...b.items]);}
-    if(a instanceof PyTuple){if(!(b instanceof PyTuple))throw err('TypeError',`can only concatenate tuple (not "${typeName(b)}") to tuple`);return new PyTuple([...a.items,...b.items]);}
+    if(a instanceof PyTuple){if(!(b instanceof PyTuple))throw err('TypeError',`can only concatenate tuple (not "${typeName(b)}") to tuple`);checkItems(a.items.length+b.items.length);return new PyTuple([...a.items,...b.items]);}
     throw unsupported();
    case '*':{
     const [seq,n]=isInt(b)?[a,b]:isInt(a)?[b,a]:[null,null];
     if(seq===null||n===null){if(typeof a==='string'||a instanceof PyList||a instanceof PyTuple||typeof b==='string'||b instanceof PyList||b instanceof PyTuple)throw err('TypeError',`can't multiply sequence by non-int of type '${typeName(typeof a==='string'||a instanceof PyList||a instanceof PyTuple?b:a)}'`);throw unsupported();}
     const count=Math.max(0,Number(toBig(n)));
-    if(typeof seq==='string'){if(seq.length*count>LIMIT.string)throw limit(`string grew past ${group(LIMIT.string)} characters`);return seq.repeat(count);}
-    if(seq instanceof PyList||seq instanceof PyTuple){checkItems(seq.items.length*count);const items=Array.from({length:count},()=>seq.items).flat();return seq instanceof PyList?new PyList(items):new PyTuple(items);}
+    if(typeof seq==='string'){if(seq.length*count>LIMIT.string)throw limit(`string grew past ${group(LIMIT.string)} characters`);return seq.length?seq.repeat(count):'';}
+    if(seq instanceof PyList||seq instanceof PyTuple){checkItems(seq.items.length*count);const items:Value[]=[];if(seq.items.length)for(let i=0;i<count;i++){this.tick();for(const v of seq.items)items.push(v);}return seq instanceof PyList?new PyList(items):new PyTuple(items);}
     throw unsupported();
    }
    case '%':if(typeof a==='string')return percentFormat(a,b);throw unsupported();
@@ -1417,24 +1465,25 @@ class Interp{
   return n;
  }
  compare(op:string,a:Value,b:Value):boolean{
+  const state=comparisonState(()=>this.tick());
   switch(op){
-   case '==':return pyEq(a,b);
-   case '!=':return !pyEq(a,b);
+   case '==':return pyEq(a,b,state);
+   case '!=':return !pyEq(a,b,state);
    case 'is':return a===b;
    case 'is not':return a!==b;
    case 'in':return this.contains(b,a);
    case 'not in':return !this.contains(b,a);
   }
-  return order(op,a,b);
+  return order(op,a,b,state);
  }
  contains(c:Value,x:Value):boolean{
   if(typeof c==='string'){if(typeof x!=='string')throw err('TypeError',`'in <string>' requires string as left operand, not ${typeName(x)}`);return c.includes(x);}
-  if(c instanceof PyList||c instanceof PyTuple)return c.items.some(v=>v===x||pyEq(v,x));
+  if(c instanceof PyList||c instanceof PyTuple)return c.items.some(v=>v===x||this.compare('==',v,x));
   if(c instanceof PyDict)return c.has(x);
   if(c instanceof PySet)return c.has(x);
   if(c instanceof PyRange){const n=asNum(x);if(n===undefined||(typeof n==='number'&&!Number.isInteger(n)))return false;const v=typeof n==='number'?BigInt(n):n;const off=v-c.start;return (c.step>ZERO?v>=c.start&&v<c.stop:v<=c.start&&v>c.stop)&&off%c.step===ZERO;}
-  if(c instanceof PyView){if(c.kind==='keys')return c.dict.has(x);if(c.kind==='values')return [...c.dict.map.values()].some(([,v])=>pyEq(v,x));if(!(x instanceof PyTuple)||x.items.length!==2)return false;const v=c.dict.get(x.items[0]);return v!==undefined&&pyEq(v,x.items[1]);}
-  if(c instanceof PyIter||c instanceof PyFile){for(let v=c.next();v!==DONE;v=c.next())if(pyEq(v,x))return true;return false;}
+  if(c instanceof PyView){if(c.kind==='keys')return c.dict.has(x);if(c.kind==='values')return [...c.dict.map.values()].some(([,v])=>this.compare('==',v,x));if(!(x instanceof PyTuple)||x.items.length!==2)return false;const v=c.dict.get(x.items[0]);return v!==undefined&&this.compare('==',v,x.items[1]);}
+  if(c instanceof PyIter||c instanceof PyFile){for(let v=c.next();v!==DONE;v=c.next())if(this.compare('==',v,x))return true;return false;}
   throw err('TypeError',`argument of type '${typeName(c)}' is not iterable`);
  }
 
@@ -1547,7 +1596,7 @@ class Interp{
  sortValues(items:Value[],key:Value,reverse:boolean):Value[]{
   const keys=key===null?items:items.map(v=>this.call(key,[v]));
   const order_=items.map((_,i)=>i);
-  order_.sort((a,b)=>{const c=order('<',keys[a],keys[b])?-1:order('<',keys[b],keys[a])?1:0;return reverse?-c:c;});
+  order_.sort((a,b)=>{const c=this.compare('<',keys[a],keys[b])?-1:this.compare('<',keys[b],keys[a])?1:0;return reverse?-c:c;});
   return order_.map(i=>items[i]);
  }
  len(v:Value):number{
@@ -1621,7 +1670,7 @@ class Interp{
  jsonModule():PyModule{
   const dumps=new PyBuiltin('dumps',(a,k)=>{
    allowKw('dumps',k,['indent','ensure_ascii','sort_keys','separators','default']);arity('dumps',a,1);
-   const ind=k.get('indent')??null,indent=ind===null?null:typeof ind==='string'?ind:' '.repeat(Math.max(0,intArg(ind)));
+   const ind=k.get('indent')??null;let indent:string|null=null;if(ind!==null){if(typeof ind==='string')indent=checkText(ind);else{const width=Math.max(0,intArg(ind));if(width>LIMIT.string)throw limit('JSON indentation grew too large');indent=' '.repeat(width);}}
    const seps=k.get('separators')??null;let item=indent===null?', ':',',colon=': ';
    if(seps instanceof PyTuple&&seps.items.length===2){item=strArg(seps.items[0],'separator');colon=strArg(seps.items[1],'separator');}
    return checkText(this.jsonDump(a[0],indent,k.has('ensure_ascii')?truthy(k.get('ensure_ascii')!):true,truthy(k.get('sort_keys')??false),item,colon,0,new Set()));
@@ -1632,37 +1681,46 @@ class Interp{
   return new PyModule('json','/usr/lib/python3.12/json/__init__.py',new Map<string,Value>([['dumps',dumps],['loads',loads],['load',load],['dump',dump],['JSONDecodeError',this.types.get('json.decoder.JSONDecodeError')!]]));
  }
  jsonDump(v:Value,indent:string|null,ascii:boolean,sortKeys:boolean,item:string,colon:string,level:number,seen:Set<object>):string{
-  if(v===null)return 'null';
-  if(typeof v==='boolean')return v?'true':'false';
-  if(typeof v==='bigint')return intStr(v);
-  if(typeof v==='number')return Number.isNaN(v)?'NaN':!Number.isFinite(v)?(v>0?'Infinity':'-Infinity'):floatRepr(v);
-  if(typeof v==='string')return jsonStr(v,ascii);
-  const wrap=(open:string,close:string,parts:string[])=>{
-   if(!parts.length)return open+close;
-   if(indent===null)return open+parts.join(item)+close;
-   const pad='\n'+indent.repeat(level+1);return open+pad+parts.join(item.replace(/ +$/,'')+pad)+'\n'+indent.repeat(level)+close;
+  const out=new BoundedText();
+  const padding=(depth:number)=>{const n=(indent?.length??0)*depth;if(n>LIMIT.string-out.length)throw limit('JSON indentation grew too large');return '\n'+(indent??'').repeat(depth);};
+  const visit=(v:Value,level:number):void=>{
+   this.tick();
+   if(level>LIMIT.depth)throw new PyLimit('RecursionError','maximum recursion depth exceeded (simulated Python limit)');
+   if(v===null){out.append('null');return;}
+   if(typeof v==='boolean'){out.append(v?'true':'false');return;}
+   if(typeof v==='bigint'){out.append(intStr(v));return;}
+   if(typeof v==='number'){out.append(Number.isNaN(v)?'NaN':!Number.isFinite(v)?(v>0?'Infinity':'-Infinity'):floatRepr(v));return;}
+   if(typeof v==='string'){out.append(jsonStr(v,ascii));return;}
+   if(v instanceof PyList||v instanceof PyTuple||v instanceof PyDict){
+    if(seen.has(v))throw err('ValueError','Circular reference detected');
+    seen.add(v);
+    try{
+     const dict=v instanceof PyDict;out.append(dict?'{':'[');
+     const separator=indent===null?item:item.replace(/ +$/,'');
+     let first=true;
+     const before=()=>{if(!first)out.append(separator);first=false;if(indent!==null)out.append(padding(level+1));};
+     if(v instanceof PyDict){
+      let entries=[...v.map.values()].map(([k,x]):[string,Value]=>{
+       const key=typeof k==='string'?k:k===null?'null':typeof k==='boolean'?(k?'true':'false'):typeof k==='bigint'?intStr(k):typeof k==='number'?floatRepr(k):(()=>{throw err('TypeError',`keys must be str, int, float, bool or None, not ${typeName(k)}`);})();
+       return [key,x];
+      });
+      if(sortKeys)entries=entries.sort(([p],[q])=>p<q?-1:p>q?1:0);
+      for(const [k,x] of entries){before();out.append(jsonStr(k,ascii));out.append(colon);visit(x,level+1);}
+     }else for(const x of v.items){before();visit(x,level+1);}
+     if(!first&&indent!==null)out.append(padding(level));
+     out.append(dict?'}':']');return;
+    }finally{seen.delete(v);}
+   }
+   throw err('TypeError',`Object of type ${typeName(v)} is not JSON serializable`);
   };
-  if(v instanceof PyList||v instanceof PyTuple||v instanceof PyDict){
-   if(seen.has(v))throw err('ValueError','Circular reference detected');
-   seen.add(v);
-   try{
-    if(!(v instanceof PyDict))return wrap('[',']',v.items.map(x=>this.jsonDump(x,indent,ascii,sortKeys,item,colon,level+1,seen)));
-    let entries=[...v.map.values()].map(([k,x]):[string,Value]=>{
-     const key=typeof k==='string'?k:k===null?'null':typeof k==='boolean'?(k?'true':'false'):typeof k==='bigint'?intStr(k):typeof k==='number'?floatRepr(k):(()=>{throw err('TypeError',`keys must be str, int, float, bool or None, not ${typeName(k)}`);})();
-     return [key,x];
-    });
-    if(sortKeys)entries=entries.sort(([p],[q])=>p<q?-1:p>q?1:0);
-    return wrap('{','}',entries.map(([k,x])=>jsonStr(k,ascii)+colon+this.jsonDump(x,indent,ascii,sortKeys,item,colon,level+1,seen)));
-   }finally{seen.delete(v);}
-  }
-  throw err('TypeError',`Object of type ${typeName(v)} is not JSON serializable`);
+  visit(v,level);return out.finish();
  }
  mathModule():PyModule{
   const real=(v:Value):number=>{const n=asNum(v);if(n===undefined)throw err('TypeError',`must be real number, not ${typeName(v)}`);return Number(n);};
   const toInt=(x:number)=>{if(Number.isNaN(x))throw err('ValueError','cannot convert float NaN to integer');if(!Number.isFinite(x))throw err('OverflowError','cannot convert float infinity to integer');return BigInt(x);};
   const f1=(name:string,fn:(x:number)=>number,ok:(x:number)=>boolean=()=>true)=>new PyBuiltin(name,a=>{arity(name,a,1);const x=real(a[0]);if(!ok(x))throw err('ValueError','math domain error');return fn(x);});
   const rounder=(name:string,fn:(x:number)=>number)=>new PyBuiltin(name,a=>{arity(name,a,1);return isInt(a[0])?toBig(a[0]):toInt(fn(real(a[0])));});
-  const gcd=(x:bigint,y:bigint):bigint=>{x=x<ZERO?-x:x;y=y<ZERO?-y:y;while(y){[x,y]=[y,x%y];}return x;};
+  const gcd=(x:bigint,y:bigint):bigint=>{x=x<ZERO?-x:x;y=y<ZERO?-y:y;while(y){this.tick();[x,y]=[y,x%y];}return x;};
   const attrs=new Map<string,Value>([
    ['pi',Math.PI],['e',Math.E],['tau',2*Math.PI],['inf',Infinity],['nan',NaN],
    ['sqrt',f1('sqrt',Math.sqrt,x=>x>=0)],['exp',f1('exp',Math.exp)],['log10',f1('log10',Math.log10,x=>x>0)],['log2',f1('log2',Math.log2,x=>x>0)],
@@ -1678,11 +1736,11 @@ class Interp{
    ['isclose',new PyBuiltin('isclose',(a,k)=>{arity('isclose',a,2);const x=real(a[0]),y=real(a[1]),rel=real(k.get('rel_tol')??1e-9),abs=real(k.get('abs_tol')??0);return x===y||Math.abs(x-y)<=Math.max(rel*Math.max(Math.abs(x),Math.abs(y)),abs);})],
    ['gcd',new PyBuiltin('gcd',a=>a.map(bigArg).reduce(gcd,ZERO))],
    ['lcm',new PyBuiltin('lcm',a=>a.map(bigArg).reduce((x,y)=>x===ZERO||y===ZERO?ZERO:checkBig((x*y<ZERO?-(x*y):x*y)/gcd(x,y)),ONE))],
-   ['factorial',new PyBuiltin('factorial',a=>{arity('factorial',a,1);const n=bigArg(a[0]);if(n<ZERO)throw err('ValueError','factorial() not defined for negative values');if(n>BigInt(3000))throw limit('factorial argument is too large');let r=ONE;for(let i=BigInt(2);i<=n;i++)r*=i;return r;})],
-   ['isqrt',new PyBuiltin('isqrt',a=>{arity('isqrt',a,1);const n=bigArg(a[0]);if(n<ZERO)throw err('ValueError','isqrt() argument must be nonnegative');if(n<BigInt(2))return n;let x=BigInt(Math.floor(Math.sqrt(Number(n))));while(x*x>n)x-=ONE;while((x+ONE)*(x+ONE)<=n)x+=ONE;return x;})],
-   ['comb',new PyBuiltin('comb',a=>{arity('comb',a,2);const n=bigArg(a[0]),r=bigArg(a[1]);if(n<ZERO||r<ZERO)throw err('ValueError','n must be a non-negative integer');if(r>n)return ZERO;let out=ONE;for(let i=ONE;i<=r;i++)out=checkBig(out*(n-r+i)/i);return out;})],
-   ['prod',new PyBuiltin('prod',(a,k)=>{arity('prod',a,1);let r:Value=k.get('start')??ONE;for(const v of this.toArray(a[0]))r=this.binop('*',r,v);return r;})],
-   ['fsum',new PyBuiltin('fsum',a=>{arity('fsum',a,1);let s=0,c=0;for(const v of this.toArray(a[0])){const x=real(v),t=s+x;c+=Math.abs(s)>=Math.abs(x)?(s-t)+x:(x-t)+s;s=t;}return s+c;})],
+   ['factorial',new PyBuiltin('factorial',a=>{arity('factorial',a,1);const n=bigArg(a[0]);if(n<ZERO)throw err('ValueError','factorial() not defined for negative values');if(n>BigInt(3000))throw limit('factorial argument is too large');let r=ONE;for(let i=BigInt(2);i<=n;i++){this.tick();r=checkBig(r*i);}return r;})],
+   ['isqrt',new PyBuiltin('isqrt',a=>{arity('isqrt',a,1);const n=bigArg(a[0]);if(n<ZERO)throw err('ValueError','isqrt() argument must be nonnegative');if(n<BigInt(2))return n;let x=ONE<<BigInt(Math.ceil(n.toString(2).length/2));for(;;){this.tick();const next=(x+n/x)>>ONE;if(next>=x)return x;x=next;}})],
+   ['comb',new PyBuiltin('comb',a=>{arity('comb',a,2);const n=bigArg(a[0]),r=bigArg(a[1]);if(n<ZERO||r<ZERO)throw err('ValueError','n must be a non-negative integer');if(r>n)return ZERO;const count=r<n-r?r:n-r;let out=ONE;for(let i=ONE;i<=count;i++){this.tick();out=checkBig(out*(n-count+i)/i);}return out;})],
+   ['prod',new PyBuiltin('prod',(a,k)=>{arity('prod',a,1);let r:Value=k.get('start')??ONE;for(const v of this.toArray(a[0])){this.tick();r=this.binop('*',r,v);}return r;})],
+   ['fsum',new PyBuiltin('fsum',a=>{arity('fsum',a,1);let s=0,c=0;for(const v of this.toArray(a[0])){this.tick();const x=real(v),t=s+x;c+=Math.abs(s)>=Math.abs(x)?(s-t)+x:(x-t)+s;s=t;}return s+c;})],
   ]);
   return new PyModule('math',null,attrs);
  }
@@ -1759,7 +1817,7 @@ class Interp{
    }
    throw err('TypeError',`float() argument must be a string or a real number, not '${typeName(v)}'`);
   });
-  type('str',(a,k)=>{noKw('str',k);arity('str',a,0,1);return a.length?pyStr(a[0]):'';});
+  type('str',(a,k)=>{noKw('str',k);arity('str',a,0,1);return a.length?pyStr(a[0],()=>this.tick()):'';});
   type('bool',(a,k)=>{noKw('bool',k);arity('bool',a,0,1);return a.length?truthy(a[0]):false;});
   type('list',(a,k)=>{noKw('list',k);arity('list',a,0,1);return new PyList(a.length?this.toArray(a[0]):[]);});
   type('tuple',(a,k)=>{noKw('tuple',k);arity('tuple',a,0,1);return a[0] instanceof PyTuple?a[0]:new PyTuple(a.length?this.toArray(a[0]):[]);});
@@ -1778,12 +1836,12 @@ class Interp{
    if(typeof sep!=='string')throw err('TypeError',`sep must be None or a string, not ${typeName(sep)}`);
    if(typeof end!=='string')throw err('TypeError',`end must be None or a string, not ${typeName(end)}`);
    if(file!==null)throw new PyRaise(new PyExc('io.UnsupportedOperation',['not writable']));
-   this.write(a.map(pyStr).join(sep)+end);return null;
+   for(let i=0;i<a.length;i++){if(i)this.write(sep);this.write(pyStr(a[i],()=>this.tick()));}this.write(end);return null;
   });
   def('input',(a)=>{arity('input',a,0,1);if(a.length)this.write(pyStr(a[0]));throw err('EOFError','EOF when reading a line');});
   def('len',(a,k)=>{noKw('len',k);arity('len',a,1);return BigInt(this.len(a[0]));});
-  def('repr',(a)=>{arity('repr',a,1);return pyRepr(a[0]);});
-  def('ascii',(a)=>{arity('ascii',a,1);return pyRepr(a[0]).replace(/[^\x00-\x7f]/g,c=>{const n=c.charCodeAt(0);return n<0x100?'\\x'+n.toString(16).padStart(2,'0'):'\\u'+n.toString(16).padStart(4,'0');});});
+  def('repr',(a)=>{arity('repr',a,1);return pyRepr(a[0],new Set(),()=>this.tick());});
+  def('ascii',(a)=>{arity('ascii',a,1);const out=new BoundedText();for(const c of pyRepr(a[0],new Set(),()=>this.tick())){const n=c.codePointAt(0)!;out.append(n<0x80?c:n<0x100?'\\x'+n.toString(16).padStart(2,'0'):n<=0xffff?'\\u'+n.toString(16).padStart(4,'0'):'\\U'+n.toString(16).padStart(8,'0'));}return out.finish();});
   def('format',(a)=>{arity('format',a,1,2);return formatValue(a[0],a.length>1?strArg(a[1],'format() argument 2'):'');});
   def('abs',(a)=>{arity('abs',a,1);const n=asNum(a[0]);if(n===undefined)throw err('TypeError',`bad operand type for abs(): '${typeName(a[0])}'`);return typeof n==='bigint'?(n<ZERO?-n:n):Math.abs(n);});
   def('round',(a,k)=>{
@@ -1791,7 +1849,7 @@ class Interp{
    const x=arg(a,k,0,'number')!,nd=arg(a,k,1,'ndigits')??null;
    if(isInt(x)){
     const v=toBig(x);if(nd===null)return v;const n=intArg(nd);if(n>=0)return v;
-    const p=BigInt(10)**BigInt(-n),q=floorDiv(v,p),r=v-q*p,twice=r*BigInt(2);
+    if(-n>(v<ZERO?-v:v).toString().length)return ZERO;const p=BigInt(10)**BigInt(-n),q=floorDiv(v,p),r=v-q*p,twice=r*BigInt(2);
     return (twice>p||(twice===p&&q%BigInt(2)!==ZERO)?q+ONE:q)*p;
    }
    if(typeof x!=='number')throw err('TypeError',`type ${typeName(x)} doesn't define __round__ method`);
@@ -1810,7 +1868,7 @@ class Interp{
    allowKw('pow',k,['base','exp','mod']);arity('pow',a,2,3);
    if(a.length===3&&a[2]!==null){
     const b=bigArg(a[0]),e=bigArg(a[1]),m=bigArg(a[2]);if(m===ZERO)throw err('ValueError','pow() 3rd argument cannot be 0');if(e<ZERO)throw err('ValueError','base is not invertible for the given modulus');
-    let r=ONE,x=floorMod(b,m),n=e;while(n>ZERO){if(n&ONE)r=r*x%m;x=x*x%m;n>>=ONE;}return floorMod(r,m);
+    let r=ONE,x=floorMod(b,m),n=e;while(n>ZERO){this.tick();if(n&ONE)r=r*x%m;x=x*x%m;n>>=ONE;}return floorMod(r,m);
    }
    return this.binop('**',a[0],a[1]);
   });
@@ -1838,7 +1896,7 @@ class Interp{
    if(a.length>1&&k.has('default'))throw err('TypeError',`Cannot specify a default for ${name}() with multiple positional arguments`);
    if(!items.length){if(k.has('default'))return k.get('default')!;throw err('ValueError',`${name}() iterable argument is empty`);}
    let best=items[0],bestKey=key===null?best:this.call(key,[best]);
-   for(const v of items.slice(1)){const kv=key===null?v:this.call(key,[v]);if(name==='min'?order('<',kv,bestKey):order('>',kv,bestKey)){best=v;bestKey=kv;}}
+   for(const v of items.slice(1)){const kv=key===null?v:this.call(key,[v]);if(name==='min'?this.compare('<',kv,bestKey):this.compare('>',kv,bestKey)){best=v;bestKey=kv;}}
    return best;
   };
   def('min',extreme('min'));def('max',extreme('max'));
@@ -1974,14 +2032,14 @@ class Interp{
    rstrip:(s,a)=>stripWith(s,chars(s,a,'rstrip'),false,true),
    split:split(false),rsplit:split(true),
    splitlines:(s,a,k)=>{allowKw('splitlines',k,['keepends']);arity('str.splitlines',a,0,1);const keep=truthy(arg(a,k,0,'keepends')??false),parts=s.match(/[^\n\r\v\f\x1c-\x1e\x85\u2028\u2029]*(?:\r\n|[\n\r\v\f\x1c-\x1e\x85\u2028\u2029]|$)/g)!.filter((p,i,all)=>p!==''||i<all.length-1);return new PyList(parts.filter(p=>p!=='').map(p=>keep?p:p.replace(/(?:\r\n|[\n\r\v\f\x1c-\x1e\x85\u2028\u2029])$/,'')));},
-   join:(s,a)=>{arity('str.join',a,1);const items=this.toArray(a[0]);items.forEach((v,i)=>{if(typeof v!=='string')throw err('TypeError',`sequence item ${i}: expected str instance, ${typeName(v)} found`);});return checkText(items.join(s));},
+   join:(s,a)=>{arity('str.join',a,1);const items=this.toArray(a[0]);items.forEach((v,i)=>{if(typeof v!=='string')throw err('TypeError',`sequence item ${i}: expected str instance, ${typeName(v)} found`);});let size=Math.max(0,items.length-1)*s.length;for(const v of items){size+=(v as string).length;if(size>LIMIT.string)throw limit(`string grew past ${group(LIMIT.string)} characters`);}return items.join(s);},
    replace:(s,a)=>{
-    arity('str.replace',a,2,3);const old=strArg(a[0],'replace() argument 1'),rep=strArg(a[1],'replace() argument 2'),count=a.length>2?intArg(a[2]):-1;
-    if(count<0)return checkText(s.split(old).join(rep));
-    let out='',rest=s,n=0;
-    if(old===''){const cs=[...s];for(let i=0;i<=cs.length;i++){if(n<count){out+=rep;n++;}out+=cs[i]??'';}return checkText(out);}
-    while(n<count){const at=rest.indexOf(old);if(at<0)break;out+=rest.slice(0,at)+rep;rest=rest.slice(at+old.length);n++;}
-    return checkText(out+rest);
+    arity('str.replace',a,2,3);const old=strArg(a[0],'replace() argument 1'),rep=strArg(a[1],'replace() argument 2'),count=a.length>2?intArg(a[2]):-1,out=new BoundedText();
+    if(count===0)return s;const max=count<0?Infinity:count;
+    if(old===''){let n=0;for(const c of s){this.tick();if(n<max){out.append(rep);n++;}out.append(c);}if(n<max)out.append(rep);return out.finish();}
+    let start=0,n=0;
+    while(n<max){const at=s.indexOf(old,start);if(at<0)break;this.tick();out.append(s.slice(start,at));out.append(rep);start=at+old.length;n++;}
+    out.append(s.slice(start));return out.finish();
    },
    startswith:affix('startswith',(s,p)=>s.startsWith(p)),endswith:affix('endswith',(s,p)=>s.endsWith(p)),
    find:find('find',false,false),rfind:find('rfind',true,false),index:find('index',false,true),rindex:find('rindex',true,true),
@@ -1998,14 +2056,14 @@ class Interp{
    rpartition:(s,a)=>{arity('str.rpartition',a,1);const sep=strArg(a[0],'rpartition() argument');if(!sep)throw err('ValueError','empty separator');const at=s.lastIndexOf(sep);return new PyTuple(at<0?['','',s]:[s.slice(0,at),sep,s.slice(at+sep.length)]);},
    removeprefix:(s,a)=>{arity('str.removeprefix',a,1);const p=strArg(a[0],'removeprefix() argument');return p&&s.startsWith(p)?s.slice(p.length):s;},
    removesuffix:(s,a)=>{arity('str.removesuffix',a,1);const p=strArg(a[0],'removesuffix() argument');return p&&s.endsWith(p)?s.slice(0,-p.length):s;},
-   expandtabs:(s,a)=>{arity('str.expandtabs',a,0,1);const size=a.length?intArg(a[0]):8;let col=0,out='';for(const c of s){if(c==='\t'){const n=size>0?size-col%size:0;out+=' '.repeat(n);col+=n;}else{out+=c;col=c==='\n'||c==='\r'?0:col+1;}}return out;},
+   expandtabs:(s,a)=>{arity('str.expandtabs',a,0,1);const size=a.length?intArg(a[0]):8,out=new BoundedText();let col=0;for(const c of s){if(c==='\t'){const n=size>0?size-col%size:0;if(n>LIMIT.string-out.length)throw limit('expanded tabs grew too large');out.append(' '.repeat(n));col+=n;}else{out.append(c);col=c==='\n'||c==='\r'?0:col+1;}}return out.finish();},
    format:(s,a,k)=>this.strFormat(s,a,k),
    format_map:(s,a)=>{arity('str.format_map',a,1);const m=a[0];if(!(m instanceof PyDict))throw err('TypeError',`'${typeName(m)}' object is not subscriptable`);const kw=new Map<string,Value>();for(const [key,v] of m.map.values())if(typeof key==='string')kw.set(key,v);return this.strFormat(s,[],kw);},
    encode:()=>{throw new PyRaise(new PyExc('NotImplementedError',['bytes are not supported in this simulated Python']));},
   };
  }
  strFormat(fmt:string,args:Value[],kw:Map<string,Value>):string{
-  let out='',i=0,auto=0,mode:''|'auto'|'manual'='';
+  const out=new BoundedText();let i=0,auto=0,mode:''|'auto'|'manual'='';
   const resolve=(field:string):Value=>{
    const m=/^([^.[]*)((?:\.[^.[]+|\[[^\]]*\])*)$/.exec(field);
    if(!m)throw err('ValueError',`unexpected '{' in field name`);
@@ -2026,7 +2084,7 @@ class Interp{
   while(i<fmt.length){
    const c=fmt[i];
    if(c==='{'){
-    if(fmt[i+1]==='{'){out+='{';i+=2;continue;}
+    if(fmt[i+1]==='{'){out.append('{');i+=2;continue;}
     let depth=1,j=i+1;while(j<fmt.length){if(fmt[j]==='{')depth++;else if(fmt[j]==='}'&&--depth===0)break;j++;}
     if(depth)throw err('ValueError',"expected '}' before end of string");
     const field=fmt.slice(i+1,j);i=j+1;
@@ -2034,16 +2092,16 @@ class Interp{
     const v=resolve(m[1]),conv=m[2]??'';
     const spec=(m[3]??'').replace(/\{([^{}]*)\}/g,(_,inner:string)=>pyStr(resolve(inner)));
     if(conv&&!['r','s','a'].includes(conv))throw err('ValueError',`Unknown conversion specifier ${conv}`);
-    out+=formatValue(conv==='r'||conv==='a'?pyRepr(v):conv==='s'?pyStr(v):v,spec);
+    out.append(formatValue(conv==='r'||conv==='a'?pyRepr(v,new Set(),()=>this.tick()):conv==='s'?pyStr(v,()=>this.tick()):v,spec));
     continue;
    }
-   if(c==='}'){if(fmt[i+1]==='}'){out+='}';i+=2;continue;}throw err('ValueError',"Single '}' encountered in format string");}
-   out+=c;i++;
+   if(c==='}'){if(fmt[i+1]==='}'){out.append('}');i+=2;continue;}throw err('ValueError',"Single '}' encountered in format string");}
+   out.append(c);i++;
   }
-  return checkText(out);
+  return out.finish();
  }
  makeListMethods():Methods<PyList>{
-  const at=(l:PyList,v:Value,start=0,end=l.items.length)=>{for(let i=Math.max(0,start);i<Math.min(end,l.items.length);i++)if(pyEq(l.items[i],v))return i;return -1;};
+  const at=(l:PyList,v:Value,start=0,end=l.items.length)=>{for(let i=Math.max(0,start);i<Math.min(end,l.items.length);i++)if(this.compare('==',l.items[i],v))return i;return -1;};
   return {
    append:(l,a,k)=>{noKw('list.append',k);arity('list.append',a,1);l.items.push(a[0]);checkItems(l.items.length);return null;},
    extend:(l,a)=>{arity('list.extend',a,1);const items=this.toArray(a[0]);checkItems(l.items.length+items.length);l.items.push(...items);return null;},
@@ -2051,7 +2109,7 @@ class Interp{
    pop:(l,a)=>{arity('list.pop',a,0,1);if(!l.items.length)throw err('IndexError','pop from empty list');let i=a.length?intArg(a[0]):-1;if(i<0)i+=l.items.length;if(i<0||i>=l.items.length)throw err('IndexError','pop index out of range');return l.items.splice(i,1)[0];},
    remove:(l,a)=>{arity('list.remove',a,1);const i=at(l,a[0]);if(i<0)throw err('ValueError','list.remove(x): x not in list');l.items.splice(i,1);return null;},
    index:(l,a)=>{arity('list.index',a,1,3);const n=l.items.length,norm=(v:Value|undefined,d:number)=>{if(v===undefined)return d;const i=intArg(v);return i<0?Math.max(0,i+n):i;};const i=at(l,a[0],norm(a[1],0),norm(a[2],n));if(i<0)throw err('ValueError',`${pyRepr(a[0])} is not in list`);return BigInt(i);},
-   count:(l,a)=>{arity('list.count',a,1);return BigInt(l.items.filter(v=>pyEq(v,a[0])).length);},
+   count:(l,a)=>{arity('list.count',a,1);return BigInt(l.items.filter(v=>this.compare('==',v,a[0])).length);},
    sort:(l,a,k)=>{if(a.length)throw err('TypeError','sort() takes no positional arguments');allowKw('sort',k,['key','reverse']);l.items=this.sortValues(l.items,k.get('key')??null,truthy(k.get('reverse')??false));return null;},
    reverse:(l,a)=>{arity('list.reverse',a,0);l.items.reverse();return null;},
    clear:(l,a)=>{arity('list.clear',a,0);l.items=[];return null;},
@@ -2060,8 +2118,8 @@ class Interp{
  }
  makeTupleMethods():Methods<PyTuple>{
   return {
-   count:(t,a)=>{arity('tuple.count',a,1);return BigInt(t.items.filter(v=>pyEq(v,a[0])).length);},
-   index:(t,a)=>{arity('tuple.index',a,1,3);const i=t.items.findIndex(v=>pyEq(v,a[0]));if(i<0)throw err('ValueError','tuple.index(x): x not in tuple');return BigInt(i);},
+   count:(t,a)=>{arity('tuple.count',a,1);return BigInt(t.items.filter(v=>this.compare('==',v,a[0])).length);},
+   index:(t,a)=>{arity('tuple.index',a,1,3);const i=t.items.findIndex(v=>this.compare('==',v,a[0]));if(i<0)throw err('ValueError','tuple.index(x): x not in tuple');return BigInt(i);},
   };
  }
  makeDictMethods():Methods<PyDict>{
@@ -2121,8 +2179,9 @@ class Interp{
 
 // ---------- JSON helpers ----------
 function jsonStr(s:string,ascii:boolean):string{
- const short:Record<string,string>={'"':'\\"','\\':'\\\\','\n':'\\n','\r':'\\r','\t':'\\t','\b':'\\b','\f':'\\f'};
- return '"'+s.replace(ascii?/[\\"\u0000-\u001f\u007f-\uffff]/g:/[\\"\u0000-\u001f]/g,c=>short[c]??'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0'))+'"';
+ const short:Record<string,string>={'"':'\\"','\\':'\\\\','\n':'\\n','\r':'\\r','\t':'\\t','\b':'\\b','\f':'\\f'},out=new BoundedText();out.append('"');
+ for(let i=0;i<s.length;i++){const c=s[i],n=c.charCodeAt(0);out.append(short[c]??(n<0x20||(ascii&&n>=0x7f)?'\\u'+n.toString(16).padStart(4,'0'):c));}
+ out.append('"');return out.finish();
 }
 function jsonParse(text:string):Value{
  let i=0;
@@ -2179,9 +2238,9 @@ export function runPython(source:string,options:PyOptions={}):PyResult{
   interp.run(parsePython(source));
  }catch(e){
   if(e instanceof PySyntax){error={...e.detail};const text=sourceLine(source,e.detail.line??0);if(text!==undefined)error.text=text;}
-  else if(e instanceof PyRaise)error=framed(e.exc.type,pyStr(e.exc),e.exc.trace);
+  else if(e instanceof PyRaise){try{error=framed(e.exc.type,pyStr(e.exc),e.exc.trace);}catch(renderError){error=framed(renderError instanceof PyLimit?renderError.type:'MemoryError',renderError instanceof PyLimit?renderError.message:'exception text grew too large (simulated Python limit)',e.exc.trace);}}
   else if(e instanceof PyLimit)error=framed(e.type,e.message,e.trace);
-  else if(e instanceof PyExit){const code=e.code;if(code!==null&&code!==ZERO&&code!==false)error={type:'SystemExit',message:typeof code==='string'?code:pyStr(code)};}
+  else if(e instanceof PyExit){const code=e.code;if(code!==null&&code!==ZERO&&code!==false){try{error={type:'SystemExit',message:typeof code==='string'?code:pyStr(code)};}catch(renderError){error={type:renderError instanceof PyLimit?renderError.type:'MemoryError',message:renderError instanceof PyLimit?renderError.message:'exit text grew too large (simulated Python limit)'};}}}
   else if(e instanceof RangeError)error=framed(/call stack/i.test(e.message)?'RecursionError':'MemoryError',/call stack/i.test(e.message)?'maximum recursion depth exceeded':'value grew too large (simulated Python limit)',interp.snapshot());
   else error={type:'SystemError',message:'internal error in the simulated Python: '+(e instanceof Error?e.message:String(e))};
  }
