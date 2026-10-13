@@ -9,6 +9,10 @@ export function parseReleaseProduct(source:string|undefined):{present:boolean;va
  const fallback={...RELEASE_PROJECT_START,items:[]};
  if(source===undefined)return {present:false,valid:true,authored:true,product:fallback};
  let data;try{if(source.length>20000)throw Error();data=JSON.parse(source);}catch{return {present:true,valid:false,authored:false,product:fallback};}
+ if(data&&typeof data==='object'&&!Array.isArray(data)&&['website','webapp'].includes(data.format)){
+  if(!exact(data,['kind','description','items','accent','layout','format','version','language'])||data.version!==1||!['ko','en','ja'].includes(String(data.language)))return {present:true,valid:false,authored:false,product:fallback};
+  const {kind,description,items,accent,layout}=data;data={kind,description,items,accent,layout};
+ }
  const valid=exact(data,['kind','description','items','accent','layout'])&&typeof data.kind==='string'&&['directory','events','portfolio'].includes(data.kind)&&text(data.description,240)&&typeof data.accent==='string'&&['sage','ocean','amber'].includes(data.accent)&&typeof data.layout==='string'&&['list','cards'].includes(data.layout)&&Array.isArray(data.items)&&data.items.length<=12&&data.items.every(item=>exact(item,['name','detail','category'])&&text(item.name,80)&&!!(item.name as string).trim()&&text(item.detail,160)&&text(item.category,32));
  if(!valid)return {present:true,valid:false,authored:false,product:fallback};
  const product:ReleaseProduct={kind:data.kind as ReleaseProduct['kind'],description:(data.description as string).trim(),items:(data.items as ReleaseItem[]).map(item=>({name:item.name.trim(),detail:item.detail.trim(),category:item.category.trim()})),accent:data.accent as ReleaseProduct['accent'],layout:data.layout as ReleaseProduct['layout']};

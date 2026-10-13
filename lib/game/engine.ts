@@ -40,7 +40,7 @@ export function sourceHash(files:Files):string {const str=Object.keys(files).sor
 export function resolvePath(cwd:string,path:string):string {let p=path||HOME;if(p==='~'||p.startsWith('~/'))p=HOME+p.slice(1);if(!p.startsWith('/'))p=cwd+'/'+p;const out:string[]=[];for(const part of p.split('/')){if(!part||part==='.')continue;if(part==='..')out.pop();else out.push(part);}return '/'+out.join('/');}
 const MAX_STORED_PATH=300,MAX_STORED_FILE=60000;
 function storedPath(path:string):string{if(path.length>MAX_STORED_PATH)throw new Error('ENAMETOOLONG: Path exceeds 300 characters.');return path;}
-function storedFile(path:string,content:string):void{storedPath(path);if(content.length>MAX_STORED_FILE)throw new Error('EFBIG: File exceeds 60,000 characters.');checkLabFileWrite(path,content);checkStudioFileWrite(path,content);}
+function storedFile(path:string,content:string):void{storedPath(path);const limit=['/home/dev/studio/launch/assets.json','/home/dev/studio/workbench/assets.json'].includes(path)?500000:MAX_STORED_FILE;if(content.length>limit)throw new Error('EFBIG: File exceeds '+limit.toLocaleString('en-US')+' characters.');checkLabFileWrite(path,content);checkStudioFileWrite(path,content);}
 function commandPath(cwd:string,path:string):string{return storedPath(resolvePath(cwd,path));}
 function validateFiles(root:string,files:Files):void{storedPath(root);for(const [p,c] of Object.entries(files))storedFile(root+'/'+p,c);}
 export function filesAt(m:Machine,root:string):Files{const r:Files={};for(const [p,c] of Object.entries(m.files))if(p.startsWith(root+'/'))r[p.slice(root.length+1)]=c;return r;}
@@ -134,7 +134,7 @@ export function act(state:GameState,action:Action,edition:GameEdition='full'):Ga
   if(s.machine!=='local'){s.notice='File editing is available on workstation only. exit to return to local files.';return s;}
   try{const path=commandPath(s.machines.local.cwd,action.path);if(!Object.hasOwn(s.machines.local.files,path)){s.notice='File not found. Open an existing local file.';return s;}if(opsPathReadOnly(path)){s.notice='의뢰 원본 데이터는 읽기 전용이에요. cp로 복사해서 실험해 보세요.';return s;}if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}if(typeof action.content!=='string')return s;storedFile(path,action.content);if(path.startsWith('/home/dev/jobs/')&&action.content.length>20000)throw Error('Job files can contain up to 20,000 characters.');s.machines.local.files[path]=action.content;if(edition==='full'){syncLabWorkspace(s);invalidateRelease(s);invalidateStudio(s);}}catch(e){s.notice=(e as Error).message;}return s;
  }
- if(action.type==='edit'){if(!s.repo)return s;if(action.content.length>60000){s.notice='파일은 60,000자까지 편집할 수 있어요.';return s;}if(!Object.hasOwn(projectFiles(s),action.path))return s;const path=s.repo.root+'/'+action.path;if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}try{storedFile(path,action.content);}catch(e){s.notice=(e as Error).message;return s;}s.machines.local.files[path]=action.content;if(edition==='full'){syncLabWorkspace(s);invalidateRelease(s);invalidateStudio(s);}return s;}
+ if(action.type==='edit'){if(!s.repo)return s;if(action.content.length>(['/home/dev/studio/launch/assets.json','/home/dev/studio/workbench/assets.json'].includes(s.repo.root+'/'+action.path)?500000:60000)){s.notice='파일은 '+(['/home/dev/studio/launch/assets.json','/home/dev/studio/workbench/assets.json'].includes(s.repo.root+'/'+action.path)?'500,000':'60,000')+'자까지 편집할 수 있어요.';return s;}if(!Object.hasOwn(projectFiles(s),action.path))return s;const path=s.repo.root+'/'+action.path;if(localPathReadOnly(s,path)){s.notice='전달한 파일은 읽기 전용이에요. 다른 폴더로 복사해 실험해 보세요.';return s;}try{storedFile(path,action.content);}catch(e){s.notice=(e as Error).message;return s;}s.machines.local.files[path]=action.content;if(edition==='full'){syncLabWorkspace(s);invalidateRelease(s);invalidateStudio(s);}return s;}
  if(action.type==='request-tests'){s.testRequest++;return s;}
  if(action.type==='test-result'){if(action.hash!==sourceHash(projectFiles(s)))return s;s.tests={hash:action.hash,mission:s.mission,checks:action.checks};if(action.designChoice&&action.designChoice===s.gameplay.designChoice)s.gameplay.designEvidence={hash:action.hash,choice:action.designChoice,passed:action.designPassed===true};s.notice=action.checks.every(c=>c.passed)?(action.designChoice===s.gameplay.designChoice&&action.designChoice?(action.designPassed?'화면과 색상 모두 통과! 보너스 창에서 보상을 받아 보세요.':'의뢰 검사는 통과했어요. 선택한 버튼 색은 아직 달라요.'):'손님 확인을 마쳤어요. 지우에게 알려 주세요.'):'아직 해결할 항목이 있어요. 검사 결과를 확인해 보세요.';return s;}
  if(action.type==='install-server'){if(s.mission<2){s.notice='세 번째 의뢰에서 서버가 지급됩니다.';return s;}s.serverReady=true;log(s,'[mono-server] Ubuntu 24.04 설치 완료 · 가상 서버');return s;}
@@ -155,13 +155,32 @@ export function act(state:GameState,action:Action,edition:GameEdition='full'):Ga
  return s;
 }
 
+export const MAX_TERMINAL_OUTPUT_CHARS=12000;
+export const MAX_TERMINAL_OUTPUT_BYTES=24000;
+export const MAX_TERMINAL_HISTORY_JSON_CHARS=128000;
+const TERMINAL_SAVE_BUDGET_CHARS=4_090_000;
+const TERMINAL_TRUNCATED='\n[출력 일부 생략 · 원본 파일은 그대로입니다. / Output truncated; the original file is unchanged. / 出力の一部を省略しました。元のファイルはそのままです。]';
+/** Bound presentation only. Redirects have already consumed the original complete output. */
+function terminalOutput(output:string):string{
+ const encoder=new TextEncoder();if(output.length<=MAX_TERMINAL_OUTPUT_CHARS&&encoder.encode(output).byteLength<=MAX_TERMINAL_OUTPUT_BYTES)return output;
+ let low=0,high=Math.min(output.length,MAX_TERMINAL_OUTPUT_CHARS-TERMINAL_TRUNCATED.length);
+ while(low<high){const middle=Math.ceil((low+high)/2);if(encoder.encode(output.slice(0,middle)+TERMINAL_TRUNCATED).byteLength<=MAX_TERMINAL_OUTPUT_BYTES)low=middle;else high=middle-1;}
+ let prefix=output.slice(0,low);if(/[\uD800-\uDBFF]$/.test(prefix))prefix=prefix.slice(0,-1);return prefix+TERMINAL_TRUNCATED;
+}
+function recordTerminal(s:GameState,input:string,output:string,error:boolean,machine:MachineId,cwd:string):void{
+ if(input.trim())s.history.push({command:input,output,error,machine,cwd});s.history=s.history.slice(-100);
+ const withoutHistory=JSON.stringify({...s,history:[]}).length-2;
+ const budget=Math.max(2,Math.min(MAX_TERMINAL_HISTORY_JSON_CHARS,TERMINAL_SAVE_BUDGET_CHARS-withoutHistory));
+ while(s.history.length&&JSON.stringify(s.history).length>budget)s.history.shift();
+}
+
 export function runCommand(state:GameState,input:string,edition:GameEdition='full'):CommandResult{
  let s=clone(state);s.notice='';const origin=s.machine,cwd=s.machines[origin].cwd;let error=false;let output='';let openFile:string|undefined;
  const fail=(text:string)=>{error=true;output=text;};
  let args:string[],redirect:ReturnType<typeof parseTerminalInput>['redirect']=null,stdin:string|null=null;try{const parsed=parseTerminalInput(input,tokenize);args=tokenize(parsed.command);redirect=parsed.redirect;stdin=parsed.stdin;}catch(e){args=[];const message=(e as Error).message;fail(message.startsWith('shell:')?message:'shell: '+message);}
  if(!editionAllowsCommand(state,args,redirect,edition,stdin)){
   const output=DEMO_LOCKED_MESSAGE;s.notice=output;
-  if(input.trim())s.history.push({command:input,output,error:true,machine:origin,cwd});s.history=s.history.slice(-100);
+  recordTerminal(s,input,output,true,origin,cwd);
   return {state:s,output,error:true};
  }
  const m=s.machines[s.machine];const [cmd,...a]=args;const root=s.machine==='local'?(s.repo?.root??PROJECT):PROJECT;
@@ -257,7 +276,8 @@ export function runCommand(state:GameState,input:string,edition:GameEdition='ful
   if(cmd==='cat'&&a[0]&&resolvePath(cwd,a[0])===s.repo.root+'/README.md')s.gameplay.exploration.readme=true;
  }
  if(edition==='full'){invalidateRelease(s);invalidateStudio(s);}
- if(input.trim())s.history.push({command:input,output,error,machine:origin,cwd});s.history=s.history.slice(-100);return {state:s,output,error,...(openFile?{openFile}:{})};
+ if(JSON.stringify({...s,history:[]}).length>TERMINAL_SAVE_BUDGET_CHARS){s=clone(state);s.notice='';openFile=undefined;fail('저장 용량이 부족해 명령을 적용하지 않았습니다. 사진 크기를 줄여 주세요. / Command was not applied: save capacity is full. Import smaller images. / 保存容量が不足しているためコマンドを適用しませんでした。小さい画像を読み込んでください。');}
+ output=terminalOutput(output);recordTerminal(s,input,output,error,origin,cwd);return {state:s,output,error,...(openFile?{openFile}:{})};
 }
 
 export function apiRequest(state:GameState,method:string,path:string,body:string):{state:GameState;status:number;data:unknown}{

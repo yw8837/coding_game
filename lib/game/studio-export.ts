@@ -1,5 +1,6 @@
+import {authoredProjectFormat,buildAuthoredHtml} from './release-authored.ts';
 import {evaluateRelease,releaseFiles,releaseHash,releasePublishedFresh,type ReleaseEvaluation,type ReleaseStyle} from './release.ts';
-import {STUDIO_FILE_NAMES,studioFiles,studioFresh,studioSourceMapValid,type StudioSourceMap} from './studio.ts';
+import {studioFiles,studioFresh,studioSourceMapValid,type StudioSourceMap} from './studio.ts';
 import {GAME_BRAND,GAME_NAME,GAME_VERSION_LABEL} from './brand.ts';
 import {buildZip} from './zip.ts';
 
@@ -30,6 +31,7 @@ export function buildStudioExport(files:StudioSourceMap,language:StudioExportLan
 }
 /** The portable app; extras (installable variant) leave the app markup and script unchanged. */
 export function buildStudioAppHtml(files:StudioSourceMap,language:StudioExportLanguage,appId?:string,extras?:StudioHtmlExtras):string{
+ if(authoredProjectFormat(files)){studioExportPreview(files,language);return buildAuthoredHtml(files,language,appId??releaseHash({'app-title':evaluateRelease(files,true).preview.title}),extras);}
  const {title,product,style}=studioExportPreview(files,language),w=STUDIO_EXPORT_WORDS[language];
  // The game passes the immutable first-release identity, so edits retain this app's inquiries.
  const identity=appId??releaseHash({'app-title':title});if(!/^[a-f0-9]{16}$/.test(identity))throw Error('Invalid studio app identity');
@@ -156,10 +158,11 @@ const README={
 /** Original sources, the portable app, project info and a README, bundled as a ZIP. */
 export function buildStudioArchive(files:StudioSourceMap,language:StudioExportLanguage,appId?:string):Uint8Array{
  const html=buildStudioExport(files,language,appId),title=evaluateRelease(files,true).preview.title;
- const project={name:STUDIO_EXPORT_NAME,title,language,generator:`${GAME_BRAND} ${GAME_VERSION_LABEL}`,entry:`${STUDIO_EXPORT_NAME}.html`,source:STUDIO_FILE_NAMES.map(name=>'source/'+name)};
+ const sourceNames=Object.keys(files).sort();
+ const project={name:STUDIO_EXPORT_NAME,title,language,generator:`${GAME_BRAND} ${GAME_VERSION_LABEL}`,entry:`${STUDIO_EXPORT_NAME}.html`,source:sourceNames.map(name=>'source/'+name)};
  return buildZip([
   {name:`${STUDIO_EXPORT_NAME}.html`,content:html},
-  ...STUDIO_FILE_NAMES.map(name=>({name:'source/'+name,content:files[name]})),
+  ...sourceNames.map(name=>({name:'source/'+name,content:files[name]})),
   {name:'project.json',content:JSON.stringify(project,null,2)+'\n'},
   {name:'README.md',content:README[language].join('\n')},
  ]);

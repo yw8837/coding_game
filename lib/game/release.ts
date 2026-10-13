@@ -1,3 +1,4 @@
+import {authoredProjectFormat,authoredStartFiles,validateAuthoredRelease,MAX_ASSETS_SOURCE,type AuthoredFormat,type AuthoredLanguage,type AuthoredEvaluation} from './release-authored.ts';
 import {CAREER_JOBS,type CareerJob,type Localized} from './career-content.ts';
 import {careerRouteReady} from './career-progress.ts';
 import {careerFootprint} from './career-tags.ts';
@@ -21,13 +22,13 @@ export const RELEASE_LEGACY_EXAMPLE:Record<string,string>={
 };
 export const RELEASE_START_FILES:Record<string,string>={...RELEASE_FILES,'project.json':RELEASE_PROJECT_SOURCE};
 export const RELEASE_EXAMPLE:Record<string,string>={...RELEASE_LEGACY_EXAMPLE,'project.json':JSON.stringify({kind:'portfolio',description:'Small tools I built for local clients.',items:[{name:'Bakery calculator',detail:'A box price and leftover rolls.',category:'Calculators'},{name:'Library finder',detail:'A searchable shelf of reading ideas.',category:'Directories'}],accent:'ocean',layout:'cards'},null,2)+'\n'};
-export const isReleaseFile=(file:string)=>Object.hasOwn(RELEASE_START_FILES,file);
-export function releaseSourceMapValid(files:Record<string,string>):boolean{return !!files&&typeof files==='object'&&!Array.isArray(files)&&Object.keys(files).every(isReleaseFile)&&Object.keys(RELEASE_FILES).every(file=>Object.hasOwn(files,file))&&Object.values(files).every(source=>typeof source==='string'&&source.length<=20000);}
-export type ReleaseProgress={formatRevision:1|2;started:boolean;proof:{hash:string;passed:boolean}|null;build:{hash:string;version:'1.0.0'}|null;published:{hash:string;version:'1.0.0'}|null};
+export const isReleaseFile=(file:string)=>Object.hasOwn(RELEASE_START_FILES,file)||file==='assets.json';
+export function releaseSourceMapValid(files:Record<string,string>):boolean{return !!files&&typeof files==='object'&&!Array.isArray(files)&&Object.keys(files).every(isReleaseFile)&&Object.keys(RELEASE_FILES).every(file=>Object.hasOwn(files,file))&&(!Object.hasOwn(files,'assets.json')||!!authoredProjectFormat(files))&&Object.entries(files).every(([file,source])=>typeof source==='string'&&source.length<=(file==='assets.json'?MAX_ASSETS_SOURCE:20000));}
+export type ReleaseProgress={formatRevision:1|2;authoredFormat?:AuthoredFormat;started:boolean;proof:{hash:string;passed:boolean}|null;build:{hash:string;version:'1.0.0'}|null;published:{hash:string;version:'1.0.0'}|null};
 export const createRelease=():ReleaseProgress=>({formatRevision:2,started:false,proof:null,build:null,published:null});
-export type ReleaseAction={type:'career-release-start'|'career-release-test'|'career-release-build'|'career-release-publish'}|{type:'career-release-edit';file:string;content:string};
-type Host={completed:number[];gameplay:{openingCelebrated:boolean;career:{completed:string[];release:ReleaseProgress}};machines:{local:{files:Record<string,string>;dirs:string[]}}};
-export type ReleaseEvaluation={passed:boolean;checks:{id:string;title:Localized;expected:string;actual:string;passed:boolean}[];preview:{title:string;width:string;style:ReleaseStyle;apiReady:boolean;storageReady:boolean;product:ReleaseProduct;personalized:boolean;productValid:boolean}};
+export type ReleaseAction={type:'career-release-start'|'career-release-test'|'career-release-build'|'career-release-publish';format?:AuthoredFormat;language?:AuthoredLanguage}|{type:'career-release-edit';file:string;content:string};
+type Host={notice?:string;completed:number[];gameplay:{openingCelebrated:boolean;career:{completed:string[];release:ReleaseProgress}};machines:{local:{files:Record<string,string>;dirs:string[]}}};
+export type ReleaseEvaluation={passed:boolean;checks:{id:string;title:Localized;expected:string;actual:string;passed:boolean}[];preview:{title:string;width:string;style:ReleaseStyle;apiReady:boolean;storageReady:boolean;product:ReleaseProduct;personalized:boolean;productValid:boolean;authored?:AuthoredEvaluation}};
 const l=(ko:string,en:string,ja:string):Localized=>({ko,en,ja});
 const MAX_SOURCE=20000;
 export function releaseFiles(s:Pick<Host,'machines'>):Record<string,string>{const prefix=RELEASE_ROOT+'/';return Object.fromEntries(Object.entries(s.machines.local.files).filter(([path])=>path.startsWith(prefix)).map(([path,value])=>[path.slice(prefix.length),value]));}
@@ -48,7 +49,8 @@ function interpret(files:Record<string,string>,requireProject=false){
 export function releaseProject(files:Record<string,string>){return parseReleaseProduct(files['project.json']);}
 /** Same bounded route/storage interpretation powers checks and the temporary UI demo. */
 export function simulateReleaseRequest(files:Record<string,string>,message:string):{status:200|404;stored:boolean}{const parsed=interpret(files);return {status:parsed.apiReady?200:404,stored:parsed.storageReady&&typeof message==='string'&&message.trim().length>0&&message.length<=2000};}
-export function evaluateRelease(files:Record<string,string>,requireProject=false):ReleaseEvaluation{
+export function evaluateRelease(files:Record<string,string>,requireProject=false,expectedFormat?:AuthoredFormat):ReleaseEvaluation{
+ if(expectedFormat||authoredProjectFormat(files))return evaluateAuthoredRelease(files,expectedFormat);
  const parsed=interpret(files,requireProject),request=simulateReleaseRequest(files,'A neighborhood request');
  const checks:ReleaseEvaluation['checks']=[
   {id:'title',title:l('내 프로젝트 제목','My project title','自分のプロジェクト名'),expected:requireProject||parsed.project.present?'Title, description and at least one authored item':'1–40 characters; not Untitled',actual:requireProject&&!parsed.project.present?'Missing project.json':parsed.project.present&&!parsed.project.authored?parsed.title+' · Add your description and items':parsed.title||'Missing or unsupported heading',passed:parsed.mapValid&&parsed.titleValid},
@@ -58,7 +60,24 @@ export function evaluateRelease(files:Record<string,string>,requireProject=false
  ];
  return {passed:checks.every(check=>check.passed),checks,preview:{title:parsed.title,width:parsed.width,style:parsed.style,apiReady:parsed.apiReady,storageReady:parsed.storageReady,product:parsed.project.product,personalized:parsed.project.present,productValid:parsed.project.valid}};
 }
-export function releaseFresh(s:Host):boolean{const progress=s.gameplay.career.release,files=releaseFiles(s);return releaseUnlocked(s)&&progress.started&&!!progress.proof?.passed&&progress.proof.hash===releaseHash(files)&&evaluateRelease(files,progress.formatRevision===2).passed;}
+function evaluateAuthoredRelease(files:Record<string,string>,expectedFormat?:AuthoredFormat):ReleaseEvaluation{
+ const parsed=validateAuthoredRelease(files,expectedFormat),mapValid=releaseSourceMapValid(files),request=simulateReleaseRequest(files,'An inquiry');
+ const check=(id:string,title:Localized,expected:string,passed:boolean,actual:string):ReleaseEvaluation['checks'][number]=>({id,title,expected,passed:mapValid&&passed,actual});
+ const checks:ReleaseEvaluation['checks']=[
+  check('title',l('내 제목과 이야기','My title and story','自分のタイトルと内容'),'Your own title and body content or personal photo',parsed.htmlValid&&parsed.authored&&parsed.projectValid,parsed.title||parsed.diagnostics[0]||'Missing heading'),
+  check('html',l('HTML 구조','HTML structure','HTML構造'),'Passive semantic HTML; local image references',parsed.htmlValid,parsed.htmlValid?'HTML accepted':parsed.diagnostics[0]||'Check HTML'),
+  check('width',l('반응형 CSS','Responsive CSS','レスポンシブCSS'),'Fluid widths; check the preview at 320/360/960px',parsed.cssValid&&parsed.responsive,parsed.cssValid&&parsed.responsive?'Responsive declarations accepted':parsed.diagnostics.join(' · ')),
+  check('assets',l('내 사진','My images','自分の画像'),'Optional PNG/JPEG/WebP images, bounded embedded data',parsed.assetsValid,parsed.assetsValid?'Images accepted':parsed.diagnostics.join(' · ')),
+ ];
+ if(parsed.format==='webapp'){
+  checks.push(check('items',l('내 검색 목록','My searchable list','自分の検索一覧'),'Authored items and items/inquiry sections',parsed.widgetsReady,parsed.widgetsReady?'App sections ready':'Add your items and data-app sections'));
+  checks.push(check('route',l('목록 요청','List request','一覧リクエスト'),'GET /api/places → 200',request.status===200,'GET /api/places → '+request.status));
+  checks.push(check('storage',l('문의 보관','Keep inquiries','問い合わせ保存'),'saveRequests: true',request.stored,request.stored?'Inquiry configured':'Enable inquiry storage'));
+ }
+ return {passed:checks.every(c=>c.passed)&&parsed.valid,checks,preview:{title:parsed.title,width:'100%',style:{width:'100%',boxSizing:'border-box',padding:0},apiReady:request.status===200,storageReady:request.stored,product:parsed.product,personalized:true,productValid:parsed.projectValid,authored:parsed}};
+}
+
+export function releaseFresh(s:Host):boolean{const progress=s.gameplay.career.release,files=releaseFiles(s);return releaseUnlocked(s)&&progress.started&&!!progress.proof?.passed&&progress.proof.hash===releaseHash(files)&&evaluateRelease(files,progress.formatRevision===2,progress.authoredFormat).passed;}
 export function releaseBuildFresh(s:Host):boolean{const progress=s.gameplay.career.release;return releaseFresh(s)&&progress.build?.version==='1.0.0'&&progress.build.hash===releaseHash(releaseFiles(s));}
 export function releasePublishedFresh(s:Host):boolean{const progress=s.gameplay.career.release;return releaseBuildFresh(s)&&progress.published?.version==='1.0.0'&&progress.published.hash===releaseHash(releaseFiles(s));}
 export function invalidateRelease(s:Host):void{const progress=s.gameplay.career.release;if(!progress.started||progress.published)return;const hash=releaseHash(releaseFiles(s));if(progress.proof&&progress.proof.hash!==hash)progress.proof=null;if(progress.build&&progress.build.hash!==hash)progress.build=null;}
@@ -68,15 +87,19 @@ export function applyRelease(s:Host,action:ReleaseAction):void{
  if(action.type==='career-release-start'){
   if(progress.started)return;progress.started=true;progress.formatRevision=2;
   for(const directory of ['/home/dev/studio',RELEASE_ROOT])if(!s.machines.local.dirs.includes(directory))s.machines.local.dirs.push(directory);
-  for(const [file,content] of Object.entries(RELEASE_START_FILES))s.machines.local.files[RELEASE_ROOT+'/'+file]=content;return;
+  if(action.format&&['website','webapp'].includes(action.format))progress.authoredFormat=action.format;
+  const startFiles=action.format&&['website','webapp'].includes(action.format)?authoredStartFiles(action.format,action.language&&['ko','en','ja'].includes(action.language)?action.language:'ko'):RELEASE_START_FILES;
+  for(const [file,content] of Object.entries(startFiles))s.machines.local.files[RELEASE_ROOT+'/'+file]=content;return;
  }
  if(!progress.started)return;
  if(action.type==='career-release-edit'){
-  if(!isReleaseFile(action.file)||typeof action.content!=='string'||action.content.length>MAX_SOURCE)return;
+  if(!isReleaseFile(action.file)||typeof action.content!=='string'||action.content.length>(action.file==='assets.json'?MAX_ASSETS_SOURCE:MAX_SOURCE)||action.file==='assets.json'&&!progress.authoredFormat&&!authoredProjectFormat(releaseFiles(s)))return;
+  const projected={...s,machines:{...s.machines,local:{...s.machines.local,files:{...s.machines.local.files,[RELEASE_ROOT+'/'+action.file]:action.content}}}};
+  if(JSON.stringify(projected).length>4_090_000){s.notice='사진과 파일이 저장 용량에 가까워요. 사진 크기를 줄여 주세요. / Photos and files are close to the save limit. Import smaller images. / 写真とファイルが保存容量に近づいています。小さい画像を読み込んでください。';return;}
   s.machines.local.files[RELEASE_ROOT+'/'+action.file]=action.content;progress.proof=null;progress.build=null;return;
  }
  const files=releaseFiles(s);invalidateRelease(s);
- if(action.type==='career-release-test'){progress.proof={hash:releaseHash(files),passed:evaluateRelease(files,progress.formatRevision===2).passed};return;}
+ if(action.type==='career-release-test'){progress.proof={hash:releaseHash(files),passed:evaluateRelease(files,progress.formatRevision===2,progress.authoredFormat).passed};return;}
  if(action.type==='career-release-build'){if(releaseFresh(s))progress.build={hash:releaseHash(files),version:'1.0.0'};return;}
  if(action.type==='career-release-publish'&&releaseBuildFresh(s))progress.published={hash:releaseHash(files),version:'1.0.0'};
 }
@@ -92,5 +115,5 @@ export function releaseFootprint(s:FootprintHost):ReleaseFootprint{
  const delivered=[...new Set(ids)].map(id=>CAREER_JOBS.find(job=>job.id===id)).filter((job):job is CareerJob=>!!job&&!NARRATOR_JOBS.includes(job.id));
  const clients=(delivered.length>1?[delivered[0],delivered[delivered.length-1]]:[]).map(job=>job.client);
  const preview=evaluateRelease(releaseFiles(s)).preview;
- return {...footprint,clients,title:preview.title,product:preview.personalized&&preview.productValid&&preview.product.items.length?preview.product:null};
+ return {...footprint,clients,title:preview.title,...(preview.authored?{authored:{format:preview.authored.format,description:preview.product.description}}:{}),product:preview.personalized&&preview.productValid&&preview.product.items.length?preview.product:null};
 }

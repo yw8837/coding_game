@@ -2,7 +2,10 @@
 import {useEffect,useRef,useState} from 'react';
 import {useLanguage} from '@/lib/game/i18n';
 import {desktopBridge} from '@/lib/game/platform';
-import {evaluateRelease,filterReleaseItems,releaseHash} from '@/lib/game/release';
+import {evaluateRelease,filterReleaseItems,releaseHash,releaseFiles} from '@/lib/game/release';
+import {authoredProjectFormat} from '@/lib/game/release-authored';
+import {AuthoredProject} from './AuthoredProject';
+import {ProjectUpgrade} from './ProjectUpgrade';
 import {STUDIO_FILE_NAMES,STUDIO_MAX_SOURCE,studioFiles,studioFresh,studioHasUnsnapshottedChanges} from '@/lib/game/studio';
 import {buildStudioExport} from '@/lib/game/studio-export';
 import {SmartCodeInput,type SmartCodeHandle} from './SmartCodeInput';
@@ -11,7 +14,13 @@ import {ReleaseLearning} from './ReleaseLearning';
 import type {GameProps} from './types';
 import './studio.css';
 
-export function StudioWorkspace({props,onBack}:{props:GameProps;onBack:()=>void}){
+type StudioProps={props:GameProps;onBack:()=>void};
+export function StudioWorkspace({props,onBack}:StudioProps){
+ const files=props.state.gameplay.career.studio?studioFiles(props.state):releaseFiles(props.state);
+ if(props.state.gameplay.career.studio?.authoredFormat||props.state.gameplay.career.release.authoredFormat||authoredProjectFormat(files))return <AuthoredProject props={props} mode="studio" onBack={onBack}/>;
+ return <LegacyStudioWorkspace props={props} onBack={onBack}/>;
+}
+function LegacyStudioWorkspace({props,onBack}:StudioProps){
  const {state,onAction}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
  const progress=state.gameplay.career.studio,files=studioFiles(state),hash=releaseHash(files),evaluation=evaluateRelease(files,true);
  const checked=progress?.proof?.hash===hash,fresh=studioFresh(state),changed=studioHasUnsnapshottedChanges(state);
@@ -50,6 +59,7 @@ export function StudioWorkspace({props,onBack}:{props:GameProps;onBack:()=>void}
  return <section className="studio-workspace" data-testid="studio-workspace" data-no-translate>
   <div className="studio-content" inert={restore!==null}>
   <header className="studio-heading"><button className="outline-button" data-testid="studio-back" onClick={onBack}>{tr('첫 릴리스 보기','View first release','最初のリリースを見る')}</button><h2 ref={heading} tabIndex={-1}>{tr('내 앱 작업실','My app studio','自分のアプリ工房')}</h2><p>{tr('장소 목록 · 행사 안내 · 작품 모음을 계속 고치고 HTML로 가져갈 수 있어요. 첫 1.0.0 기록은 보관됩니다.','Keep editing your directory, event board or portfolio and take it with you as HTML. Your first 1.0.0 release is preserved.','場所一覧・イベント案内・作品集を編集し、HTMLで持ち帰れます。最初の1.0.0の記録は保存されます。')}</p></header>
+  {progress&&<ProjectUpgrade props={props} disabled={!fresh}/>}
   {!progress?<div className="studio-start"><p>{tr('배포한 파일을 별도 초안으로 복사해 시작합니다. 새 검사와 버전 기록에는 보상이 붙지 않습니다.','Start with a separate draft copied from your released files. Checks and snapshots award no credits.','公開済みのファイルから別の下書きを作ります。検査や版の記録では報酬は増えません。')}</p><button className="primary-button" data-testid="studio-start" onClick={()=>onAction({type:'career-studio-start'})}>{tr('편집 초안 만들기','Create editable draft','編集用の下書きを作る')}</button></div>:<>
    <div className="studio-status" role="status" data-testid="studio-state"><strong>{fresh?tr('현재 파일 검사 통과','Current files checked','現在のファイルは検査合格'):checked?tr('검사에서 수정할 곳을 찾았어요','Checks found changes to make','検査で修正点が見つかりました'):tr('현재 초안 · 검사 필요','Current draft · check needed','現在の下書き・検査が必要')}</strong><span>{changed?tr('마지막 버전 이후 변경 있음','Changes since last snapshot','最後の版から変更あり'):tr('마지막 버전과 같음','Matches last snapshot','最後の版と同じ')}</span><small>{tr('게임 저장에 포함되는 초안 · 최대 5개 버전','Draft included in game saves · up to 5 snapshots','ゲーム保存に含まれる下書き・版は最大5件')}</small></div>
    <div className="studio-grid"><section className="studio-editor"><nav className="career-file-tabs" aria-label={tr('작업실 파일','Studio files','工房のファイル')}>{STUDIO_FILE_NAMES.map(name=><button key={name} data-testid={'studio-file-'+name} aria-pressed={file===name} onClick={()=>{setFile(name);setEditError('');}}>{name}</button>)}</nav><div className="career-editor-tools"><button onClick={()=>smart.current?.undo()}>{tr('실행 취소','Undo','元に戻す')}</button><button onClick={()=>smart.current?.redo()}>{tr('다시 실행','Redo','やり直す')}</button><button onClick={()=>smart.current?.complete()}>{tr('자동완성','Complete','補完')}</button><span>Tab · Ctrl+Enter</span></div><div className="career-code-input release-code" data-testid="studio-editor"><SmartCodeInput ref={smart} file={file} value={files[file]??''} onScroll={()=>{}} onChange={content=>edit(file,content)} onTest={()=>onAction({type:'career-studio-test'})}/></div>{editError&&<p role="alert">{editError}</p>}

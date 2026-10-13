@@ -1,4 +1,5 @@
 import {releaseHash} from './release.ts';
+import {authoredProjectFormat,buildAuthoredHtml} from './release-authored.ts';
 import type {StudioSourceMap} from './studio.ts';
 import {GAME_BRAND,GAME_VERSION_LABEL} from './brand.ts';
 import {buildStudioAppHtml,escapeHtml,STUDIO_ACCENT_COLORS,STUDIO_EXPORT_WORDS,studioExportPreview,studioPortalCss} from './studio-export.ts';
@@ -17,6 +18,7 @@ const graphemes=(value:string)=>Array.from(new Intl.Segmenter('en',{granularity:
 
 /** A zero-JavaScript page of the authored product, grouped by category. Uploadable as index.html. */
 export function buildStaticSiteExport(files:StudioSourceMap,language:FinaleLanguage):string{
+ if(authoredProjectFormat(files)){studioExportPreview(files,language);return buildAuthoredHtml(files,language);}
  const {title,product,style}=studioExportPreview(files,language),w=STUDIO_EXPORT_WORDS[language];
  const groups=new Map<string,typeof product.items>();
  for(const item of product.items)groups.set(item.category,[...(groups.get(item.category)??[]),item]);

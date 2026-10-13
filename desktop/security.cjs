@@ -3,8 +3,9 @@ const path = require('node:path');
 
 const ORIGIN = 'codeshift://app';
 const ENTRY = `${ORIGIN}/index.html`;
+const authoredRuntime = require('./authored-runtime.json');
 const CSP = [
-  "default-src 'none'", "script-src 'self'", "style-src 'self' 'unsafe-inline'",
+  "default-src 'none'", `script-src 'self' 'sha256-${authoredRuntime.sha256}'`, "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:", "font-src 'self'", "media-src 'self' blob:",
   "connect-src 'none'", "worker-src 'none'", "frame-src 'self' about: blob:",
   "object-src 'none'", "base-uri 'none'", "form-action 'none'", "frame-ancestors 'none'",

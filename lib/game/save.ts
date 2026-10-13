@@ -16,7 +16,7 @@ import {OPS_IDS} from './ops-content.ts';
 import {createFinale} from './finale.ts';
 import {DEFAULT_LOADOUT} from './progression.ts';
 const text=z.string().max(60000);
-const files=z.record(z.string().max(300),text);
+const files=z.record(z.string().max(300),z.string().max(500000)).refine(map=>Object.entries(map).every(([path,source])=>source.length<=60000||['/home/dev/studio/launch/assets.json','/home/dev/studio/workbench/assets.json'].includes(path)));
 const snapshot=z.object({id:z.string(),message:z.string(),files,mission:z.number().int().min(0).max(2),hash:z.string()});
 const machine=z.object({cwd:z.string(),tools:z.array(z.string()),updated:z.boolean(),files,dirs:z.array(z.string()),dependencies:z.array(z.string()),pythonDeps:z.array(z.string()),processes:z.object({frontend:z.boolean(),backend:z.boolean()}),frontendRoot:z.string().nullable(),backendRoot:z.string().nullable(),backendSource:text.nullable(),cloned:z.boolean()});
 const practiceValue=z.union([z.number().finite(),z.string().max(80),z.boolean()]);
@@ -34,7 +34,7 @@ const MAX_LEGACY_SAVE_CHARS=4_000_000;
 const MAX_SAVE_CHARS=4_100_000;
 function validateCareer(state:GameState){validateStudioSave(state);const c=state.gameplay.career;if(c.accepted.length&&(!state.gameplay.openingCelebrated||![0,1,2].every(m=>state.completed.includes(m))))throw Error('Career requires the cafe opening');for(const id of c.completed){const job=CAREER_JOBS.find(j=>j.id===id)!;const files=careerFiles(state,id);if(Object.keys(job.files).some(p=>typeof files[p]!=='string'||files[p].length>20000)||!deliveredCareerValid(id,files,c.rulesRevision))throw Error('Delivered job files are missing or invalid');}
  const release=c.release;if(!release)return;if(release.started&&!releaseUnlocked(state))throw Error('Release requires cafe OPEN and four deliveries per district');
- const files=releaseFiles(state),hash=releaseHash(files),evaluation=evaluateRelease(files,release.formatRevision===2);
+ const files=releaseFiles(state),hash=releaseHash(files),evaluation=evaluateRelease(files,release.formatRevision===2,release.authoredFormat);
  if(release.proof&&(release.proof.hash!==hash||release.proof.passed!==evaluation.passed))throw Error('Release proof must match current source');
  if(release.build&&(release.build.hash!==hash||!evaluation.passed))throw Error('Release build must match passing current source');
  if(release.published&&!releasePublishedFresh(state))throw Error('Published release source or records are invalid');

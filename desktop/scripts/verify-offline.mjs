@@ -22,7 +22,7 @@ for (const name of ['LICENSE', 'LICENSES.chromium.html', 'THIRD-PARTY-NOTICES.tx
 const notice = JSON.parse(read('renderer/third-party-manifest.json'));
 assert.ok(notice.packages.length > 0);
 assert.deepEqual(read('renderer/THIRD-PARTY-NOTICES.txt'), await readFile(path.join(release, 'THIRD-PARTY-NOTICES.txt')));
-const matching = files.filter(name => /^renderer[/\\]/.test(name) || /^[^/\\]+\.cjs$/.test(name) && !name.endsWith('qa-build.cjs'));
+const matching = files.filter(name => /^renderer[/\\]/.test(name) || name === 'authored-runtime.json' || /^[^/\\]+\.cjs$/.test(name) && !name.endsWith('qa-build.cjs'));
 for (const name of matching) assert.deepEqual(read(name), extractFile(qaArchive, name), `QA mismatch: ${name}`);
 const rendererFiles = matching.filter(name => /^renderer[/\\]/.test(name));
 for (const name of matching) {
@@ -31,7 +31,7 @@ for (const name of matching) {
 assert.deepEqual(read('renderer/favicon.svg'), await readFile(path.join(root, 'public/favicon.svg')));
 assert.match(read('renderer/index.html').toString(), /href="\/favicon\.svg"/);
 const art = [];
-for (const name of ['studio-evening.png', 'neighborhood.png', 'mono-cafe.png', 'portraits.png', 'wallpaper-blue.png', 'wallpaper-coast.png', 'wallpaper-garden.png', 'wallpaper-loft.png']) {
+for (const name of ['studio-evening.png', 'neighborhood.png', 'mono-cafe.png', 'portraits.png', 'wallpaper-blue.png', 'wallpaper-coast.png', 'wallpaper-garden.png', 'wallpaper-loft.png', 'ending-neighbors.png', 'ending-celebration.png', 'ending-home.png']) {
   const packed = read('renderer/game-art/' + name);
   assert.deepEqual(packed, await readFile(path.join(root, 'public/game-art', name)), `Art mismatch: ${name}`);
   art.push({file: name, bytes: packed.length, sha256: createHash('sha256').update(packed).digest('hex')});
@@ -39,7 +39,9 @@ for (const name of ['studio-evening.png', 'neighborhood.png', 'mono-cafe.png', '
 const fuses = await getCurrentFuseWire(path.join(release, 'CODE-SHIFT.exe'));
 for (const key of ['RunAsNode', 'EnableNodeOptionsEnvironmentVariable', 'EnableNodeCliInspectArguments']) assert.equal(fuses[FuseV1Options[key]], 48, key);
 for (const key of ['EnableEmbeddedAsarIntegrityValidation', 'OnlyLoadAppFromAsar', 'EnableCookieEncryption']) assert.equal(fuses[FuseV1Options[key]], 49, key);
-const report = {version: manifest.version, qaFlag: false, steamModuleIncluded: false, steamAppId: null,
+const authoredRuntime = JSON.parse(read('authored-runtime.json'));
+assert.equal(createHash('sha256').update(authoredRuntime.source).digest('base64'), authoredRuntime.sha256);
+const report = {version: manifest.version, qaFlag: false, steamModuleIncluded: false, steamAppId: null, authoredRuntimeHash: authoredRuntime.sha256,
   licenseFilesPresent: true, rendererNoticePackages: notice.packages.length, fuses,
   matchingQAGameFiles: matching.length, matchingCurrentSourceAndRendererFiles: matching.length, matchingCurrentRendererFiles: rendererFiles.length,
   desktopIconPresent: true, asarFiles: files.length, art};

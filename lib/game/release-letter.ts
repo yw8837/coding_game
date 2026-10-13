@@ -3,7 +3,7 @@ import {CAREER_TRACK_LABELS,type CareerFootprint,type CareerTrack} from './caree
 import type {ReleaseProduct} from './release-product.ts';
 
 export type ReleaseEnding='community'|'studio'|'balanced';
-export type ReleaseFootprint=CareerFootprint&{clients:Localized[];title:string;product:ReleaseProduct|null};
+export type ReleaseFootprint=CareerFootprint&{clients:Localized[];title:string;product:ReleaseProduct|null;authored?:{format:'website'|'webapp';description:string}};
 export type ReleaseLetter={sender:'지우'|'민서';title:Localized;paragraphs:Localized[];director:Localized[]};
 type Lang=keyof Localized;
 const LANGS:Lang[]=['ko','en','ja'];
@@ -53,6 +53,14 @@ function productLine(ending:ReleaseEnding,footprint:ReleaseFootprint):Localized 
  const item=footprint.product?.items[0]?.name,kind=footprint.product?KIND[footprint.product.kind]:null;
  return each(lang=>{
   const title=footprint.title?({ko:`‘${footprint.title}’`,en:`“${footprint.title}”`,ja:`「${footprint.title}」`})[lang]:({ko:'네 첫 버전',en:'your first release',ja:'あなたの最初の版'})[lang];
+  if(footprint.authored){
+   const format=({website:{ko:'웹사이트',en:'website',ja:'ウェブサイト'},webapp:{ko:'웹앱',en:'web app',ja:'ウェブアプリ'}})[footprint.authored.format][lang];
+   const purpose=footprint.authored.description.trim();
+   const about=purpose?({ko:` ‘${purpose}’라는 소개도 읽었어.`,en:` I read your description: “${purpose}”.`,ja:`「${purpose}」という紹介も読んだよ。`})[lang]:'';
+   if(ending==='studio')return ({ko:`오늘 배포한 ${title}는 네가 글과 화면을 직접 만든 ${format}${footprint.authored.format==='website'?'야':'이야'}.${about} 첫 버전은 네 이름으로 남겨 두자.`,en:`You wrote the content and designed the page of ${title}, your own ${format}.${about} Let’s keep this first version under your name.`,ja:`今日公開した${title}は、文章と画面を自分で作った${format}だね。${about}最初の版はあなたの名前で残そう。`})[lang];
+   if(ending==='community')return ({ko:`네가 만든 ${format} ${title}를 이웃들에게 보여 줬어.${about} 누가 만들었냐길래 네 이름을 말해 줬지.`,en:`I showed the neighbors ${title}, the ${format} you made.${about} When they asked who made it, I said your name.`,ja:`あなたが作った${format}、${title}を近所のみんなに見せたよ。${about}誰が作ったのって聞かれたから、あなたの名前を伝えたよ。`})[lang];
+   return ({ko:`네 ${format} ${title}를 열어 봤어. 직접 쓴 글과 고른 화면이 이제 다른 사람에게 닿네.${about} 처음 카페 이름 한 줄을 고치던 날에서 여기까지 왔구나.`,en:`I opened ${title}, your ${format}. The words you wrote and the design you chose now reach other people.${about} You came all this way from changing a café’s name.`,ja:`あなたの${format}、${title}を開いてみたよ。自分で書いた文章と選んだ画面が、ほかの人に届くんだね。${about}カフェの名前の一行から、ここまで来たんだね。`})[lang];
+  }
   const quoted=item&&kind?({ko:`‘${item}’`,en:`“${item}”`,ja:`「${item}」`})[lang]:'',k=kind?.[lang]??'';
   if(ending==='community')return ({ko:`${title} 주소를 이웃들에게 전했어.${quoted?` ${k}에 올린 ${quoted}부터 다들 눌러 보더라.`:''} 누가 만들었냐길래 네 이름을 말해 줬지.`,en:`I shared ${title} with the neighbors.${quoted?` Everyone started with ${quoted} on your ${k}.`:''} When they asked who made it, I said your name.`,ja:`${title}のアドレスを近所のみんなに伝えたよ。${quoted?`${k}に載せた${quoted}から、みんな開いてた。`:''}誰が作ったのって聞かれたから、あなたの名前を言ったよ。`})[lang];
   if(ending==='studio')return ({ko:`오늘 배포한 ${title} 1.0은 네 이름으로 남겨 두자.${quoted?` ${k} 첫 줄의 ${quoted}까지 전부 네 손으로 쓴 거잖아.`:''}`,en:`Let’s keep ${title}, version 1.0, under your name.${quoted?` From ${quoted} at the top of your ${k}, every line is yours.`:''}`,ja:`今日公開した${title}の1.0は、あなたの名前で残そう。${quoted?`${k}の最初の${quoted}まで、全部あなたが書いたものだから。`:''}`})[lang];
@@ -79,12 +87,16 @@ function directorNote(footprint:ReleaseFootprint):Localized[] {
   return base+' '+({ko:`가장 깊이 들어간 분야는 ‘${label}’(${trackTotal}건 중 ${done}건)입니다.`,en:`The field you went deepest into was ${label} (${done} of ${trackTotal}).`,ja:`いちばん深く取り組んだ分野は「${label}」（${trackTotal}件中${done}件）です。`})[lang];
  });
  const code=count?L(`그중 ${count}건은 설정을 고치는 대신 JavaScript 함수를 직접 작성해 통과했어요. 실행기는 게임 속 가상 환경이지만, 문법은 실제 JavaScript 그대로입니다.`,`In ${count} of them you passed by writing your own JavaScript function instead of editing settings. The runner is simulated inside the game, but the syntax is real JavaScript.`,`そのうち${count}件は、設定を直す代わりにJavaScriptの関数を自分で書いて通過しました。実行環境はゲーム内の仮想のものですが、文法は本物のJavaScriptです。`):L('이번에는 모든 의뢰를 설정 파일로 풀었어요. 지도에서 ‘JS’ 배지가 붙은 의뢰는 ‘JavaScript로 직접 풀기’로 코드 풀이에도 도전할 수 있어요.','This time you solved everything through settings files. Jobs with the JS badge on the map can also be solved in code with “Solve with JavaScript”.','今回はすべての依頼を設定ファイルで解きました。地図で「JS」バッジがついた依頼は、「JavaScriptで解く」からコードでも挑戦できます。');
- return [summary,code,...(lead?[NEXT_STEPS[lead]]:[]),L('끝까지 함께해 줘서 고마워요. 당신이 고친 동네는 저장 파일 안에 그대로 남아 있습니다.','Thank you for staying until the end. The neighborhood you repaired stays in your save, just as you left it.','最後まで一緒にいてくれてありがとう。あなたが直したまちは、セーブデータの中にそのまま残っています。')];
+ const authored=footprint.authored?[each(lang=>{
+  const format=({website:{ko:'웹사이트',en:'website',ja:'ウェブサイト'},webapp:{ko:'웹앱',en:'web app',ja:'ウェブアプリ'}})[footprint.authored!.format][lang];
+  return ({ko:`마지막에는 ‘${footprint.title}’라는 나만의 ${format}${footprint.authored!.format==='website'?'를':'을'} 만들었습니다. 직접 쓴 글과 CSS로 고른 모습이 첫 버전에 남아 있어요. 작업실에서 이 작품을 계속 고칠 수 있습니다.`,en:`At the end, you made “${footprint.title}”, your own ${format}. The words you wrote and the style you chose in CSS remain in your first release. You can keep editing this project in the studio.`,ja:`最後には、自分の${format}「${footprint.title}」を作りました。書いた文章とCSSで選んだ見た目が最初の版に残っています。工房でこの作品を作り続けられます。`})[lang];
+ })]:[];
+ return [summary,code,...authored,...(lead?[NEXT_STEPS[lead]]:[]),L('끝까지 함께해 줘서 고마워요. 당신이 고친 동네는 저장 파일 안에 그대로 남아 있습니다.','Thank you for staying until the end. The neighborhood you repaired stays in your save, just as you left it.','最後まで一緒にいてくれてありがとう。あなたが直したまちは、セーブデータの中にそのまま残っています。')];
 }
 /** Ending selection stays in careerEndingFor; this only fills the authored letter with the player's own record. */
 export function releaseLetter(ending:ReleaseEnding,footprint:ReleaseFootprint):ReleaseLetter {
  const sender=ending==='studio'?'민서':'지우',[first,last]=footprint.clients.map(person);
- const paragraphs=[OPENINGS[ending]];
+ const paragraphs=[footprint.authored&&ending==='studio'?L('마지막 버전을 열어 봤어. 글도 화면의 모습도 네가 직접 고르고 만든 거더라.','I opened your final version. The writing and the look of the page are choices you made yourself.','最後の版を開いてみたよ。文章も画面の見た目も、自分で選んで作ったものなんだね。'):OPENINGS[ending]];
  if(first&&last)paragraphs.push(each(lang=>CLIENTS[ending](first[lang],last[lang],lang)));
  if(footprint.lead)paragraphs.push(TRACK_LINES[footprint.lead]);
  paragraphs.push(codeLine(sender,footprint.javascript.length),productLine(ending,footprint),CLOSINGS[ending]);
