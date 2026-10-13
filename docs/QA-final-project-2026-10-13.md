@@ -54,3 +54,13 @@ Independent save/security follow-up: three valid PNGs (479,244 asset-source char
 The authored-project native harness starts from a cafe-completion fixture and earns twelve neighborhood jobs through the game engine. It then uses actual UI for format selection, authoring, image import, checks, publication, story, studio, snapshots, export and restart. This does not represent a new full-campaign human playthrough.
 
 Real beginner enjoyment, independent low-end hardware, native-language editing, Steam integration and Steam review remain outside these automatic checks. No claim is made that every reference video has been watched end to end.
+
+## Follow-up: ending image crop and short-window access
+
+The user spotted a cropped image top after the original delivery. Native reproduction at a requested 1280×800 window showed `object-fit: cover` rendering the 1672×941 picture into an approximately 998×337 area, cutting about 224.54 CSS pixels vertically in total. The dialog itself remained inside the viewport.
+
+The art now uses `contain`, preserving the entire composition with side space when necessary. Story and credits dialogs allow vertical overflow when their fixed heading/actions exceed the available height. The story body retains a 120px minimum usable scroll area; the credits title may wrap long words.
+
+Native layout QA passed 18 combinations: KO/EN/JA × requested windows and Electron zoom of 1280×800/100%, 1366×768/125%, 1024×600/100%, 800×600/150%, 390×720/100%, and 640×360/125%. All three scenes have no image-fit crop. Dialog bounds stay inside the actual CSS viewport, the heading is reachable, next-scene buttons remain accessible, and the final short-window credits studio button can be reached. These are app zoom checks, not separate OS DPI certification. Evidence: `output/ending-layout/before.json`, `report.json`, before/after screenshots, and the isolated local check script `output/check-ending-layout.cjs`.
+
+Follow-up `pnpm verify` passed at 2026-10-13 14:26:58 UTC with the same 462 game / 41 desktop tests and 366 clean lint files. The desktop renderer was rebuilt with this CSS correction.
