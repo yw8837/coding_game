@@ -1,13 +1,16 @@
 'use client';
-import {useCallback,useEffect,useRef,useState,type ReactNode} from 'react';
+import {useCallback,useEffect,useRef,useState,type ReactNode,type KeyboardEvent as ReactKeyboardEvent} from 'react';
 import {editionAllowsApp,editionAllowsPath} from '@/lib/game/edition';
-import {Monitor,Code2,TerminalSquare,MessageCircle,FolderOpen,FileText,Settings2,Trophy,Palette,Server,Send,LayoutGrid,Search,Power,Volume2,VolumeX,Wifi,Check,Flag,Puzzle,Expand,ChevronLeft,ChevronRight,CalendarDays,Columns2} from 'lucide-react';
+import {Monitor,Code2,TerminalSquare,MessageCircle,FolderOpen,FileText,Settings2,Trophy,Palette,Server,Send,LayoutGrid,Search,Power,Volume2,VolumeX,Wifi,Check,Flag,Puzzle,Expand,ChevronLeft,ChevronRight,CalendarDays,Columns2,Sparkles,FileCode2,Database} from 'lucide-react';
+import {opsTrackUnlocked} from '@/lib/game/ops';
+import {LevelChip} from './LevelChip';
 import {useLanguage,t} from '@/lib/game/i18n';
 import {gameMessages} from '@/lib/game/gameplay';
-import {openWindow,focusedWindow,tileWindows,type WindowState,type Bounds} from '@/lib/game/windows';
+import {openWindow,focusedWindow,tileWindows,cycleWindow,type WindowState,type Bounds} from '@/lib/game/windows';
 import type {FeedbackPreferences} from '@/lib/game/feedback-preferences';
 import {calendarMonth,calendarWeeks,recentEditorFiles,DESKTOP_LOCALES} from '@/lib/game/desktop-calendar';
 import {unreadWelcome,visibleQuestApps} from '@/lib/game/quest-guidance';
+import {defaultWorkContext,visibleWorkContext,workContextForFile,workGuide as buildWorkGuide} from '@/lib/game/work-context';
 import {CharacterPortrait} from './StoryArt';
 import {BrowserIcon} from './BrowserIcon';
 import {DesktopWindow} from './DesktopWindow';
@@ -29,6 +32,9 @@ export const DESKTOP_APPS=[
  {id:'api',ko:'요청 실험실',en:'API lab',ja:'APIラボ',icon:Send,color:'orange'},
  {id:'achievements',ko:'성취',en:'Achievements',ja:'実績',icon:Trophy,color:'gold'},
  {id:'workbench',ko:'꾸미기',en:'Personalize',ja:'個人設定',icon:Palette,color:'purple'},
+ {id:'profile',ko:'내 성장',en:'Growth',ja:'成長',icon:Sparkles,color:'purple'},
+ {id:'python',ko:'파이썬 자동화',en:'Python Automation',ja:'Python自動化',icon:FileCode2,color:'blue'},
+ {id:'sql',ko:'SQL 데이터베이스',en:'SQL Database',ja:'SQLデータベース',icon:Database,color:'green'},
 ] as const;
 
 export function useDesktopManager(){
@@ -55,7 +61,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
  const toggleCalendar=()=>{if(calendar)closePanel();else{const current=new Date();setNow(current);setMonth(calendarMonth(current));returnFocus.current=clockRef.current;setPanel('calendar');}};
  const time=now?.toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit',hour12:false})??'--:--';
  const date=now?.toLocaleDateString(locale,{month:'2-digit',day:'2-digit'})??'--/--';
- const recentFiles=recentEditorFiles(props.state.history,props.state.machines.local.files).filter(path=>editionAllowsPath(props.edition,path));
+ const recentFiles=recentEditorFiles(props.state.history,props.state.machines.local.files).filter(path=>editionAllowsPath(props.edition,path,'/home/dev',props.state));
  const recentWork=props.state.history.slice(-3).reverse();
  const weekdays=Array.from({length:7},(_,day)=>new Date(2023,0,1+day,12));
  const unread=gameMessages(props.state).filter(m=>!props.state.gameplay.readMessages.includes(m.id)).length;
@@ -67,24 +73,55 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
  useEffect(()=>{if(manager.app==='desktop')startRef.current?.focus({preventScroll:true});},[manager.app]);
  useEffect(()=>{if(!panel)return;const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePanel();}};const outside=(e:PointerEvent)=>{const target=e.target as Node;if([startPanel,calendarPanel,soundPanel,languagePanel,startRef,searchRef,clockRef,soundRef,languageRef].some(r=>r.current?.contains(target)))return;closePanel();};document.addEventListener('keydown',key,true);document.addEventListener('pointerdown',outside);return()=>{document.removeEventListener('keydown',key,true);document.removeEventListener('pointerdown',outside);};},[panel,closePanel]);
  const open=(id:AppId)=>{closePanel(false);props.onOpen(id);};
- const available=DESKTOP_APPS.filter(a=>editionAllowsApp(props.edition,a.id)&&(a.id!=='career'||props.state.gameplay.openingCelebrated)&&(advanced||!['server','api'].includes(a.id)||props.state.mission===2));
+ const available=DESKTOP_APPS.filter(a=>editionAllowsApp(props.edition,a.id)&&(a.id!=='career'||props.state.gameplay.openingCelebrated)&&(a.id!=='python'||opsTrackUnlocked(props.state,'python'))&&(a.id!=='sql'||opsTrackUnlocked(props.state,'sql'))&&(advanced||!['server','api'].includes(a.id)||props.state.mission===2));
+ const {windows,app,focus:focusWindow}=manager;
+ const {workContext,workSelections,onWorkContext,editorTarget,guided,state}=props;
+ const focus=useCallback((id:string)=>{
+  if(id!==app){
+   const context=id==='editor'?workContextForFile(editorTarget?.file??''):id==='terminal'?workContext??null:workSelections?.[id]??(id==='challenges'&&guided?null:defaultWorkContext(state,id));
+   onWorkContext?.(context);
+  }
+  focusWindow(id);
+ },[app,focusWindow,workContext,workSelections,onWorkContext,editorTarget,guided,state]);
+ useEffect(()=>{
+  const key=(e:KeyboardEvent)=>{
+   if(e.key!=='F6'||e.ctrlKey||e.altKey||e.metaKey||e.isComposing||e.defaultPrevented||panel||document.querySelector('[aria-modal="true"]'))return;
+   const id=cycleWindow(windows,app,available.map(a=>a.id),e.shiftKey);
+   if(!id)return;
+   e.preventDefault();
+   focus(id);
+  };
+  document.addEventListener('keydown',key);
+  return()=>document.removeEventListener('keydown',key);
+ },[windows,app,focus,available,panel]);
+ const taskbarKey=(e:ReactKeyboardEvent<HTMLDivElement>)=>{
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key)||e.altKey||e.ctrlKey||e.metaKey)return;
+  const buttons=Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('button'));
+  const index=buttons.indexOf(e.target as HTMLButtonElement);
+  if(index<0)return;
+  e.preventDefault();
+  const next=e.key==='Home'?0:e.key==='End'?buttons.length-1:(index+(e.key==='ArrowLeft'?-1:1)+buttons.length)%buttons.length;
+  buttons[next]?.focus({preventScroll:true});
+  buttons[next]?.scrollIntoView({block:'nearest',inline:'nearest'});
+ };
  const label=(a:typeof DESKTOP_APPS[number])=>a[lang];
  const activeApps=manager.windows.filter(w=>!w.closed);
  const visibleApps=visibleQuestApps(manager.windows,manager.bounds,manager.compact);
+ const guide=buildWorkGuide(props.state,visibleWorkContext(props.workSelections?.[manager.app]??props.workContext??null,manager.app,props.editorTarget?.file));
  const toggleTask=(id:AppId)=>{const w=manager.windows.find(w=>w.id===id);if(w&&manager.app===id)manager.change({...w,minimized:true});else open(id);};
  return <>
-  <div className="pc-topbar"><span className="pc-session"><Monitor size={14}/> Localhost Hero <span>/</span> {tr('내 작업실','My workspace','マイデスク')}</span><div><span className="pc-save" data-testid="save-status" data-state={saveStatus} role="status">{saveStatus==='saved'&&<Check size={13}/>} {saveStatus==='saving'?tr('저장 중…','Saving…','保存中…'):saveStatus==='saved'?tr('저장됨','Saved','保存済み'):tr('저장 실패 · 설정에서 백업','Save failed · Back up in Settings','保存失敗 · 設定でバックアップ')}</span><button className="pc-wallet" data-testid="open-wallet" onClick={()=>props.onOpen('workbench')} title={tr('크레딧 사용 · 작업실 상점','Spend credits · Workspace shop','クレジットを使う · 作業場ショップ')}><CreditReadout amount={props.state.credits}/></button><button onClick={onSidebar} aria-expanded={sidebarOpen} aria-label={tr('퀘스트 열기 또는 접기','Toggle quest','クエストを開閉')}><Flag size={15}/>{tr('의뢰','Quest','依頼')}</button></div></div>
+  <div className="pc-topbar"><span className="pc-session"><Monitor size={14}/> Localhost Hero <span>/</span> {tr('내 작업실','My workspace','マイデスク')}</span><div><span className="pc-save" data-testid="save-status" data-state={saveStatus} role="status">{saveStatus==='saved'&&<Check size={13}/>} {saveStatus==='saving'?tr('저장 중…','Saving…','保存中…'):saveStatus==='saved'?tr('저장됨','Saved','保存済み'):tr('저장 실패 · 설정에서 백업','Save failed · Back up in Settings','保存失敗 · 設定でバックアップ')}</span><LevelChip xp={props.state.xp} onClick={()=>props.onOpen('profile')}/><button className="pc-wallet" data-testid="open-wallet" onClick={()=>props.onOpen('workbench')} title={tr('크레딧 사용 · 작업실 상점','Spend credits · Workspace shop','クレジットを使う · 作業場ショップ')}><CreditReadout amount={props.state.credits}/></button><button onClick={onSidebar} aria-expanded={sidebarOpen} aria-label={tr('퀘스트 열기 또는 접기','Toggle quest','クエストを開閉')}><Flag size={15}/>{tr('의뢰','Quest','依頼')}</button></div></div>
   <div className="pc-main">
-   <div className="pc-workarea"><div className="pc-compact-quest"><QuestRibbon {...props} visibleApps={visibleApps}/></div><div className="pc-stage" ref={stage}>
+   <div className="pc-workarea"><div className="pc-compact-quest"><QuestRibbon {...props} visibleApps={visibleApps} guide={guide}/></div><div className="pc-stage" ref={stage}>
     <Wallpaper/>
     <nav className="pc-shortcuts" aria-label={tr('바탕화면 바로가기','Desktop shortcuts','デスクトップのショートカット')}>
-     {available.filter(a=>['computer','messages','browser','editor','terminal','notes','challenges','career'].includes(a.id)).map(a=><button key={a.id} aria-label={label(a)} className={'pc-shortcut '+(a.id==='messages'&&welcomeUnread?'first-message':'')} onClick={()=>open(a.id)}><span className={'pc-app-icon '+a.color}><a.icon size={28}/>{a.id==='messages'&&unread>0&&<i>{unread}</i>}</span><span>{label(a)}</span></button>)}
+     {available.filter(a=>['computer','messages','browser','editor','terminal','notes','challenges','career','python','sql'].includes(a.id)).map(a=><button key={a.id} aria-label={label(a)} className={'pc-shortcut '+(a.id==='messages'&&welcomeUnread?'first-message':'')} onClick={()=>open(a.id)}><span className={'pc-app-icon '+a.color}><a.icon size={28}/>{a.id==='messages'&&unread>0&&<i>{unread}</i>}</span><span>{label(a)}</span></button>)}
     </nav>
     <div className="pc-desktop-caption"><span>{props.edition!=='demo'&&props.state.gameplay.career.upgrades.includes('studio-sign')?tr('나의 독립 작업실','Independent studio','自分の作業場'):'SHIFT OS'}</span><small>{tr('개인용 컴퓨터','Personal computer','パーソナルコンピューター')}</small></div>
     {manager.app==='desktop'&&welcomeUnread&&<button className="pc-mail-toast" onClick={()=>open('messages')}><CharacterPortrait name="지우"/><span><small>{tr('지우 · 새 메시지','Jiwoo · New message','ジウ · 新着メッセージ')}</small><strong>{tr('메뉴판이 이상해요. 한번 봐줄래요?','The menu is broken. Can you take a look?','メニューがおかしいんです。見てもらえますか？')}</strong><em>{tr('눌러서 읽기','Click to read','クリックして読む')} →</em></span></button>}
-    {manager.windows.map(w=>{const a=DESKTOP_APPS.find(a=>a.id===w.id);return <DesktopWindow key={w.id} window={w} bounds={manager.bounds} compact={manager.compact} active={manager.app===w.id} title={a?label(a):t('의뢰함')} icon={a?<a.icon size={16}/>:<Monitor size={16}/>} onFocus={()=>manager.focus(w.id)} onChange={manager.change} onClose={()=>{manager.close(w.id);onWindowClose();}}>{renderApp(w.id as AppId)}</DesktopWindow>;})}
+    {manager.windows.map(w=>{const a=DESKTOP_APPS.find(a=>a.id===w.id);return <DesktopWindow key={w.id} window={w} bounds={manager.bounds} compact={manager.compact} active={manager.app===w.id} title={a?label(a):t('의뢰함')} icon={a?<a.icon size={16}/>:<Monitor size={16}/>} onFocus={()=>focus(w.id)} onChange={manager.change} onClose={()=>{manager.close(w.id);onWindowClose();}}>{renderApp(w.id as AppId)}</DesktopWindow>;})}
    </div></div>
-   {sidebarOpen&&<><button className="pc-quest-backdrop" onClick={onSidebar} aria-label={tr('퀘스트 접기','Close quest','クエストを閉じる')}/><QuestTracker {...props} visibleApps={visibleApps} onClose={onSidebar}/></>}
+   {sidebarOpen&&<><button className="pc-quest-backdrop" onClick={onSidebar} aria-label={tr('퀘스트 접기','Close quest','クエストを閉じる')}/><QuestTracker {...props} visibleApps={visibleApps} guide={guide} onClose={onSidebar}/></>}
   </div>
   {start&&<><button type="button" tabIndex={-1} className="pc-menu-backdrop" onPointerDown={e=>{e.preventDefault();closePanel();}} onClick={()=>closePanel()} aria-label={tr('시작 메뉴 닫기','Close Start menu','スタートメニューを閉じる')}/><section ref={startPanel} id="workspace-start" data-testid="desktop-start" role="dialog" aria-labelledby="workspace-start-title" className="pc-start-menu">
    <header className="pc-start-heading"><span className="pc-start-mark"><TerminalSquare size={20}/></span><h1 id="workspace-start-title">{tr('내 작업실','My workspace','マイデスク')}</h1><span>Localhost Hero</span></header>
@@ -102,9 +139,9 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
   </section></>}
   {soundOpen&&<SoundFlyout ref={soundPanel} value={mix} onChange={onMix} enabled={sound} onToggle={onSound} onMore={()=>{closePanel(false);onSettings();}}/>}
   {languageOpen&&<LanguageFlyout ref={languagePanel} onPicked={()=>closePanel()}/>}
-  <nav className="pc-taskbar" aria-label={tr('작업 표시줄','Taskbar','タスクバー')}>
+  <nav className="pc-taskbar" title={tr('F6 다음 창 · Shift+F6 이전 창 · 앱 아이콘에서 ← → 이동, Enter 선택','F6 next window · Shift+F6 previous window · App icons: ← → to move, Enter to select','F6 次のウィンドウ · Shift+F6 前のウィンドウ · アプリアイコン: ← → で移動、Enter で選択')} aria-label={tr('작업 표시줄','Taskbar','タスクバー')}>
    <div className="pc-task-start"><button type="button" ref={startRef} data-testid="taskbar-start" className={'pc-start-button '+(start?'selected':'')} onClick={()=>toggleStart(startRef.current)} aria-expanded={start} aria-controls="workspace-start" aria-haspopup="dialog" aria-label={tr('시작 메뉴','Start menu','スタートメニュー')}><LayoutGrid size={23}/><span>{tr('작업실','Workspace','デスク')}</span></button><button type="button" ref={searchRef} data-testid="taskbar-search" className="pc-task-search" onClick={()=>toggleStart(searchRef.current)} aria-expanded={start} aria-controls="workspace-start" aria-haspopup="dialog" aria-label={tr('앱 검색','Search apps','アプリを検索')}><Search size={18}/></button>{!manager.compact&&<button type="button" data-testid="taskbar-tile" className="pc-task-tile" onClick={()=>{closePanel(false);onTile();}} title={tr('터미널과 작업 창 나란히 정렬','Tile terminal beside your work','ターミナルと作業ウィンドウを並べる')} aria-label={tr('창 나란히 정렬','Tile windows','ウィンドウを並べる')}><Columns2 size={18}/></button>}</div>
-   <div className="pc-task-center"><div className="pc-task-apps">{available.filter(a=>['messages','browser','computer','editor','terminal'].includes(a.id)||activeApps.some(w=>w.id===a.id)).map(a=><button type="button" key={a.id} className={(manager.app===a.id?'selected ':'')+(activeApps.some(w=>w.id===a.id)?'running':'')} onClick={()=>toggleTask(a.id)} title={label(a)} aria-label={label(a)} aria-pressed={manager.app===a.id}><span className={'pc-app-icon '+a.color}><a.icon size={21}/>{a.id==='messages'&&unread>0&&<i>{unread}</i>}</span></button>)}</div></div>
+   <div className="pc-task-center"><div className="pc-task-apps" role="group" onKeyDown={taskbarKey} aria-label={tr('앱 전환 · F6 다음 창 · Shift+F6 이전 창','Switch apps · F6 next window · Shift+F6 previous window','アプリ切り替え · F6 次のウィンドウ · Shift+F6 前のウィンドウ')}>{available.filter(a=>['messages','browser','computer','editor','terminal'].includes(a.id)||activeApps.some(w=>w.id===a.id)).map(a=><button type="button" key={a.id} className={(manager.app===a.id?'selected ':'')+(activeApps.some(w=>w.id===a.id)?'running':'')} data-task-app={a.id} onClick={()=>toggleTask(a.id)} title={label(a)+' · '+tr('F6 창 전환','F6 switch windows','F6 ウィンドウ切り替え')} aria-label={label(a)} aria-pressed={manager.app===a.id}><span className={'pc-app-icon '+a.color}><a.icon size={21}/>{a.id==='messages'&&unread>0&&<i>{unread}</i>}</span></button>)}</div></div>
    <div className="pc-tray"><button className="pc-fullscreen" onClick={()=>{if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});else void document.documentElement.requestFullscreen?.().catch(()=>{});}} title={tr('전체 화면','Fullscreen','全画面')} aria-label={tr('전체 화면','Fullscreen','全画面')}><Expand size={16}/></button><button type="button" ref={soundRef} data-testid="tray-sound" className={'pc-tray-sound '+(soundOpen?'selected':'')} onClick={()=>toggleTray('sound',soundRef.current)} aria-expanded={soundOpen} aria-controls="workspace-sound" aria-haspopup="dialog" aria-label={tr('소리 조절','Sound controls','サウンド調整')+' · '+(sound?mix.master+'%':tr('음소거','Muted','ミュート'))} title={tr('소리 조절','Sound controls','サウンド調整')}>{sound&&mix.master>0?<Volume2 size={17}/>:<VolumeX size={17}/>}</button><button type="button" ref={languageRef} data-testid="tray-language" className={'pc-language '+(languageOpen?'selected':'')} onClick={()=>toggleTray('language',languageRef.current)} aria-expanded={languageOpen} aria-controls="workspace-language" aria-haspopup="dialog" aria-label={tr('언어 바꾸기','Change language','言語を切り替え')} title={tr('언어 바꾸기','Change language','言語を切り替え')}>{lang.toUpperCase()}</button><button type="button" data-testid="tray-settings" className="pc-tray-settings" onClick={()=>{closePanel(false);onSettings();}} aria-label={tr('작업실 설정','Workspace settings','作業場の設定')} title={tr('작업실 설정','Workspace settings','作業場の設定')}><Settings2 size={16}/></button><span className="pc-network" title={tr('게임 속 가상 네트워크','Simulated game network','ゲーム内の仮想ネットワーク')}><Wifi size={16}/></span><button type="button" ref={clockRef} data-testid="taskbar-clock" className={'pc-clock '+(calendar?'selected':'')} onClick={toggleCalendar} aria-expanded={calendar} aria-controls="workspace-calendar" aria-haspopup="dialog" aria-label={tr('시계와 달력 열기','Open clock and calendar','時計とカレンダーを開く')+' · '+time+' · '+(now?.toLocaleDateString(locale)??'')}><span>{time}</span><small>{date}</small></button></div>
    <button type="button" data-testid="show-desktop" className="pc-show-desktop" onClick={()=>{closePanel(false);manager.setApp('desktop');}} title={tr('바탕화면 보기','Show desktop','デスクトップを表示')} aria-label={tr('바탕화면 보기','Show desktop','デスクトップを表示')}/>
   </nav>

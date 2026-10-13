@@ -140,7 +140,7 @@ test('portable runner and generated tests execute authored solutions in actual N
  // Only authored reference solutions are executed natively; never player input.
  for(const job of LAB_JOBS){await writeFile(path.join(root,`${job.id}.js`),job.solution);await writeFile(path.join(root,`${job.id}.test.cjs`),labTestTemplate(job.id,1));}
  const env={...process.env};delete env.NODE_TEST_CONTEXT;
- const result=spawnSync(process.execPath,['--test','--test-reporter=tap',...LAB_JOBS.map(job=>`${job.id}.test.cjs`)],{cwd:root,env,encoding:'utf8',timeout:20000});assert.equal(result.status,0,result.stdout+'\n'+result.stderr);assert.match(result.stdout,/# fail 0/);
+ const result=spawnSync(process.execPath,['--test','--test-concurrency=1','--test-reporter=tap',...LAB_JOBS.map(job=>`${job.id}.test.cjs`)],{cwd:root,env,encoding:'utf8',timeout:20000});assert.equal(result.status,0,result.stdout+'\n'+result.stderr);assert.match(result.stdout,/# fail 0/);
  await writeFile(path.join(root,'receipt.input.json'),JSON.stringify({price:3,quantity:4}));const sample=spawnSync(process.execPath,['run.cjs','receipt.js','receipt.input.json'],{cwd:root,env,encoding:'utf8',timeout:3000});assert.equal(sample.status,0,sample.stderr);assert.equal(sample.stdout.trim(),'12');
  assert.equal(await readFile(path.join(root,'run.cjs'),'utf8'),LAB_RUNNER);
 });

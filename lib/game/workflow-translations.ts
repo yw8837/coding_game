@@ -1,4 +1,4 @@
-export const workflowRows=String.raw`
+﻿export const workflowRows=String.raw`
 의뢰 읽기¦Read the request¦依頼を読む
 작업 준비¦Prepare your tools¦作業の準備
 문제 고치기¦Find and fix¦問題を直す
@@ -100,4 +100,10 @@ PR 병합을 누르면 검토한 수정본이 공개할 버전으로 정해져�
 선택된 글자만 입력해서 바꿔 보세요. 나머지 코드는 그대로 두세요.¦Type to replace the selected text. Leave the rest of the code as it is.¦選んだ文字だけ入力して変更しましょう。他のコードはそのままにします。
 대화상자 닫기¦Close dialog¦ダイアログを閉じる
 이 결과는 수정 전 기록이에요. 다시 검사해 주세요.¦This result is from before your edit. Run checks again.¦これは修正前の結果です。もう一度チェックしてください。
+합계를 계산하는 코드 찾아 고치기¦Find and fix the total calculation code¦合計を計算するコードを探して直す
+3잔이 4,503원이 됐어요. 계산을 맡은 파일을 탐색기에서 직접 찾아 여세요. 컴퓨터 앱의 파일 설명이 단서예요. 찾았다면: price는 한 잔 가격, quantity는 잔 수예요. return 줄의 +를 곱셈 기호 *로 바꿔 보세요.¦Three cups became 4,503 KRW. Find and open the file handling the calculation in Files. The file description in Computer is your clue. Once found: price is the cost per cup, quantity is the cup count. Replace + with the multiplication symbol * on the return line.¦3杯で4,503ウォンになりました。計算を行うファイルをファイル管理で直接探して開いてください。コンピューターアプリのファイル説明が手がかりです。見つけたら：priceは1杯の価格、quantityは杯数です。returnの行の＋を掛け算の記号*に変えてみましょう。
+주문 서버 코드에서 메뉴 주소 연결¦Connect menu address in order server code¦注文サーバーコードでメニューアドレスを接続
+메뉴와 주문을 받는 서버 프로그램 파일을 탐색기에서 직접 찾아 여세요. MENU_PATH는 메뉴를 찾는 주소예요. /menu를 /api/menu로 바꾸세요. 따옴표는 남겨 주세요.¦Find and open the server program file that handles menus and orders in Files. MENU_PATH is the address for fetching menus. Change /menu to /api/menu. Keep the quotes.¦メニューと注文を受けるサーバープログラムファイルをファイル管理で直接探して開いてください。MENU_PATHはメニューを探すアドレスです。/menuを/api/menuに変えましょう。引用符は残してください。
+주문 서버 코드에서 주문 보관 켜기¦Enable order storage in order server code¦注文サーバーコードで注文保存を有効化
+SAVE_ORDERS는 주문 보관 스위치예요. False를 True로 바꾸세요. 첫 글자는 대문자예요.¦SAVE_ORDERS is the switch for storing orders. Change False to True with a capital T.¦SAVE_ORDERSは注文を保存するスイッチです。False를 Trueに変えてください。最初の文字は大文字です。
 `;

@@ -1,0 +1,96 @@
+/* Finale ending branch: choose how the player's creation leaves the game. Mocks are pure CSS. */
+.finale-branch{--finale-ink:#e6edf3;--finale-muted:#b3c5d5;position:relative;margin:30px 0;padding:24px;border:1px solid #4a6178;border-radius:6px;background:radial-gradient(120% 90% at 50% 0%,#1f3549 0%,#0f1d2b 72%);color:var(--finale-ink);text-shadow:none}
+.finale-branch .finale-heading>small{display:inline-flex;align-items:center;gap:6px;font:11px/1.5 var(--mono);letter-spacing:1.4px;color:#e4c38f}
+.finale-branch .finale-heading h3{margin:10px 0 9px;font-size:21px;line-height:1.45;font-weight:600;color:#f1ead9;word-break:keep-all;overflow-wrap:anywhere}
+.finale-branch .finale-heading h3>span{color:#e4c38f}
+.finale-branch .finale-heading p{margin:0;max-width:660px;font-size:13px;line-height:1.85;color:var(--finale-muted);word-break:keep-all;overflow-wrap:break-word}
+
+/* Two ending cards (radio group) */
+.finale-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0 10px}
+.finale-card{--finale-accent:#e7c48d;--finale-glow:#e7c48d55;--finale-tint:#2b2a22;display:flex;flex-direction:column;gap:12px;min-width:0;padding:18px;border:1px solid #445a70;border-radius:8px;background:#132536;cursor:pointer;user-select:none;transition:border-color .2s,box-shadow .3s,transform .2s,background .2s,opacity .2s}
+.finale-card[data-branch=webapp]{--finale-accent:#7fd6bd;--finale-glow:#7fd6bd55;--finale-tint:#183330}
+.finale-card:hover{border-color:var(--finale-accent);transform:translateY(-2px)}
+.finale-card:focus-visible{outline:2px solid #f5ce8f;outline-offset:3px}
+.finale-card[aria-checked=true]{border-color:var(--finale-accent);background:linear-gradient(180deg,var(--finale-tint),#142739 65%);box-shadow:0 0 0 1px var(--finale-accent),0 0 34px var(--finale-glow)}
+.finale-choices[data-chosen] .finale-card[aria-checked=false]{opacity:.78}
+.finale-choices[data-chosen] .finale-card[aria-checked=false]:hover,.finale-choices[data-chosen] .finale-card[aria-checked=false]:focus-visible{opacity:1}
+.finale-card-top{display:flex;align-items:center;gap:8px;min-width:0;color:var(--finale-accent);font:11px/1.5 var(--mono);letter-spacing:.5px}
+.finale-card-top>span:first-of-type{min-width:0;overflow-wrap:anywhere}
+.finale-card-badge{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto;padding:3px 10px;border:1px solid #5b7085;border-radius:999px;color:#c3d2df;font:600 11px/1.5 var(--font-sans,sans-serif);letter-spacing:0;white-space:nowrap}
+.finale-card[aria-checked=true] .finale-card-badge{border-color:var(--finale-accent);background:var(--finale-accent);color:#15211d;box-shadow:0 0 14px var(--finale-glow)}
+.finale-branch .finale-card .finale-card-title{display:block;font-size:18px;line-height:1.45;font-weight:600;color:#f3efe2;word-break:keep-all;overflow-wrap:anywhere}
+.finale-branch .finale-card p{margin:0;font-size:12.5px;line-height:1.8;color:var(--finale-muted);word-break:keep-all;overflow-wrap:break-word}
+.finale-branch .finale-card ul{display:grid;gap:7px;margin:0;padding:0;list-style:none}
+.finale-branch .finale-card li{display:flex;align-items:flex-start;gap:7px;font-size:12px;line-height:1.65;color:#d3dfe8;overflow-wrap:anywhere}
+.finale-branch .finale-card li>svg{margin-top:3px;color:var(--finale-accent)}
+
+/* Tiny product mocks */
+.finale-mock{position:relative;display:flex;flex-direction:column;gap:6px;height:128px;overflow:hidden;border:1px solid #5d7286;border-radius:6px;background:#f4f1e8;box-shadow:inset 0 -18px 24px -20px #0003}
+.finale-mock span,.finale-mock i,.finale-mock b{display:block;flex-shrink:0}
+.finale-mock .finale-mock-chrome{display:flex;align-items:center;gap:4px;height:17px;padding:0 7px;background:#dcded3;border-bottom:1px solid #c8cbbe}
+.finale-mock-chrome i{width:6px;height:6px;border-radius:50%;background:#a9ae9f}
+.finale-mock-chrome b{flex:1;height:7px;margin-left:6px;border-radius:4px;background:#f5f5ef}
+.finale-mock-title{width:52%;height:11px;margin:5px 10px 1px;border-radius:2px;background:#8a561d}
+.finale-mock-line{width:78%;height:5px;margin:0 10px;border-radius:3px;background:#c9c4b5}
+.finale-mock-line.short{width:56%}
+.finale-mock .finale-mock-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 10px 0}
+.finale-mock-tiles i{height:40px;border:1px solid #ddd7c8;border-top:3px solid #8a561d;border-radius:3px;background:#fff}
+.finale-mock-app{gap:5px;background:#eaf2ef}
+.finale-mock .finale-mock-appbar{display:flex;align-items:center;gap:6px;height:22px;padding:0 9px;background:#285c50}
+.finale-mock-appbar i{width:10px;height:10px;border-radius:3px;background:#9fe1cb}
+.finale-mock-appbar b{width:40%;height:5px;border-radius:3px;background:#d7efe6}
+.finale-mock .finale-mock-search{display:flex;align-items:center;gap:5px;height:20px;margin:3px 9px 0;padding:0 7px;border:1px solid #9cb8ad;border-radius:10px;background:#fff;color:#5e7a70;font-size:9px;line-height:1;overflow:hidden;white-space:nowrap}
+.finale-mock .finale-mock-chips{display:flex;gap:4px;margin:0 9px}
+.finale-mock-chips i{width:28px;height:9px;border:1px solid #9cb8ad;border-radius:5px;background:#fff}
+.finale-mock-chips i.on{background:#285c50;border-color:#285c50}
+.finale-mock .finale-mock-row{display:flex;align-items:center;gap:6px;height:18px;margin:0 9px;padding:0 7px;border-radius:4px;background:#fff}
+.finale-mock-row i{width:7px;height:7px;border:1.5px solid #3e7a68;border-radius:50%}
+.finale-mock-row b{width:60%;height:5px;border-radius:3px;background:#c4d5ce}
+.finale-mock-fab{position:absolute;right:9px;bottom:8px;width:20px;height:20px;border-radius:50%;background:#285c50;box-shadow:0 2px 5px #0003}
+.finale-branch .finale-switch-note{margin:6px 0 0;font-size:12px;line-height:1.7;color:#9fb4c6}
+
+/* Epilogue, revealed like a closing narration */
+.finale-epilogue{--finale-accent:#e7c48d;margin:22px 0 0;padding:22px 24px;border:1px solid #6d6650;border-radius:6px;background:linear-gradient(180deg,#232b2b,#172227);animation:finale-arrive .45s ease-out}
+.finale-epilogue[data-branch=webapp]{--finale-accent:#7fd6bd;border-color:#4f7469;background:linear-gradient(180deg,#1b2d2d,#152227)}
+.finale-epilogue>header{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:var(--finale-accent)}
+.finale-branch .finale-epilogue h4{flex:1;min-width:0;margin:0;font-size:15px;line-height:1.5;font-weight:600;color:#f0e2c3;overflow-wrap:anywhere}
+.finale-epilogue[data-branch=webapp] h4{color:#d6efe5}
+.finale-branch .finale-text-button{display:inline-flex;align-items:center;gap:5px;min-height:32px;padding:4px 8px;border:1px solid transparent;border-radius:4px;background:none;color:#c5d6e2;font-size:12px}
+.finale-branch .finale-text-button:hover{border-color:#5b7085;color:#fff}
+.finale-branch .finale-epilogue-text p{margin:16px 0 0;font-size:15px;line-height:2;color:#e6e2d4;word-break:keep-all;overflow-wrap:break-word}
+.finale-epilogue-rest{visibility:hidden}
+.finale-caret{display:inline-block;width:2px;height:1.05em;margin-right:-2px;vertical-align:-.15em;background:var(--finale-accent);animation:finale-blink 1s steps(1) infinite}
+.finale-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+
+/* Export desk */
+.finale-export{margin:18px 0 0;padding:18px;border:1px solid #42576c;border-radius:6px;background:#0f2131}
+.finale-export>header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.finale-branch .finale-export h4{margin:0;font-size:14px;line-height:1.5;font-weight:600;color:#f0e8d6}
+.finale-done{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 0 auto;padding:0;list-style:none}
+.finale-done li{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border:1px solid #6f9a83;border-radius:999px;background:#1f3a30;color:#cfe8d3;font-size:11px;line-height:1.5}
+.finale-branch .finale-export>p{margin:10px 0 0;font-size:12.5px;line-height:1.8;color:var(--finale-muted);word-break:keep-all;overflow-wrap:break-word}
+.finale-export-actions{display:flex;flex-wrap:wrap;gap:10px;margin:15px 0 0}
+.finale-export-actions>button{white-space:normal;text-align:left}
+.finale-branch .finale-export>.finale-pwa-note{margin:14px 0 0;padding:9px 12px;border-left:2px solid #7fd6bd;background:#12302c;font-size:12px;line-height:1.75;color:#c6e2d8}
+.finale-branch .finale-export>.finale-status{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;min-height:0;margin:12px 0 0;font-size:12.5px;line-height:1.7;color:#cfe8d3}
+.finale-branch .finale-export>.finale-status:empty{margin:0}
+.finale-branch .finale-export>.finale-status[data-tone=error]{color:#f2b9a6}
+.finale-status code{padding:1px 7px;border:1px solid #47606f;border-radius:4px;background:#0a1824;color:#d7e3ec;font-size:11px;overflow-wrap:anywhere}
+.finale-guide{margin:16px 0 0;border-top:1px solid #34495d;padding-top:10px}
+.finale-guide>summary{display:flex;align-items:center;gap:7px;min-height:36px;cursor:pointer;list-style:none;color:#c6d6e3;font-size:12.5px}
+.finale-guide>summary::-webkit-details-marker{display:none}
+.finale-guide>summary>svg:last-child{margin-left:auto;transition:transform .2s}
+.finale-guide[open]>summary>svg:last-child{transform:rotate(180deg)}
+.finale-guide>summary:focus-visible{outline:2px solid #f5ce8f;outline-offset:3px;border-radius:3px}
+.finale-guide ol{margin:8px 0 0;padding-left:22px}
+.finale-guide li{margin:6px 0;font-size:12.5px;line-height:1.75;color:#d1dde7;overflow-wrap:anywhere}
+.finale-branch .finale-guide p{margin:10px 0 0;font-size:11.5px;line-height:1.75;color:#a9bccc}
+
+@keyframes finale-arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes finale-blink{50%{opacity:0}}
+
+@container(max-width:700px){.finale-branch{padding:18px 14px}.finale-choices{grid-template-columns:1fr}.finale-branch .finale-heading h3{font-size:18px}.finale-epilogue{padding:18px 15px}.finale-branch .finale-epilogue-text p{font-size:14px;line-height:1.95}.finale-done{margin-left:0;flex-basis:100%}.finale-export-actions>button{flex:1 1 100%}}
+@media(max-width:700px){.finale-branch{padding:18px 14px}.finale-choices{grid-template-columns:1fr}.finale-branch .finale-heading h3{font-size:18px}.finale-epilogue{padding:18px 15px}.finale-branch .finale-epilogue-text p{font-size:14px;line-height:1.95}.finale-done{margin-left:0;flex-basis:100%}.finale-export-actions>button{flex:1 1 100%}}
+@media(prefers-reduced-motion:reduce){.finale-branch *{animation:none!important;transition:none!important}.finale-card:hover{transform:none}}
+html[data-game-reduced-motion="true"] .finale-branch *{animation:none!important;transition:none!important}
+html[data-game-reduced-motion="true"] .finale-card:hover{transform:none}

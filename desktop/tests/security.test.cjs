@@ -2,7 +2,20 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const {ENTRY, ORIGIN, resolveAsset, isAppURL, isTrustedSender} = require('../security.cjs');
+const {CSP, ENTRY, ORIGIN, resolveAsset, isAppURL, isTrustedSender} = require('../security.cjs');
+
+test('desktop CSP permits only the exact trusted authored preview runtime beside packaged scripts', () => {
+ const {createHash} = require('node:crypto');
+ const runtime = require('../authored-runtime.json');
+ const digest = createHash('sha256').update(runtime.source, 'utf8').digest('base64');
+ assert.equal(digest, runtime.sha256);
+ const scriptPolicy = CSP.split('; ').find(value => value.startsWith('script-src '));
+ assert.equal(scriptPolicy, "script-src 'self' 'sha256-" + digest + "'");
+ assert.equal(scriptPolicy.includes('unsafe-inline'), false);
+ assert.equal(scriptPolicy.includes('nonce-'), false);
+ assert.ok(CSP.includes("connect-src 'none'"));
+ assert.ok(CSP.includes("worker-src 'none'"));
+});
 
 test('only packaged origin and files inside renderer root are accepted', () => {
   const root = path.resolve('renderer');

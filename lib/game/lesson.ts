@@ -23,7 +23,8 @@ export function lessonFacts(s:GameState){
  try{const b=parseBackend(fs['server.py']??'');route=b.route==='/api/menu';keep=b.save;}catch{}
  const fresh=s.tests?.mission===s.mission&&s.tests.hash===sourceHash(fs);
  const trial=!!fresh&&s.tests!.checks.length===MISSIONS[s.mission].checkNames.length&&s.tests!.checks.every(c=>c.passed);
- return {sign:isCafeName(/<h1\b[^>]*>([^<]*)<\/h1>/i.exec(fs['index.html']??'')?.[1]??''),size:/\.menu-grid\s*\{[^}]*width:\s*100%/.test(fs['style.css']??''),rule,serve:rule&&s.gameplay.servedCustomers===3,route,keep,trial,deliver:s.completed.includes(s.mission),fresh:!!fresh};
+ // Measured proof can accept equivalent markup and CSS that the introductory token patterns cannot describe.
+ return {sign:isCafeName(/<h1\b[^>]*>([^<]*)<\/h1>/i.exec(fs['index.html']??'')?.[1]??'')||(s.mission===0&&trial),size:/\.menu-grid\s*\{[^}]*width:\s*100%/.test(fs['style.css']??'')||(s.mission===0&&trial),rule,serve:rule&&s.gameplay.servedCustomers===3,route,keep,trial,deliver:s.completed.includes(s.mission),fresh:!!fresh};
 }
 export function resumeLesson(s:GameState):LessonStep{
  const facts=lessonFacts(s);

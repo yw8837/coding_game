@@ -10,6 +10,12 @@ const locale=createLocaleStore({
  readPreference:()=>typeof localStorage==='undefined'?null:localStorage.getItem(LANGUAGE_PREFERENCE_KEY),
  writePreference:preference=>{if(typeof localStorage!=='undefined')localStorage.setItem(LANGUAGE_PREFERENCE_KEY,preference);},
  browserLanguages:()=>typeof navigator==='undefined'?[]:navigator.languages?.length?navigator.languages:navigator.language?[navigator.language]:[],
+ clientContext:()=>{
+  if(typeof window==='undefined')return {};
+  let timeZone:string|undefined;
+  try{timeZone=Intl.DateTimeFormat().resolvedOptions().timeZone;}catch{}
+  return {timeZone,hostname:window.location?.hostname};
+ },
  isDesktop:()=>typeof window!=='undefined'&&!!(window as Window&{desktopBridge?:unknown}).desktopBridge,
  regionLanguage:signal=>typeof window==='undefined'?Promise.resolve(null):fetchRegionLanguage((url,init)=>fetch(url,init),signal),
  platformInfo:async()=>{

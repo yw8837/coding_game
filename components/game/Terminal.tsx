@@ -4,14 +4,19 @@ import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {ChevronRight,TerminalSquare,CornerDownLeft} from 'lucide-react';
 import {terminalCompletionsAtCursor,visibleTerminalHistory,type TerminalCompletion} from '@/lib/game/terminal-input';
 import {translateTerminalOutput} from '@/lib/game/terminal-translations';
+import {suggestCommand} from '@/lib/game/terminal-suggest';
 import {isKeystrokeKey} from '@/lib/game/audio-feedback';
 import type {GameProps} from './types';
 import {playFeedbackMotion,playGameFeedback} from './useGameFeedback';
+/** Restart a one-shot CSS animation class; CSS disables the motion under reduced-motion settings. */
+function flash(element:Element|undefined,className:string){if(!element)return;element.classList.remove(className);void (element as HTMLElement).offsetWidth;element.classList.add(className);element.addEventListener('animationend',()=>element.classList.remove(className),{once:true});}
 export function TerminalView({state,onCommand,queued,onQueued,compact=false,expected}:GameProps&{queued:string;onQueued:()=>void;compact?:boolean;expected?:string}){
  const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='en'?en:ja;
  const [input,setInput]=useState(''),[index,setIndex]=useState(-1),[suggestions,setSuggestions]=useState<TerminalCompletion[]>([]),[selected,setSelected]=useState(-1);
  const draft=useRef(''),scroll=useRef<HTMLDivElement>(null),field=useRef<HTMLInputElement>(null),m=state.machines[state.machine],visible=visibleTerminalHistory(state.history);
- const completion=useRef<TerminalCompletion|null>(null),pendingCaret=useRef<number|null>(null),submitted=useRef(false);
+ const completion=useRef<TerminalCompletion|null>(null),pendingCaret=useRef<number|null>(null),submitted=useRef(false),xpAtSubmit=useRef(state.xp),body=useRef<HTMLDivElement>(null);
+ // A mistyped command offers one corrected line; Tab or a click fills it in, Enter still runs it.
+ const lastEntry=state.history.at(-1),fix=lastEntry?.error&&lastEntry.machine===state.machine?suggestCommand(lastEntry.command):null;
  const close=()=>{setSuggestions([]);setSelected(-1);completion.current=null;};
  const change=useCallback((value:string)=>{setInput(value);setIndex(-1);draft.current=value;setSuggestions([]);setSelected(-1);completion.current=null;pendingCaret.current=null;},[setInput,setIndex,setSuggestions,setSelected]);
  useLayoutEffect(()=>{if(pendingCaret.current!==null){field.current?.setSelectionRange(pendingCaret.current,pendingCaret.current);pendingCaret.current=null;}},[input,suggestions]);
@@ -23,8 +28,10 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false,expe
  useLayoutEffect(()=>{if(queued){change(queued);onQueued();field.current?.focus();}},[queued,onQueued,change]);
  useEffect(()=>{if(scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;},[state.history.length,latestCommand]);
  // 여기서 직접 실행한 명령의 결과만 살짝 떠오르게 한다. 오류는 작게 흔들어 눈에 띄게.
- useEffect(()=>{if(!submitted.current)return;submitted.current=false;const entries=scroll.current?.getElementsByClassName('terminal-entry');playFeedbackMotion(entries?.[entries.length-1],state.history.at(-1)?.error?'error':'entry');},[state.history]);
- const send=()=>{if(!input.trim())return;submitted.current=true;onCommand(input);change('');field.current?.focus();};
+ // 성공한 명령은 초록 네온으로 짧게 빛나고, 보상까지 받은 명령은 터미널 전체가 한 번 맥박친다.
+ useEffect(()=>{if(!submitted.current)return;submitted.current=false;const entries=scroll.current?.getElementsByClassName('terminal-entry'),entry=entries?.[entries.length-1],failed=!!state.history.at(-1)?.error;playFeedbackMotion(entry,failed?'error':'entry');if(failed)return;flash(entry,'terminal-entry-success');if(state.xp>xpAtSubmit.current)flash(body.current??undefined,'terminal-success-pulse');},[state.history,state.xp]);
+ const send=()=>{if(!input.trim())return;submitted.current=true;xpAtSubmit.current=state.xp;onCommand(input);change('');field.current?.focus();};
+ const applyFix=()=>{if(!fix)return;change(fix);pendingCaret.current=fix.length;field.current?.focus();};
  const applyCompletion=(option:TerminalCompletion)=>{setInput(option.value);setIndex(-1);draft.current=option.value;completion.current=option;pendingCaret.current=option.caret;};
  const complete=()=>{
   const element=field.current,cursor=element?.selectionStart??input.length;
@@ -35,9 +42,10 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false,expe
   const next=cycle?(selected+1)%options.length:0;
   setSuggestions(options);setSelected(next);applyCompletion(options[next]);return true;
  };
- return localizeUI(<div className={'terminal-body '+(compact?'compact':'')}>
+ return localizeUI(<div ref={body} className={'terminal-body '+(compact?'compact':'')}>
   <div className="terminal-output" ref={scroll} aria-live="polite" aria-label="터미널 출력"><div className="terminal-welcome"><TerminalSquare size={18}/><span>SHIFT SHELL<br/><span data-no-translate>{tr('Linux 개발 터미널','Linux development terminal','Linux開発ターミナル')}</span><br/><span data-no-translate>{tr('help · 명령과 옵션 / Tab · 경로 완성','help · commands and options / Tab · path completion','help · コマンドとオプション / Tab · パス補完')}</span></span></div>{visible.map((h,i)=><div className="terminal-entry" key={i}><div className="terminal-prompt"><span>dev@{h.machine==='local'?'workstation':'mono-server'}</span><span className="path">{h.cwd.replace('/home/dev','~')}</span><span>$</span><strong data-no-translate>{h.command}</strong></div>{h.output&&<pre className={h.error?'terminal-error':''}>{translateTerminalOutput(h.command,h.output,language)}</pre>}</div>)}</div>
   {!!suggestions.length&&<div className="terminal-completions" aria-label="명령어 자동완성 후보">{suggestions.map((c,i)=><button type="button" className={i===selected?'selected':''} key={c.value} onClick={()=>{close();applyCompletion(c);field.current?.focus();}}>{c.value}</button>)}</div>}
+  {fix&&!input&&!expected&&<button type="button" className="terminal-fix" data-testid="terminal-fix" data-no-translate onClick={applyFix}><span>{tr('혹시 이거였나요?','Did you mean','もしかして')}</span><code>{fix}</code><kbd>Tab</kbd></button>}
   {expected&&<div className={'terminal-ghost'+(typo?' has-typo':'')+(ready?' is-ready':'')} data-testid="terminal-ghost" aria-hidden="true" data-no-translate><span className="ghost-done">{expected.slice(0,matched)}</span>{typo&&<span className="ghost-typo">{input.slice(matched)}</span>}<span className="ghost-rest">{typo?'':expected.slice(matched)}</span><small>{ready?'Enter ↵':typo?'Backspace ⌫':'Tab ⇥'}</small></div>}
   <form className="terminal-form" onSubmit={e=>{e.preventDefault();send();}}><label htmlFor={compact?'terminal-dock':'terminal-main'}><span>dev@{state.machine==='local'?'workstation':'mono-server'}</span><b>{m.cwd.replace('/home/dev','~')}</b><ChevronRight size={16}/></label><input id={compact?'terminal-dock':'terminal-main'} ref={field} value={input} onChange={e=>change(e.target.value)} onPointerDown={close} autoComplete="off" autoCapitalize="off" spellCheck={false} placeholder="명령어 입력 · Tab으로 완성" aria-label="가상 터미널 명령어" onKeyDown={e=>{
    if(e.key!=='Enter'&&isKeystrokeKey(e))playGameFeedback('keystroke');
@@ -48,7 +56,7 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false,expe
     const element=e.currentTarget,hasSelection=element.selectionStart!==element.selectionEnd||Boolean(window.getSelection()?.toString());
     if(!hasSelection){e.preventDefault();change('');}return;
    }
-   if(e.key==='Tab'&&!e.shiftKey){if(complete())e.preventDefault();return;}
+   if(e.key==='Tab'&&!e.shiftKey){if(fix&&!input&&!expected){e.preventDefault();applyFix();return;}if(complete())e.preventDefault();return;}
    if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)||((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'))close();
    if(e.key==='ArrowUp'){e.preventDefault();if(index===-1)draft.current=input;const n=Math.min(index+1,state.history.length-1);setIndex(n);setInput(state.history[state.history.length-1-n]?.command??draft.current);close();}
    if(e.key==='ArrowDown'){e.preventDefault();const n=Math.max(-1,index-1);setIndex(n);setInput(n<0?draft.current:state.history[state.history.length-1-n]?.command??'');close();}

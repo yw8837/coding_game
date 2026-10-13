@@ -6,6 +6,7 @@ import {careerCurrent,careerNext,careerFiles,careerHash,careerFresh} from './car
 import {careerRouteReady} from './career-progress.ts';
 import {releaseFiles,releaseHash,releaseFresh,releaseBuildFresh,releasePublishedFresh,RELEASE_START_FILES} from './release.ts';
 import type {Localized} from './career-content.ts';
+import {DEMO_SAMPLE_JOB,isDemoCafeComplete,isDemoComplete} from './edition.ts';
 
 const L=(ko:string,en:string,ja:string):Localized=>({ko,en,ja});
 export type QuestMilestone={id:string;label:Localized;done:boolean};
@@ -18,12 +19,23 @@ const step=(id:string,label:Localized,done:boolean):QuestMilestone=>({id,label,d
 
 /** Presentation only: never grants progress or changes the source of mission validation. */
 export function questProgress(s:GameState,edition:import('./edition.ts').GameEdition='full'):QuestProgress{
- if(edition==='demo'&&s.gameplay.openingCelebrated)return model('cafe',[
-  step('chapter-1',L('메뉴판 완성','Menu board complete','メニュー完成'),s.completed.includes(0)),
-  step('chapter-2',L('계산대 완성','Checkout complete','レジ完成'),s.completed.includes(1)),
-  step('chapter-3',L('주문함 완성','Order box complete','注文箱完成'),s.completed.includes(2)),
-  step('open',L('OPEN 행사','OPEN ceremony','OPENセレモニー'),s.gameplay.openingCelebrated),
- ]);
+ if(edition==='demo'&&isDemoCafeComplete(s)){
+  if(isDemoComplete(s))return model('cafe',[
+   step('chapter-1',L('메뉴판 완성','Menu board complete','メニュー完成'),true),
+   step('chapter-2',L('계산대 완성','Checkout complete','レジ完成'),true),
+   step('chapter-3',L('주문함 완성','Order box complete','注文箱完成'),true),
+   step('open',L('OPEN 행사','OPEN ceremony','OPENセレモニー'),true),
+   step('sample',L('새벽빵집 첫 의뢰','Dawn Bakery case','夜明けベーカリーの依頼'),true),
+  ]);
+  const c=s.gameplay.career,id=DEMO_SAMPLE_JOB,proof=c.proofs[id],fresh=careerFresh(s,id);
+  return model('career',[
+   step('accept',L('의뢰 수락','Accept request','依頼を受ける'),c.accepted.includes(id)),
+   step('inspect',L('현재 결과 확인','Inspect current result','現在の結果を確認'),c.inspected.includes(id)),
+   step('check',L('다른 주문 검사 통과','Pass changed-order checks','別の注文の検査に合格'),fresh),
+   step('reply',L('고객 답장 선택','Choose client reply','顧客への返信を選択'),!!c.choices[id]),
+   step('deliver',L('새벽빵집에 전달','Deliver to Dawn Bakery','夜明けベーカリーに納品'),c.completed.includes(id)),
+  ],null,proof&&proof.hash!==careerHash(careerFiles(s,id))?stale:null);
+ }
  if(s.gameplay.openingCelebrated){
   const c=s.gameplay.career,job=careerCurrent(s);
   if(careerRouteReady(c.completed)&&(!job||c.completed.includes(job.id))){

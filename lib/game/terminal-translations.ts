@@ -1,6 +1,7 @@
 import {tokenize} from './engine.ts';
 import {DEMO_LOCKED_MESSAGE,demoLockedMessage} from './edition.ts';
 import type {Language} from './translations.ts';
+import {translateOpsLine} from './terminal-patterns.ts';
 
 // Exact authored lines only. Paths, commands, code and user messages are opaque.
 const lines:Record<string,readonly [string,string]>={
@@ -17,7 +18,6 @@ const lines:Record<string,readonly [string,string]>={
  '이 실습의 sudo는 apt 명령을 지원합니다.':['In this simulator, sudo supports apt commands.','このシミュレーターのsudoはaptコマンドに対応しています。'],
  '패키지 목록을 갱신했습니다. [게임 내 시뮬레이션]':['Package lists updated. [game simulation]','パッケージ一覧を更新しました。[ゲーム内シミュレーション]'],
  'E: 패키지 이름을 입력하세요.':['E: Enter a package name.','E: パッケージ名を入力してください。'],
- 'E: 이 실습에서는 nodejs, npm, git, python3, python3-pip을 지원합니다.':['E: This simulator supports nodejs, npm, git, python3 and python3-pip.','E: このシミュレーターはnodejs、npm、git、python3、python3-pipに対応しています。'],
  '가상 컴퓨터의 설치 상태가 갱신되었습니다.':['The simulated computer’s installed tools have been updated.','仮想コンピューターのインストール状態を更新しました。'],
  '지원 명령: sudo apt update / install / list':['Supported commands: sudo apt update / install / list','対応コマンド: sudo apt update / install / list'],
  '이 실습에서는 node --version과 npm 스크립트를 사용하세요.':['Use node --version or npm scripts in this simulator.','このシミュレーターではnode --versionとnpmスクリプトを使用してください。'],
@@ -63,7 +63,7 @@ const lines:Record<string,readonly [string,string]>={
 export function translateTerminalOutput(command:string,output:string,language:Language):string{
  if(output===DEMO_LOCKED_MESSAGE)return demoLockedMessage(language);
  if(language==='ko'||!output)return output;
- const translate=(line:string)=>lines[line]?.[language==='en'?0:1]??line;
+ const translate=(line:string)=>lines[line]?.[language==='en'?0:1]??translateOpsLine(line,language)??line;
  let args:string[];
  try{args=tokenize(command);}catch{return translate(output);}
  const [cmd,sub]=args;
@@ -90,7 +90,7 @@ export function translateTerminalOutput(command:string,output:string,language:La
   return output;
  }
  // Only help and tool/server commands produce known authored multiline logs.
- if(['help','man','sudo','apt','node','npm','git','ssh','exit','pip','pip3','python3','pkill'].includes(cmd)){
+ if(['help','man','sudo','apt','node','npm','git','ssh','exit','pip','pip3','python3','sqlite3','pkill'].includes(cmd)){
   if(cmd==='npm'&&output.startsWith('npm ERR! code ENOENT'))return output;
   if(cmd==='npm'&&output.startsWith('npm ERR! Missing script: '))return output;
   return output.split('\n').map(translate).join('\n');

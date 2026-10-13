@@ -16,6 +16,8 @@ export function ComputerView(props:GameProps){
  const [tab,setTab]=useState<'pc'|'project'|'jobs'>('project'),[failure,setFailure]=useState('');
  const ready=setupReadiness(state),files=projectFiles(state),edited=new Set(dirtyFiles(state));
  const allowed=state.accepted&&state.discovered.repo;
+ // First job only: softly point at the file the client's message is about, until it is opened or edited.
+ const hintFile=!state.gameplay.fileHintSeen&&state.mission===0&&state.accepted&&!state.completed.includes(0)&&!edited.has('index.html')?'index.html':null;
  const projectName=state.repo?.root.split('/').at(-1)??'menu-site';
  const fileType=(file:string)=>{
   if(file.endsWith('.html'))return tr('웹페이지 구조','Page structure','ページの構造');
@@ -72,7 +74,7 @@ export function ComputerView(props:GameProps){
     {tab==='pc'&&<section className="computer-devices"><h2>{tr('폴더와 드라이브','Folders and drives','フォルダーとドライブ')}</h2><button className="computer-drive" onClick={()=>setTab('project')}><HardDrive size={37}/><span><strong>{tr('내 프로젝트','My project','自分のプロジェクト')}</strong><small>{ready.copied?projectName:tr('프로젝트를 복사하면 여기에 생겨요.','Your project appears here after you copy it.','コピーしたプロジェクトがここに表示されます。')}</small></span><ChevronRight size={18}/></button></section>}
     {tab==='project'&&ready.copied&&<section className="computer-files" aria-label={tr('프로젝트 파일','Project files','プロジェクトのファイル')}>
      <div className="computer-files-heading"><div><h2><FolderOpen size={23}/>{projectName}</h2><p>{tr('파일을 누르면 에디터에서 열려요.','Select a file to open it in the editor.','ファイルを押すとエディターで開きます。')}</p></div><span className={'computer-preview-status '+(ready.preview?'running':'')}><i/>{ready.preview?tr('미리보기 실행 중','Preview running','プレビュー実行中'):tr('미리보기 꺼짐','Preview stopped','プレビュー停止中')}</span></div>
-     <div className="computer-file-table"><div className="computer-file-columns" aria-hidden="true"><span>{tr('이름','Name','名前')}</span><span>{tr('역할','Purpose','役割')}</span><span>{tr('상태','Status','状態')}</span></div>{names.map(file=><button className="computer-file-row" key={file} onClick={()=>openFile(file)} aria-label={tr(file+' 열기','Open '+file,file+'を開く')}><span>{/\.(html|css|js|py|json)$/.test(file)?<FileCode size={19}/>:<FileText size={19}/>}<strong>{file}</strong></span><span>{fileType(file)}</span><span className={edited.has(file)?'edited':''}>{edited.has(file)?tr('수정됨','Edited','変更あり'):tr('저장됨','Saved','保存済み')}</span></button>)}</div>
+     <div className="computer-file-table"><div className="computer-file-columns" aria-hidden="true"><span>{tr('이름','Name','名前')}</span><span>{tr('역할','Purpose','役割')}</span><span>{tr('상태','Status','状態')}</span></div>{names.map(file=><button className={'computer-file-row'+(file===hintFile?' file-hint-glow':'')} key={file} onClick={()=>{if(file===hintFile)props.onAction({type:'file-hint-seen'});openFile(file);}} aria-label={tr(file+' 열기','Open '+file,file+'を開く')}><span>{/\.(html|css|js|py|json)$/.test(file)?<FileCode size={19}/>:<FileText size={19}/>}<strong>{file}</strong>{file===hintFile&&<em className="file-hint-badge">{tr('여기부터!','Start here!','ここから！')}</em>}</span><span>{fileType(file)}</span><span className={edited.has(file)?'edited':''}>{edited.has(file)?tr('수정됨','Edited','変更あり'):tr('저장됨','Saved','保存済み')}</span></button>)}</div>
      <div className="computer-files-footer"><span>{names.length} {tr('개 파일','files','個のファイル')}</span><span>{tr('미리보기는 브라우저에서 사이트가 어떻게 보이는지 확인하는 화면이에요.','The preview shows how your site looks in the browser.','プレビューではブラウザーでのサイトの見た目を確認できます。')}</span></div>
     </section>}
    </div>

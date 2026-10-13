@@ -41,3 +41,19 @@ test('all guided lesson instructions and guest requests have English and Japanes
  strings.push(...PRACTICE_CUSTOMERS.map(c=>c.request));
  for(const language of ['en','ja'] as const)for(const value of strings)assert.notEqual(translate(value,language),value,language+': '+value);
 });
+
+test('fresh layout proof advances alternate HTML and CSS implementations and remains compatible with saved progress',()=>{
+ let s=assist(createGame(),'prepare');s.gameplay.inspected.push(0);
+ const files=projectFiles(s);
+ s=act(s,{type:'edit',path:'index.html',content:files['index.html'].replace('<h1>우리 동네 카페</h1>','<h1><span>Mono Cafe</span></h1>')});
+ s=act(s,{type:'edit',path:'style.css',content:files['style.css'].replace('width: 960px','width: calc(100% - 0px)')});
+ assert.equal(lessonFacts(s).trial,false);
+ s=act(s,{type:'test-result',hash:sourceHash(projectFiles(s)),checks:[{name:'title',passed:true}]});
+ assert.equal(lessonFacts(s).size,false);
+ const checks=['title','phone','desktop'].map(name=>({name,passed:true}));
+ s=act(s,{type:'test-result',hash:sourceHash(projectFiles(s)),checks});
+ assert.equal(lessonFacts(s).sign,true);assert.equal(lessonFacts(s).size,true);assert.equal(resumeLesson(s),'deliver');
+ s=readSave(JSON.stringify(s));assert.equal(resumeLesson(s),'deliver');
+ s=act(s,{type:'edit',path:'style.css',content:projectFiles(s)['style.css'].replace('calc(100% - 0px)','960px')});
+ assert.equal(lessonFacts(s).trial,false);assert.equal(lessonFacts(s).size,false);
+});

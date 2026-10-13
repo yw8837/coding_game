@@ -33,14 +33,14 @@ export function TitleScreen({hasSave,language,onStart,onSettings,onNew,loading=f
   event.preventDefault();buttons[next]?.focus();
  };
  const blocked=!ready||loading||unavailable;
- return <section className="pc-title-screen title-home" data-no-translate data-paused={paused} data-motion={animate?'animated':'still'} aria-label={tr('타이틀 화면','Title screen','タイトル画面')} onPointerMove={event=>{
+ return <section suppressHydrationWarning className="pc-title-screen title-home" data-no-translate data-paused={paused} data-motion={animate?'animated':'still'} aria-label={tr('타이틀 화면','Title screen','タイトル画面')} onPointerMove={event=>{
   if(!animate||paused||event.pointerType!=='mouse'||window.matchMedia('(pointer: coarse)').matches)return;
   const bounds=event.currentTarget.getBoundingClientRect();
   moveRoom((event.clientX/bounds.width-.5)*-16,(event.clientY/bounds.height-.5)*-10);
  }} onPointerLeave={()=>moveRoom(0,0)}>
   <div ref={room} className="title-room"><TitleWorkspace paused={paused||!animate}/></div>
   <div className="title-home-content">
-   <h1 className="title-home-logo" aria-label={tr('로컬호스트 히어로','Localhost Hero','ローカルホスト・ヒーロー')}><span>Localhost</span><em>Hero</em></h1>
+   <h1 className="title-home-logo" aria-label={tr('로컬호스트 히어로','Localhost Hero','ローカルホスト・ヒーロー')}><span className="logo-line-1">Localhost</span><em className="logo-line-2">Hero</em></h1>
     <p className="title-home-subtitle">{tr('우리 동네 코딩 시뮬레이터','A neighborhood coding sim','ご近所プログラミングシミュレーター')}</p>
    <p className="title-home-description">{tr('동네 카페의 작은 부탁으로 시작하는 개발자 생활.','Your life as a developer starts with a favor for the café next door.','近所のカフェからの小さなお願い。それが、開発者生活のはじまり。')}</p>
    <nav className="title-home-menu" aria-label={tr('메인 메뉴','Main menu','メインメニュー')} onKeyDown={navigate}>

@@ -12,7 +12,7 @@ export function aboutMetadata(language: AboutLanguage): Metadata {
   const poster = SITE_ORIGIN + '/media/first-release-poster' + (language === 'en' ? '-en' : '') + '.jpg';
   const locales = { ko: 'ko_KR', en: 'en_US', ja: 'ja_JP' };
   return {
-    title: copy.title,
+    title: GAME_BRAND,
     description: copy.description,
     alternates: {
       canonical: url,
@@ -25,12 +25,12 @@ export function aboutMetadata(language: AboutLanguage): Metadata {
     },
     robots: { index: true, follow: true },
     openGraph: {
-      type: 'website', title: copy.title, description: copy.description,
+      type: 'website', title: GAME_BRAND, description: copy.description,
       url, siteName: GAME_BRAND, locale: locales[language],
       images: [{ url: poster, width: 1280, height: 720, alt: copy.title }],
       alternateLocale: Object.entries(locales).filter(([key]) => key !== language).map(([, value]) => value),
     },
-    twitter: { card: 'summary_large_image', title: copy.title, description: copy.description, images: [poster] },
+    twitter: { card: 'summary_large_image', title: GAME_BRAND, description: copy.description, images: [poster] },
     other: { 'content-language': language, 'game-version': GAME_VERSION_LABEL },
   };
 }

@@ -2,12 +2,14 @@ import {dirtyFiles,projectFiles,sourceHash,type GameState} from './engine.ts';
 import {lessonFacts} from './lesson.ts';
 import {PROJECT,REPO_URL,MISSIONS} from './content.ts';
 import {setupReadiness} from './setup.ts';
-import {careerCurrent,careerFresh,careerNext} from './career.ts';
+import {careerCurrent,careerFresh,careerNext,careerFiles} from './career.ts';
+import {careerCodeModeSafe} from './career-code.ts';
 import {careerRouteReady} from './career-progress.ts';
 import {releaseFresh,releaseBuildFresh} from './release.ts';
 import type {Localized} from './career-content.ts';
+import {DEMO_SAMPLE_JOB,isDemoCafeComplete,isDemoComplete} from './edition.ts';
 
-export type Task={id:string;phase:number;title:string;detail:string;app:'career'|'messages'|'browser'|'computer'|'editor'|'terminal'|'server'|'api'|'achievements';command?:string;url?:string;file?:string;find?:string;next?:boolean;localized?:{title:Localized;detail:Localized}};
+export type Task={id:string;phase:number;title:string;detail:string;app:'career'|'messages'|'browser'|'computer'|'editor'|'terminal'|'server'|'api'|'achievements';command?:string;url?:string;file?:string;find?:string;discover?:boolean;next?:boolean;localized?:{title:Localized;detail:Localized}};
 export const PHASES=['의뢰 읽기','작업 준비','문제 고치기','결과 확인','의뢰 전달'];
 const step=(id:string,phase:number,title:string,detail:string,app:Task['app'],extra:Partial<Task>={}):Task=>({id,phase,title,detail,app,...extra});
 const shell=(id:string,phase:number,title:string,detail:string,command:string)=>step(id,phase,title,detail,'terminal',{command});
@@ -24,7 +26,15 @@ function upload(s:GameState,phase:number):Task|null{
  return null;
 }
 export function currentTask(s:GameState,edition:import('./edition.ts').GameEdition='full'):Task{
- if(edition==='demo'&&s.gameplay.openingCelebrated)return step('demo-complete',5,'카페 데모 완료!','완성한 카페를 다시 살펴보거나 설정에서 저장 파일을 백업하세요.','achievements');
+ if(edition==='demo'&&isDemoCafeComplete(s)){
+  const l=(ko:string,en:string,ja:string)=>({ko,en,ja}),c=s.gameplay.career,file=careerCodeModeSafe(careerFiles(s,DEMO_SAMPLE_JOB))==='javascript'?'solution.js':'pricing.json';
+  const sample=(id:string,phase:number,title:Localized,detail:Localized,app:Task['app']='career'):Task=>({id,phase,title:title.ko,detail:detail.ko,app,...(phase>=2&&phase<4?{file}:{}),localized:{title,detail}});
+  if(isDemoComplete(s))return sample('demo-complete',5,l('카페와 첫 고객 의뢰 완료!','Café and first client case complete!','カフェと最初の顧客の依頼をクリア！'),l('새벽빵집에도 고친 파일과 답장을 전달했어요. 작업을 돌아보거나 설정에서 저장 파일을 백업하세요.','Your repaired files and reply reached Dawn Bakery too. Revisit your work or back up your save in Settings.','夜明けベーカリーにも修正したファイルと返事を届けました。仕事を振り返ったり設定でセーブを保存できます。'),'achievements');
+  if(!c.accepted.includes(DEMO_SAMPLE_JOB))return sample('demo-sample-accept',0,l('첫 새 고객: 새벽빵집의 부탁','First new client: Dawn Bakery','最初の新しい顧客：夜明けベーカリー'),l('카페를 연 소문이 퍼졌어요. 여섯 개 상자 가격이 틀린 새벽빵집의 파일을 받아 독립 의뢰에 도전하세요.','Word of the café’s opening has spread. Take Dawn Bakery’s files and solve its incorrect six-roll box pricing.','カフェ開店のうわさが広まりました。夜明けベーカリーのファイルを受け取り、6個箱の価格の間違いを解決しましょう。'));
+  if(!c.inspected.includes(DEMO_SAMPLE_JOB))return sample('demo-sample-inspect',1,l('상자와 낱개 가격 비교하기','Compare box and single prices','箱と単品の価格を比べる'),l('현재 결과를 0개, 6개, 8개 주문과 비교하고 문제 확인을 누르세요.','Compare the current output for zero, six and eight rolls, then confirm your inspection.','0個・6個・8個の今の結果を比べ、確認ボタンを押しましょう。'));
+  if(!careerFresh(s,DEMO_SAMPLE_JOB))return sample('demo-sample-edit',2,l('내 가격 설정을 고치고 검사하기','Repair your pricing and run checks','価格設定を直して検査する'),l('pricing.json을 직접 수정하거나 JavaScript 함수로 해결하세요. 다른 주문에서도 맞는지 검사하고, 막히면 힌트를 여세요.','Edit pricing.json or solve it with a JavaScript function. Check changed orders; open a hint if you need a clue.','pricing.jsonを直接直すかJavaScript関数で解決します。別の注文でも検査し、困ったらヒントを開きましょう。'));
+  return sample('demo-sample-deliver',4,l('해나에게 결과와 답장 전달하기','Deliver your result and reply to Hana','ハナに結果と返事を届ける'),l('검사를 통과했어요. 고객에게 보낼 답장을 고르고 직접 만든 파일을 전달하세요.','Your checks passed. Choose a client reply and deliver your repaired files.','検査に合格しました。返信を選び、自分で直したファイルを届けましょう。'));
+ }
  if(s.gameplay.openingCelebrated){
   const c=s.gameplay.career,job=careerCurrent(s),next=careerNext(s);
   const career=(id:string,phase:number,title:Localized,detail:Localized):Task=>({id,phase,title:title.ko,detail:detail.ko,app:'career',localized:{title,detail}});
@@ -56,9 +66,10 @@ export function currentTask(s:GameState,edition:import('./edition.ts').GameEditi
  if(m<2&&!s.gameplay.inspected.includes(m))return step('inspect',2,m===0?'브라우저에서 고장 난 메뉴판 보기':'계산대에서 커피 3잔 담아 보기',m===0?'360px 버튼을 눌러 휴대폰 화면을 보세요. 이름과 잘린 메뉴를 확인한 뒤 문제 확인 버튼을 누르세요.':'수량의 + 버튼으로 3잔을 담아 보세요. 13,500원이 나오는지 확인하고 문제 확인 버튼을 누르세요.','browser',{url:'http://localhost:5173'});
  if(m===0&&!facts.sign)return step('sign',2,'index.html에서 카페 이름 바꾸기','고칠 글자 찾기를 누르세요. 선택된 글자를 모노 카페로 바꾸면 돼요. <h1>과 </h1>은 남겨 주세요.','editor',{file:'index.html',find:'heading'});
  if(m===0&&!facts.size)return step('size',2,'style.css에서 메뉴 너비 고치기','고칠 글자 찾기로 960px을 선택한 뒤 100%를 입력하세요. 화면 너비에 맞춘다는 뜻이에요.','editor',{file:'style.css',find:'width'});
- if(m===1&&!facts.rule)return step('rule',2,'app.js에서 합계 계산 고치기','price는 한 잔 가격, quantity는 잔 수예요. return 줄의 +를 곱셈 기호 *로 바꿔 보세요.','editor',{file:'app.js',find:'operator'});
- if(m===2&&!facts.route)return step('route',2,'server.py에서 메뉴 주소 연결','MENU_PATH는 메뉴를 찾는 주소예요. /menu를 /api/menu로 바꾸세요. 따옴표는 남겨 주세요.','editor',{file:'server.py',find:'route'});
- if(m===2&&!facts.keep)return step('keep',2,'server.py에서 주문 보관 켜기','SAVE_ORDERS는 주문 보관 스위치예요. False를 True로 바꾸세요. 첫 글자는 대문자예요.','editor',{file:'server.py',find:'keep'});
+ // From the second request on, the player finds the file from the client's clue (no file name, no auto-open).
+ if(m===1&&!facts.rule)return step('rule',2,'합계를 계산하는 코드 찾아 고치기','3잔이 4,503원이 됐어요. 계산을 맡은 파일을 탐색기에서 직접 찾아 여세요. 컴퓨터 앱의 파일 설명이 단서예요. 찾았다면: price는 한 잔 가격, quantity는 잔 수예요. return 줄의 +를 곱셈 기호 *로 바꿔 보세요.','editor',{file:'app.js',find:'operator',discover:true});
+ if(m===2&&!facts.route)return step('route',2,'주문 서버 코드에서 메뉴 주소 연결','메뉴와 주문을 받는 서버 프로그램 파일을 탐색기에서 직접 찾아 여세요. MENU_PATH는 메뉴를 찾는 주소예요. /menu를 /api/menu로 바꾸세요. 따옴표는 남겨 주세요.','editor',{file:'server.py',find:'route',discover:true});
+ if(m===2&&!facts.keep)return step('keep',2,'주문 서버 코드에서 주문 보관 켜기','SAVE_ORDERS는 주문 보관 스위치예요. False를 True로 바꾸세요. 첫 글자는 대문자예요.','editor',{file:'server.py',find:'keep',discover:true});
  if(m===2){
   const transfer=upload(s,3);if(transfer)return transfer;
   if(!s.serverReady)return step('server',3,'서버 앱에서 컴퓨터 준비','내 PC 밖에서 주문을 받으려면 다른 컴퓨터가 필요해요. 서버 앱의 Ubuntu 설치를 누르세요.','server');

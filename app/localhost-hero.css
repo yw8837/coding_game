@@ -1,0 +1,8 @@
+/* Integration styles for the curriculum/progression features (typo helper, first-file badge). */
+.terminal-fix{display:flex;align-items:center;gap:10px;margin:0 16px 8px;padding:7px 12px;border:1px dashed #3d7a63;border-radius:8px;background:#11261f;color:#a9dcc6;font:12px/1.4 var(--mono);text-align:left;cursor:pointer;flex-shrink:0}
+.terminal-fix:hover,.terminal-fix:focus-visible{border-style:solid;border-color:#72e4bf;background:#14302a;outline:none;box-shadow:0 0 0 2px #72e4bf33}
+.terminal-fix>span{color:#7fb3a0;font-family:Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+.terminal-fix>code{color:#e8fff6;font-weight:700;white-space:pre-wrap;word-break:break-all}
+.terminal-fix>kbd{margin-left:auto;padding:1px 7px;border:1px solid #4f8a74;border-bottom-width:2px;border-radius:5px;color:#c8f3e2;font:11px var(--mono)}
+.file-hint-badge{margin-left:8px;padding:1px 7px;border-radius:999px;background:#72e4bf;color:#0c2d23;font:700 10px/1.6 Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-style:normal;letter-spacing:.2px;white-space:nowrap}
+.file-explorer .file-hint-badge{margin-left:auto}

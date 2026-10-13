@@ -9,9 +9,18 @@ import {ReleaseAuthoring} from './ReleaseAuthoring';
 import {ReleaseLearning} from './ReleaseLearning';
 import {CampaignGoal} from './CampaignGoal';
 import {StudioWorkspace} from './StudioWorkspace';
+import {AuthoredProject} from './AuthoredProject';
+import {authoredProjectFormat} from '@/lib/game/release-authored';
 import type {GameProps} from './types';
 
-export function ReleaseProject({props,onLetter,onMap}:{props:GameProps;onLetter:()=>void;onMap:()=>void}) {
+type ReleaseProjectProps={props:GameProps;onLetter:()=>void;onMap:()=>void;openStudio?:boolean};
+export function ReleaseProject({openStudio=false,...rest}:ReleaseProjectProps){
+ const [studioOpen,setStudioOpen]=useState(openStudio);
+ if(studioOpen&&rest.props.state.gameplay.career.release.published)return <StudioWorkspace props={rest.props} onBack={()=>setStudioOpen(false)}/>;
+ if(!rest.props.state.gameplay.career.release.started||rest.props.state.gameplay.career.release.authoredFormat||authoredProjectFormat(releaseFiles(rest.props.state)))return <AuthoredProject props={rest.props} mode="release" onBack={rest.onMap} onLetter={rest.onLetter} onStudio={()=>setStudioOpen(true)}/>;
+ return <LegacyReleaseProject {...rest}/>;
+}
+function LegacyReleaseProject({props,onLetter,onMap}:ReleaseProjectProps) {
  const {state,onAction}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
  const progress=state.gameplay.career.release,unlocked=releaseUnlocked(state);
  const [studioOpen,setStudioOpen]=useState(false);
