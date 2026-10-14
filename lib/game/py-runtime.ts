@@ -6,7 +6,7 @@
 export type PyFrame={line:number;scope:string;text?:string};
 export type PyError={type:string;message:string;line?:number;column?:number;text?:string;trace?:PyFrame[]};
 export type PyResult={ok:boolean;stdout:string;error:PyError|null;steps:number};
-export type PyOptions={files?:Readonly<Record<string,string>>;filename?:string;maxSteps?:number};
+export type PyOptions={files?:Readonly<Record<string,string>>;filename?:string;maxSteps?:number;maxDataWork?:number};
 
 const LIMIT={source:60000,steps:250000,depth:200,output:30000,string:1000000,items:100000,digits:4300};
 const MODULE_NOTE='simulated Python: available modules are csv, json, math, random, string';
@@ -1077,7 +1077,7 @@ const MODULE_NAMES=['csv','json','math','random','string'];
 
 // ---------- interpreter ----------
 class Interp{
- steps=0;out='';maxSteps:number;files:Readonly<Record<string,string>>;
+ steps=0;out='';maxSteps:number;dataWork=0;maxDataWork:number;files:Readonly<Record<string,string>>;
  stack:{scope:string;line:number}[]=[];
  builtins=new Map<string,Value>();types=new Map<string,PyBuiltin>();modules=new Map<string,PyModule>();
  handling:PyExc[]=[];globals=new Scope('module',null);
@@ -1085,6 +1085,7 @@ class Interp{
  strMethods:Methods<string>;listMethods:Methods<PyList>;tupleMethods:Methods<PyTuple>;dictMethods:Methods<PyDict>;setMethods:Methods<PySet>;fileMethods:Methods<PyFile>;
  constructor(options:PyOptions){
   this.maxSteps=options.maxSteps??LIMIT.steps;this.files=options.files??{};
+  this.maxDataWork=options.maxDataWork??16*1024*1024;
   this.seed=Math.floor(Math.random()*0xffffffff)>>>0;
   this.globals.vars.set('__name__','__main__');
   this.strMethods=this.makeStrMethods();this.listMethods=this.makeListMethods();this.tupleMethods=this.makeTupleMethods();
@@ -1268,6 +1269,19 @@ class Interp{
 
  // --- expressions ---
  eval(e:Expr,scope:Scope):Value{
+  const value=this.evalValue(e,scope);
+  // Cumulative data-processing budget, not a retained-heap measurement. Repeated
+  // transformations must not evade the individual string/container size limits.
+  // Looking up an existing value or method does not allocate its contents.
+  if(e.k!=='name'&&e.k!=='const'&&e.k!=='attr'){
+   this.dataWork+=typeof value==='string'?value.length*2:
+    value instanceof PyList||value instanceof PyTuple?value.items.length*8:
+    value instanceof PyDict?value.size*32:value instanceof PySet?value.size*16:0;
+   if(this.dataWork>this.maxDataWork)throw limit('cumulative data work exceeded the per-run budget');
+  }
+  return value;
+ }
+ private evalValue(e:Expr,scope:Scope):Value{
   switch(e.k){
    case 'const':return e.v;
    case 'name':return this.lookup(e.id,scope);

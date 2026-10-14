@@ -81,7 +81,7 @@ async function author(kind,language){
  current.note={ko:'내가 작성한 소개입니다. 친구들과 이 화면을 나눕니다.',en:'This is an introduction I wrote. I am sharing this page with friends.',ja:'自分で書いた紹介です。この画面を友人と共有します。'}[language];
  const html='<!doctype html>\n<html lang="'+language+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'+current.title+'</title><link rel="stylesheet" href="style.css"></head><body><main class="portal"><h1>'+current.title+'</h1><p class="authored-note">'+current.note+'</p><section class="qa-pixel"></section>'+ (kind==='webapp'?'<section data-app="items"></section><section data-app="inquiry"></section>':'')+'</main></body></html>\n';
  await fillFile('index.html',html);
- await fillFile('style.css','body { margin: 0; font-family: system-ui, sans-serif; background: #f5f3ed; color: #24332d; }\n.portal { width: 100%; max-width: 860px; margin: 0 auto; padding: 20px; box-sizing: border-box; }\nh1 { color: #356553; }\n.authored-note { color: #183a49; line-height: 1.7; padding: 8px; border-left: 3px solid #aa5533; }\n.qa-pixel { width: 64px; height: 24px; background: #aa5533; }\nimg { width: 96px; max-width: 100%; height: auto; border-radius: 8px; }\n');
+ await fillFile('style.css','body { margin: 0; font-family: system-ui, sans-serif; background: #f5f3ed; color: #24332d; }\n.portal { width: 960px; max-width: 100%; margin: 0 auto; padding: 20px; box-sizing: border-box; }\nh1 { color: #356553; }\n.authored-note { color: #183a49; line-height: 1.7; padding: 8px; border-left: 3px solid #aa5533; }\n.qa-pixel { width: 64px; height: 24px; background: #aa5533; }\nimg { width: 96px; max-width: 100%; height: auto; border-radius: 8px; }\n');
  const product=JSON.parse(await fileText('project.json'));assert.equal(product.format,kind);product.description=current.note;product.items=[{name:'River bench',detail:'A quiet stop I recommend',category:'Walks'},{name:'Small bookshop',detail:'Books I want to share',category:'Books'}];await fillFile('project.json',JSON.stringify(product,null,2)+'\n');
  await page.getByTestId('project-images-toggle').click();await page.getByTestId('project-image-input').setInputFiles(path.join(out,'fixture-photo.png'));
  await page.getByTestId('project-image-alt-photo1').waitFor();await page.getByTestId('project-image-alt-photo1').fill('QA imported photo');await page.getByTestId('project-image-insert-photo1').click();
@@ -143,6 +143,13 @@ async function portable(){
    await portablePage.locator('[data-app="items"] input').fill('bookshop');assert.equal(await portablePage.locator('[data-app="items"] li').count(),1);await portablePage.locator('[data-app="items"] input').fill('');
    await portablePage.locator('[data-app="inquiry"] textarea').fill('An inquiry from outside the game');await portablePage.locator('[data-app="inquiry"] button').click();assert.equal(await portablePage.locator('[data-app="inquiry"] ol li').count(),1);await portablePage.reload();assert.equal(await portablePage.locator('[data-app="inquiry"] ol li').count(),1);row.portableAppSearchAndInquiryPersistence=true;
   }
+  row.responsiveWidths=[];
+  for(const width of [320,960,961,1280]){
+   await portablePage.setViewportSize({width,height:740});
+   const measured=await snapshot(portablePage);assert.equal(measured.noOverflow,true,row.id+' width '+width);
+   row.responsiveWidths.push(width);
+  }
+  await portablePage.setViewportSize({width:row.previewWidth,height:740});
   assert.equal(external,0);await portablePage.screenshot({path:path.join(row.dir,'export-360.png')});row.previewExportDomAndRepresentativeCssPatchMatch=true;row.offlineExport=true;await context.close();delete row.previewPixels;row.passed=true;
  }
  await browser.close();browser=null;

@@ -58,6 +58,19 @@ test('the sandbox has no host access and stops runaway scripts',()=>{
  assert.equal(runPython('print(1)',{maxSteps:0}).error?.type,'TimeoutError');
 });
 
+test('cumulative data work stops repeated transformations and resets per run',()=>{
+ const source="values = []\nfor i in range(20):\n    values.append((str(i) + 'x' * 100).upper())\nprint(len(values))";
+ const stopped=runPython(source,{maxDataWork:2048});
+ assert.equal(stopped.ok,false);
+ assert.equal(stopped.error?.type,'MemoryError');
+ assert.match(stopped.error!.message,/cumulative data work/);
+ const guarded=runPython("try:\n"+source.split('\n').map(line=>'    '+line).join('\n')+"\nexcept Exception:\n    print('caught')",{maxDataWork:2048});
+ assert.equal(guarded.error?.type,'MemoryError');
+ assert.equal(guarded.stdout,'');
+ assert.equal(runPython(source).stdout,'20\n');
+ assert.equal(runPython('print(6 * 7)').stdout,'42\n');
+});
+
 test('scripts read only the virtual files they are given',()=>{
  const files={'data/menu.csv':'name,price\nLatte,5000\n','notes.txt':'a\r\nb\r\n'};
  const r=runPython("import csv\nwith open('./data/menu.csv') as f:\n    print([dict(row) for row in csv.DictReader(f)])\nprint(open('notes.txt').read().splitlines())",{files});

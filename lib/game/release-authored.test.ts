@@ -72,6 +72,23 @@ test('trusted authored runtime combines search/categories, renders no-result tex
  for(const mode of ['blocked','quota'] as const){const unavailable=appRuntime(html,mode);unavailable.submit('Ephemeral question');assert.equal(unavailable.requests.children.length,1);assert.match(unavailable.status.textContent,/only during this preview/);assert.equal(Object.keys(unavailable.store).length,0);}
  const corrupt=appRuntime(html,'corrupt');corrupt.submit('Keep old data');assert.equal(corrupt.requests.children.length,0);assert.equal(corrupt.store['codeshift-app-1234567890abcdef'],'{"bad":true}');assert.match(corrupt.status.textContent,/not overwritten/);
 });
+test('responsive CSS respects width caps, source order and media overrides',()=>{
+ const safe=[
+  '.portal { width: 960px; max-width: 100%; }',
+  '.portal { width: 960px; width: 100%; }',
+  '.portal { width: 960px; } @media (max-width: 960px) { .portal { width: 100%; } }',
+  '.portal { width: 100%; } @media (min-width: 960px) { .portal { width: 900px; } }',
+ ];
+ for(const css of safe){const files=sources();files['style.css']=css;assert.equal(validateAuthoredRelease(files).responsive,true,css);}
+ const unsafe=[
+  '.portal { width: 960px; }',
+  '.portal { width: 100%; width: 960px; }',
+  '.portal { width: 960px; max-width: 100%; min-width: 960px; }',
+  '.portal { width: 100%; } @media (min-width: 500px) { .portal { width: 960px; } }',
+ ];
+ for(const css of unsafe){const files=sources();files['style.css']=css;assert.equal(validateAuthoredRelease(files).responsive,false,css);}
+});
+
 test('safe CSS accepts bounded media queries, variables, quoted fonts and gradients',()=>{
  const files=sources();files['style.css']+='\n:root { --accent: #823b7c; } h1 { color: var(--accent); font-family: "Noto Sans", sans-serif; } body { background: linear-gradient(90deg, #eee, #fff); } @media (max-width: 600px) { .portal { padding: 12px; } }';
  assert.equal(evaluateRelease(files,true).passed,true,validateAuthoredRelease(files).diagnostics.join(' '));assert.match(buildStudioExport(files,'en'),/@media/);

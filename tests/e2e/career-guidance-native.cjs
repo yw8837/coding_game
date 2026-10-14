@@ -36,7 +36,8 @@ async function nav(id){
  await page.getByTestId('title-settings').click();await page.getByRole('combobox',{name:'Language',exact:true}).selectOption('en');await page.keyboard.press('Escape');
  await until(()=>page.getByTestId('title-continue').isEnabled(),true);await page.getByTestId('title-continue').click();
  await page.locator('.pc-shortcuts').getByRole('button',{name:'Contracts',exact:true}).click();
- const active=page.locator('.pc-window[data-active="true"]');
+ const active=page.locator('.pc-window[data-window="career"]');
+ await active.waitFor({state:'visible'});
  if(!(await active.getAttribute('class')).includes('arranged'))await active.getByRole('button',{name:'Maximize or restore window',exact:true}).click();
  const saved=async()=>JSON.parse(await fs.readFile(save,'utf8'));
  const cache=async()=>JSON.parse(careerFiles(await saved(),'photo-cache')['cache.json']);
@@ -74,7 +75,13 @@ async function nav(id){
   });
  }
  report.passed=report.checks.every(item=>item.passed)&&report.errors.length===0;
-})().catch(error=>report.errors.push(String(error.stack||error))).finally(async()=>{
+})().catch(async error=>{
+ report.errors.push(String(error.stack||error));
+ if(page){
+  await page.screenshot({path:path.join(out,'career-guidance-'+tag+'-failure.png')}).catch(()=>{});
+  report.failureWindows=await page.locator('.pc-window').evaluateAll(nodes=>nodes.map(node=>({window:node.getAttribute('data-window'),active:node.getAttribute('data-active'),hidden:node.hidden,rect:node.getBoundingClientRect().toJSON()}))).catch(()=>[]);
+ }
+}).finally(async()=>{
  if(app){const stopped=app.waitForEvent('close');await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].close());await stopped;}
  report.completedAt=new Date().toISOString();await fs.mkdir(out,{recursive:true});await fs.writeFile(path.join(out,'career-guidance-'+tag+'.json'),JSON.stringify(report,null,2));
  console.log(JSON.stringify(report,null,2));if(!report.passed)process.exitCode=1;
