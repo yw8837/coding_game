@@ -1,3 +1,4 @@
+import {authoredWidthsFit,type AuthoredLayoutRule} from './authored-css-layout.ts';
 import authoredRuntime from '../../desktop/authored-runtime.json' with {type:'json'};
 export const AUTHORED_RUNTIME=authoredRuntime.source;
 export const AUTHORED_RUNTIME_SHA256=authoredRuntime.sha256;
@@ -150,8 +151,9 @@ export function validateAuthoredCss(source:string):{valid:boolean;responsive:boo
  const bad=(message:string)=>({valid:false,responsive:false,css:'',diagnostics:[message]});
  if(!safeText(source,20000))return bad('style.css must fit within 20,000 characters.');
  const clean=source.replace(/\/\*[\s\S]*?\*\//g,'').trim();if(!clean)return bad('Add CSS for your page.');
- let responsive=true,rules=0;
- function parseRules(input:string,minimumViewport=320,depth=0):string{
+ let rules=0;
+ const layout:AuthoredLayoutRule[]=[];
+ function parseRules(input:string,minimumViewport=320,maximumViewport=Infinity,depth=0):string{
   if(depth>3)throw Error('Use at most three nested media queries.');
   let position=0,css='';
   while(position<input.length){
@@ -163,13 +165,14 @@ export function validateAuthoredCss(source:string):{valid:boolean;responsive:boo
    if(selector.startsWith('@media')){
     const media=/^@media\s+\((min|max)-width\s*:\s*([1-9][0-9]{1,3})px\)$/.exec(selector);
     if(!media)throw Error('Media queries support (min-width: Npx) or (max-width: Npx).');
-    css+=selector+' {\n'+parseRules(inner,media[1]==='min'?Math.max(minimumViewport,Number(media[2])):minimumViewport,depth+1)+'}\n';
+    css+=selector+' {\n'+parseRules(inner,media[1]==='min'?Math.max(minimumViewport,Number(media[2])):minimumViewport,media[1]==='max'?Math.min(maximumViewport,Number(media[2])):maximumViewport,depth+1)+'}\n';
    }else{
     if(!selector||!/^[:.#a-zA-Z0-9_\s,>+*()\[\]="'-]+$/.test(selector)||selector.length>240)throw Error('Use simple HTML, class or id CSS selectors.');
     const selectorWithoutAttributes=selector.replace(/\[data-app=(?:"(?:items|inquiry)"|'(?:items|inquiry)')\]/g,'');
     if(/[\[\]="']/.test(selectorWithoutAttributes))throw Error('Only [data-app="items"] and [data-app="inquiry"] attribute selectors are supported.');
     if(/[{}]/.test(inner))throw Error('Nested CSS belongs inside an @media query.');
     let declarations='';
+    const dimensions:Record<string,string>={};
     for(const declaration of inner.split(';')){
      if(!declaration.trim())continue;
      const match=/^\s*((?:--)?[a-z][a-z0-9-]*)\s*:\s*(.*?)\s*$/.exec(declaration);
@@ -184,13 +187,10 @@ export function validateAuthoredCss(source:string):{valid:boolean;responsive:boo
      let parentheses=0;
      for(const char of withoutStrings){if(char==='(')parentheses++;if(char===')'&&--parentheses<0)throw Error('Balance CSS parentheses.');}
      if(parentheses!==0)throw Error('Balance CSS parentheses.');
-     if(['width','min-width'].includes(key)){
-      const fixed=/^(\d+(?:\.\d+)?)(px|rem|em|vw|%)$/.exec(value);
-      if(fixed){const size=Number(fixed[1]);if(fixed[2]==='px'&&size>minimumViewport||['rem','em'].includes(fixed[2])&&size*16>minimumViewport||['vw','%'].includes(fixed[2])&&size>100)responsive=false;}
-     }
-     if(key==='white-space'&&value==='nowrap')responsive=false;
+     if(['width','min-width','max-width','white-space'].includes(key))dimensions[key]=value;
      declarations+=key+': '+value+'; ';
     }
+    layout.push({selector,min:minimumViewport,max:maximumViewport,declarations:dimensions});
     css+=selector+' { '+declarations+'}\n';rules++;if(rules>100)throw Error('Use at most 100 CSS rules.');
    }
    position=end;while(position<input.length&&/\s/.test(input[position]))position++;
@@ -198,6 +198,7 @@ export function validateAuthoredCss(source:string):{valid:boolean;responsive:boo
   return css;
  }
  let css='';try{css=parseRules(clean);}catch(error){return bad(error instanceof Error?error.message:'Check CSS rules.');}
+ const responsive=authoredWidthsFit(layout);
  return {valid:true,responsive,css,diagnostics:responsive?[]:['Use responsive widths (100%, auto, max-width) so narrow screens can fit the page.']};
 }
 
