@@ -11,6 +11,7 @@ const {createSteam, readConfig} = require('./steam.cjs');
 const {ENTRY, CSP, MIME, isAppURL, resolveAsset, isTrustedSender} = require('./security.cjs');
 const {selectProfile, prepareProfile} = require('./profile.cjs');
 const qaBuild = require('./qa-build.cjs');
+const {createLaunchProbe} = require('./launch-probe.cjs');
 
 app.setName('CODE-SHIFT');
 let profile;
@@ -22,6 +23,11 @@ try {
   app.setPath('userData', paths.userData);
   app.setPath('sessionData', paths.sessionData);
 } catch (error) { profileError = error; }
+const launchProbe = createLaunchProbe({
+  enabled: qaBuild && profile?.qa && process.argv.includes('--qa-launch-check'),
+  report: result => fs.writeFile(path.join(profile.directory, 'launch-check.json'), JSON.stringify(result, null, 2)),
+  exit: code => app.exit(code),
+});
 protocol.registerSchemesAsPrivileged([{scheme: 'codeshift', privileges: {
   standard: true, secure: true, supportFetchAPI: true, corsEnabled: true,
 }}]);
@@ -65,7 +71,9 @@ function requestClose(event) {
 function handle(channel, callback) {
   ipcMain.handle(channel, async (event, ...args) => {
     if (!window || !isTrustedSender(event, window.webContents)) throw new Error('Untrusted sender');
-    return callback(...args);
+    const result = await callback(...args);
+    launchProbe.mark(channel);
+    return result;
   });
 }
 
@@ -112,6 +120,9 @@ async function boot() {
   const nativeMenu = nativeMenuTemplate(process.platform);
   if (nativeMenu) Menu.setApplicationMenu(Menu.buildFromTemplate(nativeMenu));
   else window.setMenu(null);
+  window.webContents.on('did-finish-load', () => launchProbe.mark('renderer-loaded'));
+  window.webContents.on('render-process-gone', () => launchProbe.fail('renderer-process-gone'));
+  window.webContents.on('did-fail-load', () => launchProbe.fail('renderer-load-failed'));
   window.webContents.setWindowOpenHandler(() => ({action: 'deny'}));
   window.webContents.on('will-navigate', event => event.preventDefault());
   window.webContents.on('will-redirect', event => event.preventDefault());
@@ -197,6 +208,7 @@ else {
     if (window && !allowClose) { event.preventDefault(); window.close(); }
   });
   app.whenReady().then(boot).catch(error => {
+    launchProbe.fail('main-startup-failed');
     dialog.showErrorBox(words().startupTitle, error.code === 'ENOENT'
       ? words().missingBundle : words().startupFailed);
     allowClose = true; app.quit();

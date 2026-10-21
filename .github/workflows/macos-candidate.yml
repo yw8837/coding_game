@@ -45,6 +45,10 @@ jobs:
       - run: npm ci --prefix desktop
       - run: pnpm verify
       - run: pnpm desktop:build
+      - name: Native app startup check (isolated QA profile)
+        run: |
+          node desktop/scripts/package.mjs --qa
+          node desktop/scripts/verify-launch.mjs "$PWD/desktop/release/Localhost Hero QA-darwin-${{ matrix.arch }}/Localhost Hero QA.app/Contents/MacOS/CODE-SHIFT" | tee native-launch-${{ matrix.arch }}.json
       - name: Package Steam candidate (no Steam upload)
         env:
           CODESHIFT_STEAM_APP_ID: '5441360'
@@ -75,5 +79,48 @@ jobs:
         if: always()
         with:
           name: macOS-${{ matrix.arch }}-quality-gate
-          path: output/quality-gate/
+          path: |
+            output/quality-gate/
+            native-launch-${{ matrix.arch }}.json
           retention-days: 14
+
+  universal:
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25.9.0
+      - run: npm ci --prefix desktop
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Localhost-Hero-macOS-*-candidate
+          path: native-candidates
+          merge-multiple: true
+      - name: Merge and verify universal bundle
+        run: |
+          set -euo pipefail
+          mkdir -p desktop/release
+          for arch in x64 arm64; do
+            ditto -x -k "native-candidates/Localhost-Hero-macOS-${arch}-candidate.zip" desktop/release
+          done
+          node desktop/scripts/package-universal.mjs
+          root="desktop/release/Localhost Hero-darwin-universal"
+          bundle="$root/Localhost Hero.app"
+          lipo "$bundle/Contents/MacOS/CODE-SHIFT" -verify_arch x86_64 arm64
+          lipo "$bundle/Contents/MacOS/libsteam_api.dylib" -verify_arch x86_64 arm64
+          codesign --verify --deep --strict --verbose=2 "$bundle"
+          cd "$root"
+          ditto -c -k --sequesterRsrc . "$GITHUB_WORKSPACE/Localhost-Hero-macOS-universal-candidate.zip"
+          cd "$GITHUB_WORKSPACE"
+          shasum -a 256 Localhost-Hero-macOS-universal-candidate.zip > Localhost-Hero-macOS-universal-candidate.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Localhost-Hero-macOS-universal-candidate
+          path: |
+            Localhost-Hero-macOS-universal-candidate.zip
+            Localhost-Hero-macOS-universal-candidate.sha256
+          if-no-files-found: error
+          retention-days: 30
