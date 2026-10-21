@@ -1,6 +1,6 @@
 import {makeUniversalApp} from '@electron/universal';
 import {sign} from '@electron/osx-sign';
-import {access, copyFile, mkdir, writeFile} from 'node:fs/promises';
+import {access, copyFile, mkdir, writeFile, readdir, rm, realpath} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 
@@ -11,6 +11,24 @@ const destination = path.join(root, 'Localhost Hero-darwin-universal');
 const app = path.join(destination, 'Localhost Hero.app');
 for (const arch of ['x64', 'arm64']) await access(path.join(source(arch), 'Localhost Hero.app/Contents/Resources/app.asar'));
 await mkdir(destination, {recursive: true});
+// Native archives were already verified. Remove their architecture-specific
+// signature manifests from these extracted build copies before merging; the
+// complete universal app is signed and verified again below.
+async function clearSignatureManifests(directory, boundary) {
+  const resolved = await realpath(directory);
+  const relative = path.relative(boundary, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) throw new Error('Signature path escaped build input');
+  for (const entry of await readdir(directory, {withFileTypes: true})) {
+    if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
+    const child = path.join(directory, entry.name);
+    if (entry.name === '_CodeSignature') await rm(child, {recursive: true});
+    else await clearSignatureManifests(child, boundary);
+  }
+}
+for (const arch of ['x64', 'arm64']) {
+  const input = await realpath(path.join(source(arch), 'Localhost Hero.app'));
+  await clearSignatureManifests(input, input);
+}
 await makeUniversalApp({
   x64AppPath: path.join(source('x64'), 'Localhost Hero.app'),
   arm64AppPath: path.join(source('arm64'), 'Localhost Hero.app'), outAppPath: app,
