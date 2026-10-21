@@ -1,6 +1,6 @@
 /** Friendly typo correction for the simulated shell. Suggestions are only text:
  * the player still decides to run them (Tab fills the input, nothing executes). */
-export const KNOWN_COMMANDS=['clear','help','man','pwd','whoami','uname','echo','ls','cd','cat','grep','mkdir','touch','rm','cp','mv','sudo','apt','code','node','npm','git','ssh','exit','pip','pip3','python3','ps','pkill','curl','sqlite3'] as const;
+export const KNOWN_COMMANDS=['clear','help','man','pwd','whoami','uname','echo','ls','cd','cat','grep','mkdir','touch','rm','rmdir','cp','mv','sudo','apt','code','node','npm','git','ssh','exit','pip','pip3','python3','ps','pkill','curl','sqlite3'] as const;
 const SUBCOMMANDS:Record<string,readonly string[]>={git:['clone','status','diff','add','commit','push','pull','log'],npm:['install','test','run'],apt:['update','install','list']};
 // Habits from other shells and common shorthand.
 const ALIASES:Record<string,string>={python:'python3',py:'python3',sqlite:'sqlite3',dir:'ls',cls:'clear',type:'cat',copy:'cp',move:'mv',del:'rm',md:'mkdir',vim:'code',vi:'code',nano:'code',open:'code'};

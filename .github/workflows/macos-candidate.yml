@@ -1,0 +1,179 @@
+name: macOS candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      sign_and_notarize:
+        description: 'After Apple enrollment: sign and notarize (never uploads to Steam)'
+        type: boolean
+        required: true
+        default: false
+  push:
+    branches: [feat/macos-support-20261021]
+    paths:
+      - desktop/**
+      - .github/workflows/macos-candidate.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            arch: x64
+            macho: x86_64
+          - runner: macos-15
+            arch: arm64
+            macho: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25.9.0
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - name: Verify native runner
+        env:
+          EXPECTED_ARCH: ${{ matrix.arch }}
+        run: node -e "if(process.platform !== 'darwin' || process.arch !== process.env.EXPECTED_ARCH) process.exit(1)"
+      - run: pnpm install --frozen-lockfile
+      - run: npm ci --prefix desktop
+      - run: pnpm verify
+      - name: Reproducible renderer timestamp
+        run: echo "SOURCE_DATE_EPOCH=$(git show -s --format=%ct HEAD)" >> "$GITHUB_ENV"
+      - run: pnpm desktop:build
+      - name: Native app startup check (isolated QA profile)
+        run: |
+          node desktop/scripts/package.mjs --qa
+          node desktop/scripts/verify-launch.mjs "$PWD/desktop/release/Localhost Hero QA-darwin-${{ matrix.arch }}/Localhost Hero QA.app/Contents/MacOS/CODE-SHIFT" | tee native-launch-${{ matrix.arch }}.json
+      - name: Package Steam candidate (no Steam upload)
+        env:
+          CODESHIFT_STEAM_APP_ID: '5441360'
+        run: node desktop/scripts/package.mjs --steam
+      - name: Check bundle, native libraries, and signature
+        env:
+          TARGET_ARCH: ${{ matrix.arch }}
+          MACHO_ARCH: ${{ matrix.macho }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle="desktop/release/Localhost Hero-darwin-${TARGET_ARCH}/Localhost Hero.app"
+          test -f "$bundle/Contents/Resources/app.asar"
+          lipo "$bundle/Contents/MacOS/CODE-SHIFT" -verify_arch "$MACHO_ARCH"
+          lipo "$bundle/Contents/MacOS/libsteam_api.dylib" -verify_arch "$MACHO_ARCH"
+          codesign --verify --deep --strict --verbose=2 "$bundle"
+          /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$bundle/Contents/Info.plist"
+          node -e "require('./desktop/node_modules/steamworks.js'); console.log('Native Steam binding loads on macOS')"
+          ditto -c -k --sequesterRsrc --keepParent "desktop/release/Localhost Hero-darwin-${TARGET_ARCH}" "Localhost-Hero-macOS-${TARGET_ARCH}-candidate.zip"
+          shasum -a 256 "Localhost-Hero-macOS-${TARGET_ARCH}-candidate.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Localhost-Hero-macOS-${{ matrix.arch }}-candidate
+          path: Localhost-Hero-macOS-${{ matrix.arch }}-candidate.zip
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macOS-${{ matrix.arch }}-quality-gate
+          path: |
+            output/quality-gate/
+            native-launch-${{ matrix.arch }}.json
+          retention-days: 14
+
+  universal:
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25.9.0
+      - run: npm ci --prefix desktop
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Localhost-Hero-macOS-*-candidate
+          path: native-candidates
+          merge-multiple: true
+      - name: Merge and verify universal bundle
+        run: |
+          set -euo pipefail
+          mkdir -p desktop/release
+          for arch in x64 arm64; do
+            ditto -x -k "native-candidates/Localhost-Hero-macOS-${arch}-candidate.zip" desktop/release
+          done
+          plutil -lint desktop/macos-steam-entitlements.plist
+          node desktop/scripts/package-universal.mjs
+          root="desktop/release/Localhost Hero-darwin-universal"
+          bundle="$root/Localhost Hero.app"
+          lipo "$bundle/Contents/MacOS/CODE-SHIFT" -verify_arch x86_64 arm64
+          lipo "$bundle/Contents/MacOS/libsteam_api.dylib" -verify_arch x86_64 arm64
+          codesign --verify --deep --strict --verbose=2 "$bundle"
+          cd "$root"
+          ditto -c -k --sequesterRsrc . "$GITHUB_WORKSPACE/Localhost-Hero-macOS-universal-candidate.zip"
+          cd "$GITHUB_WORKSPACE"
+          shasum -a 256 Localhost-Hero-macOS-universal-candidate.zip > Localhost-Hero-macOS-universal-candidate.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Localhost-Hero-macOS-universal-candidate
+          path: |
+            Localhost-Hero-macOS-universal-candidate.zip
+            Localhost-Hero-macOS-universal-candidate.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+  notarize:
+    if: github.event_name == 'workflow_dispatch' && inputs.sign_and_notarize
+    needs: universal
+    runs-on: macos-15
+    environment: macos-release
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25.9.0
+      - run: npm ci --prefix desktop
+      - uses: actions/download-artifact@v4
+        with:
+          name: Localhost-Hero-macOS-universal-candidate
+          path: universal-candidate
+      - name: Extract verified candidate
+        run: |
+          set -euo pipefail
+          cd universal-candidate
+          shasum -a 256 -c Localhost-Hero-macOS-universal-candidate.sha256
+          cd ..
+          mkdir -p 'desktop/release/Localhost Hero-darwin-universal'
+          ditto -x -k universal-candidate/Localhost-Hero-macOS-universal-candidate.zip 'desktop/release/Localhost Hero-darwin-universal'
+      - name: Developer ID sign, notarize, staple and assess
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+        run: node desktop/scripts/release-macos.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Localhost-Hero-macOS-5441362-notarized
+          path: |
+            desktop/release/macos-notarized/Localhost-Hero-macOS-5441362.zip
+            desktop/release/macos-notarized/Localhost-Hero-macOS-5441362.zip.sha256
+            desktop/release/macos-notarized/notary-result.json
+            desktop/release/macos-notarized/release-report.json
+          if-no-files-found: error
+          retention-days: 30

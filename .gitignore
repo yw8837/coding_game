@@ -57,3 +57,9 @@ __pycache__/
 
 # Local code-navigation state
 .serena/
+
+# Apple distribution private keys and exported signing identities
+*.p12
+*.p8
+*.key
+*.keychain-db
