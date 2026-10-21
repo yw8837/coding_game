@@ -44,6 +44,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: npm ci --prefix desktop
       - run: pnpm verify
+      - name: Reproducible renderer timestamp
+        run: echo "SOURCE_DATE_EPOCH=$(git show -s --format=%ct HEAD)" >> "$GITHUB_ENV"
       - run: pnpm desktop:build
       - name: Native app startup check (isolated QA profile)
         run: |
