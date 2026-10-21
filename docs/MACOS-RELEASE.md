@@ -6,7 +6,7 @@ Windows remains the public release target. Apple membership/payment and public M
 
 ### One-time credentials
 
-After membership activation, create a **Developer ID Application** certificate with its private key and export an encrypted P12 (not an App Store certificate). Also create a **team App Store Connect API key** permitted for notarization. Individual API keys are not supported by this workflow. If no Mac is available, arrange a controlled Mac session for certificate/key setup. Never send private keys in chat or commit them.
+After membership activation, create a **Developer ID Application** certificate with its private key and export an encrypted P12 (not an App Store certificate). Also create a **team App Store Connect API key** permitted for notarization. Individual API keys are not supported by this workflow. A personal Mac is not required for certificate preparation: an encrypted private key/CSR and P12 (including Apple's appropriate intermediate certificate) can be prepared locally with OpenSSL on Windows, then the certificate can be issued through Apple's web portal. macOS hosted CI performs signing/notarization. Generate keys only when enrollment is active, store them securely, and never send private keys in chat or commit them. Actual Mac gameplay verification is a separate requirement.
 
 Configure these GitHub secrets in environment `macos-release` (a required reviewer is recommended):
 
@@ -55,7 +55,11 @@ The user currently has no Mac. Membership activation alone does not remove these
 
 - **39630565615 / 51369e3**: Intel and ARM jobs passed quality gates and native QA app startup (renderer, platform bridge, save-load bridge). Universal merge then failed on non-reproducible build timestamps; fixed by deriving `SOURCE_DATE_EPOCH` from the source commit.
 - **2026-10-22 KST local `pnpm verify`: PASS**, 473 game + 50 desktop tests, 379 linted files with zero errors/warnings. Release configuration rejects missing secrets/ad-hoc signing identities.
-- Latest universal archive evidence will be recorded below after verification.
+- **CI 39634217110 / ab326ae40633cc6231dd40034f58b32b9d132cb9: SUCCESS**. Intel, Apple Silicon and universal jobs all passed. Both native QA apps reported `startup-ready`; the universal main executable and Steam library include x86_64 + arm64, and `codesign --verify --deep --strict` passed. Notarization was intentionally skipped.
+- Universal candidate archived locally at `D:/코딩게임/출시자료/플랫폼출시-20261022/macOS/Localhost-Hero-macOS-universal-candidate.zip` (262,474,235 bytes), SHA-256 `6f9fa131529998a5f77637e2b7c0e12300ccfdf1428f5ff9c8b6141bbb5b3a5d`.
+- Download verification passed: checksum, app-at-root ZIP layout, production bundle/AppID/version, ASAR integrity metadata, both native Steam bindings, executable mode and 14 symlinks. Valve's Steam dylib additionally contains its legacy i386 slice; the game executable itself contains only x86_64/arm64.
+- Native CI receipts and startup reports are preserved under `D:/코딩게임/출시자료/플랫폼출시-20261022/macOS-검증/`. Local `candidate-verification.json` records that Developer ID signing, notarization and Steam upload have NOT occurred.
+- Future releases must rebuild from the then-current reviewed game source, rather than blindly uploading this dated candidate.
 
 References: [Steam platforms](https://partner.steamgames.com/doc/store/application/platforms), [Apple Developer ID](https://developer.apple.com/developer-id/), [Apple notarization](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution), [Electron signing](https://www.electronjs.org/docs/latest/tutorial/code-signing).
 
