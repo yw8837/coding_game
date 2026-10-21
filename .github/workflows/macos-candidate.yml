@@ -58,8 +58,8 @@ jobs:
           set -euo pipefail
           bundle="desktop/release/Localhost Hero-darwin-${TARGET_ARCH}/Localhost Hero.app"
           test -f "$bundle/Contents/Resources/app.asar"
-          lipo -verify_arch "$MACHO_ARCH" "$bundle/Contents/MacOS/CODE-SHIFT"
-          lipo -verify_arch "$MACHO_ARCH" "$bundle/Contents/MacOS/libsteam_api.dylib"
+          lipo "$bundle/Contents/MacOS/CODE-SHIFT" -verify_arch "$MACHO_ARCH"
+          lipo "$bundle/Contents/MacOS/libsteam_api.dylib" -verify_arch "$MACHO_ARCH"
           codesign --verify --deep --strict --verbose=2 "$bundle"
           /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$bundle/Contents/Info.plist"
           node -e "require('./desktop/node_modules/steamworks.js'); console.log('Native Steam binding loads on macOS')"
