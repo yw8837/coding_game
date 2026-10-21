@@ -33,7 +33,8 @@ if (steamBuild) {
 const outputs = await packager({
   dir: desktop, name, executableName: 'CODE-SHIFT',
   platform: target.platform, arch: target.arch, electronVersion: manifest.devDependencies.electron,
-  appVersion: manifest.version, buildVersion: mac ? '0.14.0' : '0.14.0.0', appCopyright: 'Localhost Hero',
+  appVersion: mac ? manifest.version.split('-')[0] : manifest.version,
+  buildVersion: mac ? manifest.version.split('-')[0] : '0.14.0.0', appCopyright: 'Localhost Hero',
   ...(mac ? {appBundleId: qaBuild ? 'com.studioyeolmae.localhosthero.qa' : 'com.studioyeolmae.localhosthero',
     appCategoryType: 'public.app-category.games', darwinDarkModeSupport: true} : {}),
   out: path.join(desktop, 'release'), overwrite: true, prune: true,

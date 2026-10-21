@@ -1,4 +1,66 @@
-# macOS release candidates
+# macOS release readiness
+
+## Resume after Apple enrollment (2026-10-22 KST)
+
+Windows remains the public release target. Apple membership/payment and public Mac support are deferred by the owner. Prepared candidates must not be described as notarized or fully playtested.
+
+### One-time credentials
+
+After membership activation, create a **Developer ID Application** certificate with its private key and export an encrypted P12 (not an App Store certificate). Also create a **team App Store Connect API key** permitted for notarization. Individual API keys are not supported by this workflow. If no Mac is available, arrange a controlled Mac session for certificate/key setup. Never send private keys in chat or commit them.
+
+Configure these GitHub secrets in environment `macos-release` (a required reviewer is recommended):
+
+| Secret | Value |
+| --- | --- |
+| `MACOS_CERTIFICATE_P12_BASE64` | Base64 of encrypted certificate + private key P12 |
+| `MACOS_CERTIFICATE_PASSWORD` | P12 password |
+| `MACOS_SIGNING_IDENTITY` | Full `Developer ID Application: Name (TEAMID)` identity |
+| `APPLE_API_KEY_P8_BASE64` | Base64 API private key |
+| `APPLE_API_KEY_ID` | API key ID |
+| `APPLE_API_ISSUER_ID` | Team API issuer UUID |
+
+No credentials are currently configured. The script uses an ephemeral keychain and removes keys in `finally`. Hosted runners are ephemeral on cancellation. No Steam credentials are needed.
+
+### Build once, then upload
+
+1. Use the reviewed source ref in **macOS candidate** (`.github/workflows/macos-candidate.yml`). Push/default builds internal candidates only; Apple is not contacted.
+2. After enrollment, manually dispatch with **`sign_and_notarize=true`**. Native Intel and ARM quality gates/startup probes run, then the app is merged, Developer ID signed, notarized, stapled and assessed by Gatekeeper.
+3. GitHub exposes manual dispatch only once the workflow exists on the default branch. The current branch must be reviewed/merged by a human before relying on that UI; no automatic merge is authorized.
+4. Download artifact **`Localhost-Hero-macOS-5441362-notarized`**. Its `Localhost-Hero-macOS-5441362.zip` contains the `.app` and license notices at root. It includes a SHA-256 and notarization/source report. Do not extract/repack on Windows, which can lose symlinks and executable modes.
+5. Upload that ZIP to **Mac depot 5441362** at https://partner.steamgames.com/apps/depotuploads/5441360. The workflow deliberately does not upload or set any live branch.
+
+Missing secrets, ad-hoc/App Store identity, incorrect app ID, or a failed notarization prevent release output. Hardened runtime, secure timestamps, JIT and Steam overlay entitlements are configured; App Sandbox/debug entitlement are excluded. This is prepared automation, not proof of actual Developer ID signing/notarization before credentials exist.
+
+For a controlled Mac session, with the universal candidate extracted under `desktop/release/Localhost Hero-darwin-universal` and the same environment variables:
+
+```sh
+node desktop/scripts/release-macos.mjs --check-config
+node desktop/scripts/release-macos.mjs
+```
+
+`--check-config` checks presence/formats only, without contacting Apple. Output is `desktop/release/macos-notarized/`; existing output is never overwritten. Certificate files are ignored by Git.
+
+### Steam configuration and final acceptance
+
+- App **5441360**, Windows depot **5441361**, Mac-only depot **5441362**.
+- Mac depot is attached to Developer Comp **1877905**, Beta Testing **1877906**, Store package **1877907**. Metadata was published on 2026-10-22 KST; Windows default **25925147** was preserved.
+- Add macOS-only launch executable **`Localhost Hero.app`** after notarized candidate creation. This launch option and public Mac support are intentionally deferred.
+- Upload/test on an internal branch; confirm both existing Windows and new Mac manifests are present. Do not overwrite Windows content with the Mac ZIP.
+- Real Intel/Apple Silicon Steam install/update, input, save/load, fullscreen, audio, image import and HTML/ZIP export still need verification. Verify native Steam initialization, overlay and achievements as applicable. Hosted native startup checks do not prove full gameplay or Steam client integration.
+- Only then enable Mac/64-bit Intel/Apple Silicon/notarized flags and measured store requirements, promote the validated build, and submit Steam review if required.
+
+The user currently has no Mac. Membership activation alone does not remove these acceptance checks. Do not bypass Gatekeeper to claim compatibility.
+
+### Current evidence
+
+- **39630565615 / 51369e3**: Intel and ARM jobs passed quality gates and native QA app startup (renderer, platform bridge, save-load bridge). Universal merge then failed on non-reproducible build timestamps; fixed by deriving `SOURCE_DATE_EPOCH` from the source commit.
+- **2026-10-22 KST local `pnpm verify`: PASS**, 473 game + 50 desktop tests, 379 linted files with zero errors/warnings. Release configuration rejects missing secrets/ad-hoc signing identities.
+- Latest universal archive evidence will be recorded below after verification.
+
+References: [Steam platforms](https://partner.steamgames.com/doc/store/application/platforms), [Apple Developer ID](https://developer.apple.com/developer-id/), [Apple notarization](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution), [Electron signing](https://www.electronjs.org/docs/latest/tutorial/code-signing).
+
+## Historical candidate instructions and evidence (2026-10-21)
+
 
 The Steam default build is still Windows-only. Do not advertise macOS support until a Mac depot is installed and playtested through Steam.
 
