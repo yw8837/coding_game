@@ -1,3 +1,5 @@
+import {removalArguments} from './terminal-remove.ts';
+
 export type TerminalInput={command:string;redirect:null|{append:boolean;target:string};stdin:null|string};
 
 /** Recognize stdout file redirection and `sqlite3 db < file.sql`. Quoted/escaped operators stay data.
@@ -45,7 +47,8 @@ export function terminalArgumentError(cmd:string,args:string[]):string|null{
  }
  if(cmd==='echo')return args[0]?.startsWith('-')&&args[0]!=='-n'?`echo: unsupported option '${args[0]}'. Supported: -n.`:null;
  if(cmd==='grep'){const bad=args.find(a=>a.startsWith('-')&&!/^-[inv]+$/.test(a));return bad?`grep: unsupported option '${bad}'. Supported: -n, -i, -v.`:null;}
- if(['cat','touch','cp','mv','rm'].includes(cmd))return option([])||(['touch','rm'].includes(cmd)?count(1,`${cmd} <file>`):null);
+ if(cmd==='rm'||cmd==='rmdir'){try{removalArguments(cmd,args);return null;}catch(error){return (error as Error).message;}}
+ if(['cat','touch','cp','mv'].includes(cmd))return option([])||(cmd==='touch'?count(1,`${cmd} <file>`):null);
  if(cmd==='mkdir')return option(['-p']);
  if(cmd==='uname')return option(['-a'])||count(1,'uname [-a]');
  if(cmd==='git'){

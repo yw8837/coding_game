@@ -49,7 +49,7 @@ export function editionAllowsCommand(s:GameState,args:readonly string[],redirect
   const file=operands[0]==='--test'?operands[1]:operands[0];
   if(!isDemoCafeComplete(s)||!s.gameplay.career.accepted.includes(DEMO_SAMPLE_JOB)||operands.length!==2||!file||editionPath(cwd,file)!==DEMO_SAMPLE_ROOT+'/solution.js')return false;
  }
- if(['cat','ls','cd','code','mkdir','touch','cp','mv','rm','python3'].includes(cmd)){
+ if(['cat','ls','cd','code','mkdir','touch','cp','mv','rm','rmdir','python3'].includes(cmd)){
   if(operands.some(p=>!editionAllowsPath(edition,p,cwd,s)))return false;
   if(cmd==='cd'&&operands[0]==='-'){
    const previous=s.history.findLast(h=>!h.error&&h.machine===s.machine&&h.cwd!==cwd&&/^cd(?:\s|$)/.test(h.command.trim()))?.cwd;
