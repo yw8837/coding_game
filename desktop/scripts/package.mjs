@@ -71,6 +71,14 @@ for (const output of outputs) {
     [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
     [FuseV1Options.OnlyLoadAppFromAsar]: true,
   });
+  if (mac) {
+    const {sign} = await import('@electron/osx-sign');
+    // Deep codesign alone misses SDK dylibs. Sign every discovered Mach-O, then
+    // seal the outer bundle. This is explicitly an internal ad-hoc candidate.
+    await sign({app: layout.app, platform: 'darwin', identity: '-', identityValidation: false,
+      preAutoEntitlements: false, preEmbedProvisioningProfile: false,
+      optionsForFile: () => ({hardenedRuntime: false})});
+  }
   if (mac) await writeFile(path.join(output, 'MACOS-CANDIDATE-NOT-FOR-RELEASE.txt'),
     'Internal candidate: ad-hoc signed only; not Developer ID signed or notarized. Native playtest and Steam depot verification required before claiming macOS support.\n');
   if (qaBuild) await writeFile(path.join(output, 'QA-NOT-FOR-DISTRIBUTION.txt'),
