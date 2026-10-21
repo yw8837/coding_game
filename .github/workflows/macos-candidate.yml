@@ -1,0 +1,79 @@
+name: macOS candidate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/macos-support-20261021]
+    paths:
+      - desktop/**
+      - .github/workflows/macos-candidate.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            arch: x64
+            macho: x86_64
+          - runner: macos-15
+            arch: arm64
+            macho: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25.9.0
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - name: Verify native runner
+        env:
+          EXPECTED_ARCH: ${{ matrix.arch }}
+        run: node -e "if(process.platform !== 'darwin' || process.arch !== process.env.EXPECTED_ARCH) process.exit(1)"
+      - run: pnpm install --frozen-lockfile
+      - run: npm ci --prefix desktop
+      - run: pnpm verify
+      - run: pnpm desktop:build
+      - name: Package Steam candidate (no Steam upload)
+        env:
+          CODESHIFT_STEAM_APP_ID: '5441360'
+        run: node desktop/scripts/package.mjs --steam
+      - name: Check bundle, native libraries, and signature
+        env:
+          TARGET_ARCH: ${{ matrix.arch }}
+          MACHO_ARCH: ${{ matrix.macho }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle="desktop/release/Localhost Hero-darwin-${TARGET_ARCH}/Localhost Hero.app"
+          test -f "$bundle/Contents/Resources/app.asar"
+          lipo -verify_arch "$MACHO_ARCH" "$bundle/Contents/MacOS/CODE-SHIFT"
+          lipo -verify_arch "$MACHO_ARCH" "$bundle/Contents/MacOS/libsteam_api.dylib"
+          codesign --verify --deep --strict --verbose=2 "$bundle"
+          /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$bundle/Contents/Info.plist"
+          node -e "require('./desktop/node_modules/steamworks.js'); console.log('Native Steam binding loads on macOS')"
+          ditto -c -k --sequesterRsrc --keepParent "desktop/release/Localhost Hero-darwin-${TARGET_ARCH}" "Localhost-Hero-macOS-${TARGET_ARCH}-candidate.zip"
+          shasum -a 256 "Localhost-Hero-macOS-${TARGET_ARCH}-candidate.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Localhost-Hero-macOS-${{ matrix.arch }}-candidate
+          path: Localhost-Hero-macOS-${{ matrix.arch }}-candidate.zip
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macOS-${{ matrix.arch }}-quality-gate
+          path: output/quality-gate/
+          retention-days: 14

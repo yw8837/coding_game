@@ -1,5 +1,6 @@
 'use strict';
-const {app, BrowserWindow, dialog, ipcMain, protocol, session} = require('electron');
+const {app, BrowserWindow, dialog, ipcMain, protocol, session, Menu} = require('electron');
+const {nativeMenuTemplate} = require('./native-menu.cjs');
 const path = require('node:path');
 const fs = require('node:fs/promises');
 const {SaveStore, validateRaw} = require('./save-store.cjs');
@@ -108,7 +109,9 @@ async function boot() {
       devTools: !app.isPackaged, spellcheck: false,
     },
   });
-  window.setMenu(null);
+  const nativeMenu = nativeMenuTemplate(process.platform);
+  if (nativeMenu) Menu.setApplicationMenu(Menu.buildFromTemplate(nativeMenu));
+  else window.setMenu(null);
   window.webContents.setWindowOpenHandler(() => ({action: 'deny'}));
   window.webContents.on('will-navigate', event => event.preventDefault());
   window.webContents.on('will-redirect', event => event.preventDefault());
