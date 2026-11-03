@@ -118,5 +118,6 @@ jobs:
             output/steam-qa/*report.json
             output/authored-project-native/**/*.json
             output/authored-project-native/**/*.png
+            output/authored-project-native/**/video/*.webm
           if-no-files-found: warn
           retention-days: 14
