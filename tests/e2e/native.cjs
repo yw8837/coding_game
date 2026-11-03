@@ -86,7 +86,8 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  await release.getByTestId('project-file-style.css').click();await release.getByTestId('project-editor').locator('textarea').fill('body { margin: 0; font-family: system-ui; } .portal { width: 100%; max-width: 960px; padding: 20px; box-sizing: border-box; }');
  await release.getByTestId('project-test').click();await until(async()=>(await read()).gameplay.career.release.proof.passed,true);
  await release.getByTestId('release-build').click();await release.getByTestId('release-publish').click();await until(async()=>!!(await read()).gameplay.career.release.published,true);
- await active().getByTestId('career-ending').click();await until(async()=>(await read()).gameplay.career.ending,'balanced');report.nativeCareerUI=18;report.nativeFinalRelease=true;
+ // Publishing an authored project starts the ending automatically.
+ await until(async()=>(await read()).gameplay.career.ending,'balanced');report.nativeCareerUI=18;report.nativeFinalRelease=true;
  await page.getByTestId('ending-story').waitFor();await page.keyboard.press('Escape');await page.getByTestId('credits-desktop').click();report.endingAndCredits=true;
  await page.locator('.pc-start-button').click();await page.locator('.pc-start-apps').getByRole('button',{name:'연습 의뢰',exact:true}).click();await page.getByTestId('code-lab-tab').click();
  await page.getByTestId('lab-source').locator('textarea').fill('function solve(input) { return input.price * input.quantity; }');await page.getByTestId('lab-run').click();
@@ -109,14 +110,15 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  const earnedBackup=path.join(profile,'ui-earned-backup.json');await fs.writeFile(earnedBackup,JSON.stringify(first));
  await page.locator('.pc-tray-settings').click();await page.locator('.save-tools input[type=file]').setInputFiles(earnedBackup);
  await page.getByRole('button',{name:'이 저장으로 이어하기',exact:true}).click();await until(async()=>(await read()).gameplay.career.ending,'balanced');
- await page.locator('.pc-play').click();await page.locator('.pc-shortcuts').getByRole('button',{name:'에디터',exact:true}).click();assert.equal(await page.getByTestId('virtual-file-editor').count(),0);report.importClearsEditorTarget=true;await page.locator('.quest-next button').click();await page.locator('.career-conclusion').waitFor({state:'visible'});
+ await page.locator('.pc-play').click();await page.locator('.pc-shortcuts').getByRole('button',{name:'에디터',exact:true}).click();assert.equal(await page.getByTestId('virtual-file-editor').count(),0);report.importClearsEditorTarget=true;
+ await page.locator('.pc-start-button').click();await page.locator('.pc-start-apps').getByRole('button',{name:'의뢰 센터',exact:true}).click();await page.getByTestId('career-record-button').click();await page.locator('.career-conclusion').waitFor({state:'visible'});
  await page.screenshot({animations:'disabled',path:path.join(out,'native-ending.png')});
  await app.evaluate(({dialog},file)=>{dialog.showSaveDialog=async()=>({canceled:false,filePath:file});},path.join(profile,'exported.json'));
  await page.locator('.pc-tray-settings').click();await page.getByRole('button',{name:'백업 내보내기',exact:true}).click();
  await until(async()=>JSON.parse(await fs.readFile(path.join(profile,'exported.json'),'utf8')).gameplay.career.ending,'balanced');report.nativeExport=true;await page.getByRole('combobox',{name:'Language'}).selectOption('en');await app.evaluate(({dialog})=>{dialog.showSaveDialog=async(_window,options)=>{globalThis.qaExportTitle=options.title;return {canceled:true};};});await page.getByRole('button',{name:'Export backup',exact:true}).click();await until(async()=>await app.evaluate(()=>globalThis.qaExportTitle),'Export Localhost Hero progress backup');report.manualNativeDialogLanguage=true;await page.getByRole('combobox',{name:'Language'}).selectOption('ko');
  await close();report.importAndEnding=true;
  // Corrupt primary after an orderly close; backup must restore real progress.
- await fs.writeFile(save,'{corrupt');await launch();await page.locator('.pc-play').click();await page.locator('.quest-next button').click();await page.locator('.career-conclusion').waitFor({state:'visible'});await close();
+ await fs.writeFile(save,'{corrupt');await launch();await page.locator('.pc-play').click();await page.locator('.pc-start-button').click();await page.locator('.pc-start-apps').getByRole('button',{name:'의뢰 센터',exact:true}).click();await page.getByTestId('career-record-button').click();await page.locator('.career-conclusion').waitFor({state:'visible'});await close();
  assert.equal((await read()).gameplay.career.ending,'balanced');report.corruptPrimaryRecovered=true;
  assert.deepEqual(errors,[]);report.errors=errors;
  await fs.writeFile(path.join(out,'native-report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));
