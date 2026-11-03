@@ -115,7 +115,8 @@ jobs:
             output/quality-gate/
             output/full-version-quality/*.json
             output/context-menu-qa/*report.json
-            output/steam-qa/*report.json
+            output/steam-qa/*.json
+            output/steam-qa/*.png
             output/authored-project-native/**/*.json
             output/authored-project-native/**/*.png
             output/authored-project-native/**/video/*.webm

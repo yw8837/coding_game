@@ -70,7 +70,7 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
   else throw Error('Unhandled native task: '+title);
  }
  await until(async()=>(await read()).gameplay.openingCelebrated,true);report.nativeCafeUI=3;
- await page.locator('.pc-shortcuts').getByRole('button',{name:'의뢰 센터',exact:true}).click();
+ await page.getByTestId('opening-first-client').click();
  await active().getByRole('button',{name:'창 최대화 또는 복원',exact:true}).click();
  const jobs=await active().locator('[data-testid^=career-job-]').evaluateAll(elements=>elements.map(el=>el.dataset.testid));
  assert.equal(jobs.length,18);
