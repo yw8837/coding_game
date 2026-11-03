@@ -36,7 +36,7 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  await page.locator('.pc-shortcuts').getByRole('button',{name:'메시지',exact:true}).click();await page.getByRole('button',{name:'의뢰 수락',exact:true}).click();
  await until(async()=>(await read()).accepted,true);
  const active=()=>page.locator('.pc-window[data-active="true"]');
- const follow=async()=>{const button=page.getByTestId('quest-task-action');if(await button.isVisible())await button.click();else await page.getByTestId('follow-task').click();};
+ const follow=async()=>{const button=page.getByTestId('quest-task-action');if(await button.isVisible())await button.click();};
  await follow();
  // Opening CatHub discovers the project; the next task opens the local computer.
  if(!await active().getByRole('button',{name:'프로젝트 복사',exact:true}).isVisible())await follow();
