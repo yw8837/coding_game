@@ -1,6 +1,7 @@
 'use strict';
 // Source runtime smoke with isolated on-disk saves, real IPC and blocked network.
 const path=require('node:path'),fs=require('node:fs/promises'),assert=require('node:assert/strict');
+const {pathToFileURL}=require('node:url');
 const {_electron}=require(process.env.PLAYWRIGHT_PACKAGE || path.join(process.env.USERPROFILE,'.codex/skills/webapp-testing/.venv/Lib/site-packages/playwright/driver/package'));
 const root=path.resolve(__dirname,'../..'),out=path.join(root,'output/steam-qa');
 const profile=path.join(out,'native-'+Date.now()),save=path.join(profile,'saves/game.json');
@@ -10,6 +11,10 @@ async function launch(){
  const env={...process.env};delete env.ELECTRON_RUN_AS_NODE;
  app=await _electron.launch({executablePath:path.join(root,'desktop/node_modules/electron/dist/electron.exe'),args:[path.join(root,'desktop'),'--qa-user-data='+profile],env,timeout:25000});
  page=await app.firstWindow();page.setDefaultTimeout(12000);page.on('pageerror',e=>errors.push(String(e.stack||e)));
+ await page.addLocatorHandler(page.getByTestId('level-up-overlay'),async overlay=>{
+  await overlay.getByRole('button',{name:/^(확인|OK)$/}).click();
+  report.levelUpAcknowledgements=(report.levelUpAcknowledgements||0)+1;
+ });
  await page.waitForFunction(()=>document.querySelector('.pc-play')&&!document.querySelector('.pc-play').disabled);
  return page;
 }
@@ -31,8 +36,10 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  await page.locator('.pc-shortcuts').getByRole('button',{name:'메시지',exact:true}).click();await page.getByRole('button',{name:'의뢰 수락',exact:true}).click();
  await until(async()=>(await read()).accepted,true);
  const active=()=>page.locator('.pc-window[data-active="true"]');
- const follow=async()=>{const button=page.locator('#mission-sidebar .quest-next button');if(await button.isVisible())await button.click();};
+ const follow=async()=>{const button=page.getByTestId('quest-task-action');if(await button.isVisible())await button.click();else await page.getByTestId('follow-task').click();};
  await follow();
+ // Opening CatHub discovers the project; the next task opens the local computer.
+ if(!await active().getByRole('button',{name:'프로젝트 복사',exact:true}).isVisible())await follow();
  for(const name of ['프로젝트 복사','준비물 받기','미리보기 켜기'])await active().getByRole('button',{name,exact:true}).click();
  await follow();await active().getByRole('button',{name:'360px',exact:true}).click();await active().getByRole('button',{name:'문제 확인 · 파일 고치기',exact:true}).click();
  for(const [file,answer] of [['index.html','모노 카페'],['style.css','100%']]){await follow();await active().locator('.file-explorer button').filter({has:page.getByText(file,{exact:true})}).click();await active().getByRole('button',{name:'고칠 글자 찾기',exact:true}).click();await page.keyboard.insertText(answer);}
@@ -41,16 +48,17 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  for(let i=0;i<3;i++){await follow();await active().locator('.terminal-form input').press('Enter');}
  await follow();await active().getByRole('button',{name:/PR 만들기/}).click();await active().getByRole('button',{name:'PR 병합',exact:true}).click();await active().getByRole('button',{name:'검토한 버전 배포',exact:true}).click();await until(async()=>(await read()).completed.length,1);
 
- // Continue chapters two and three through the same visible quest instructions.
+ // Read the same task descriptor as the visible quest, but perform every action in UI.
+ const {currentTask}=await import(pathToFileURL(path.join(root,'lib/game/workflow.ts')).href);
  for(let step=0;step<100;step++){
   const state=JSON.parse((await page.evaluate(()=>window.desktopBridge.loadSave())).raw);
   if(state.gameplay.openingCelebrated)break;
   const reward=page.getByRole('button',{name:'이야기 계속하기',exact:true});
   if(await reward.isVisible()){await reward.click();await reward.waitFor({state:'hidden'});continue;}
-  const title=await page.locator('#mission-sidebar .quest-next>strong, #mission-sidebar .quest-current strong').innerText();await follow();const w=active();
+  const task=currentTask(state),title=task.title;await follow();const w=active();
   if(title.includes('메시지')||title.includes('의뢰 읽고')){const button=w.getByRole('button',{name:'작업 시작하기',exact:true});if(await button.isVisible())await button.click();}
   else if(title.includes('계산대에서')){for(let i=0;i<3;i++)await w.getByRole('button',{name:'수량 늘리기'}).click();await w.getByRole('button',{name:'문제 확인 · 파일 고치기',exact:true}).click();}
-  else if(title.includes('app.js에서')||title.includes('server.py에서')){await w.getByRole('button',{name:'고칠 글자 찾기',exact:true}).click();await page.keyboard.insertText(title.includes('app.js')?'*':title.includes('주소')?'/api/menu':'True');}
+  else if(['rule','route','keep'].includes(task.id)){await w.locator('.file-explorer button').filter({has:page.getByText(task.file,{exact:true})}).click();await w.getByRole('button',{name:'고칠 글자 찾기',exact:true}).click();await page.keyboard.insertText(task.id==='rule'?'*':task.id==='route'?'/api/menu':'True');}
   else if(title.includes('서버 앱에서'))await w.getByRole('button',{name:'Ubuntu 설치',exact:true}).click();
   else if(title.includes('API 앱에서')){if(title.includes('주문'))await w.getByRole('button',{name:'POST 주문 보내기'}).click();await w.getByRole('button',{name:'전송',exact:true}).click();}
   else if(title.includes('검사하기')){await w.getByRole('button',{name:'검사 실행',exact:true}).click();await until(async()=>!!(await read()).tests?.checks.every(c=>c.passed),true);}
@@ -58,25 +66,28 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
   else if(title.includes('수정본 확정'))await w.getByRole('button',{name:'PR 병합',exact:true}).click();
   else if(title.includes('수정본 전달'))await w.getByRole('button',{name:'검토한 버전 배포',exact:true}).click();
   else if(title.includes('OPEN'))await w.getByRole('button',{name:/OPEN/}).click();
-  else if(await w.locator('.terminal-form input').isVisible())await w.locator('.terminal-form input').press('Enter');
+  else if(task.command){await w.locator('.terminal-form input').fill(task.command);await w.locator('.terminal-form input').press('Enter');}
   else throw Error('Unhandled native task: '+title);
  }
  await until(async()=>(await read()).gameplay.openingCelebrated,true);report.nativeCafeUI=3;
- await follow();await active().locator('.pc-window-buttons button').nth(3).click();
+ await page.locator('.pc-shortcuts').getByRole('button',{name:'의뢰 센터',exact:true}).click();
+ await active().getByRole('button',{name:'창 최대화 또는 복원',exact:true}).click();
  const jobs=await active().locator('[data-testid^=career-job-]').evaluateAll(elements=>elements.map(el=>el.dataset.testid));
+ assert.equal(jobs.length,18);
  for(let index=0;index<jobs.length;index++){
-  const w=active();await w.getByTestId(jobs[index]).click();await w.getByTestId('career-accept').click();await w.getByTestId('career-inspect').click();assert.equal(await w.getByTestId('career-code-mode').getAttribute('aria-pressed'),'true','Direct Work must start in full code');await w.locator('.career-answer>button').click();
+  const w=active();if(!await w.getByTestId(jobs[index]).isVisible())await w.locator('.career-list-toggle').click();await w.getByTestId(jobs[index]).click();await w.getByTestId('career-accept').click();await w.getByTestId('career-inspect').click();assert.equal(await w.getByTestId('career-code-mode').getAttribute('aria-pressed'),'true','Direct Work must start in full code');await w.locator('.career-answer>button').click();
   const answers=await w.locator('.career-answer>div>div').evaluateAll(elements=>elements.map(el=>[el.querySelector('strong').textContent,el.querySelector('pre').textContent]));
   for(const [filename,source] of answers){await w.locator('.career-file-tabs button').filter({has:page.getByText(filename,{exact:true})}).click();await w.locator('.career-code-input textarea').fill(source);}
   await w.locator('.career-answer>button').click();await w.getByTestId('career-test').click();await w.getByTestId('career-reply-'+(index%2===0?'care':'craft')).check();await w.getByTestId('career-deliver').click();await until(async()=>(await read()).gameplay.career.completed.length,index+1);
  }
  await active().getByTestId('career-final-project').click();
- const release=active();await release.getByTestId('release-start').click();assert.equal(await release.getByTestId('release-code-mode').getAttribute('aria-pressed'),'true','Direct Work must start release in full code');await release.getByTestId('release-example-toggle').click();
- const releaseAnswers=await release.locator('.release-examples>div').evaluateAll(elements=>elements.map(el=>[el.querySelector('strong').textContent,el.querySelector('pre').textContent]));assert.equal(releaseAnswers.length,4);
- for(const [filename,source] of releaseAnswers){await release.locator('.release-files .career-file-tabs button').filter({has:page.getByText(filename,{exact:true})}).click();await release.locator('.release-code textarea').fill(source);}
- await release.getByTestId('release-example-toggle').click();await release.getByTestId('release-test').click();await until(async()=>(await read()).gameplay.career.release.proof.passed,true);
- await release.getByTestId('release-build').click();await release.getByTestId('release-publish').click();await until(async()=>!!(await read()).gameplay.career.release.published,true);await release.getByTestId('release-letter').click();
+ const release=active();await release.getByTestId('project-choice-website').click();await release.getByTestId('release-start').click();
+ await release.getByTestId('project-file-index.html').click();await release.getByTestId('project-editor').locator('textarea').fill('<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>우리 동네 산책</title><link rel="stylesheet" href="style.css"></head><body><main class="portal"><h1>우리 동네 산책</h1><p>내가 직접 걸으며 찾은 조용한 길과 가게를 소개합니다.</p></main></body></html>');
+ await release.getByTestId('project-file-style.css').click();await release.getByTestId('project-editor').locator('textarea').fill('body { margin: 0; font-family: system-ui; } .portal { width: 100%; max-width: 960px; padding: 20px; box-sizing: border-box; }');
+ await release.getByTestId('project-test').click();await until(async()=>(await read()).gameplay.career.release.proof.passed,true);
+ await release.getByTestId('release-build').click();await release.getByTestId('release-publish').click();await until(async()=>!!(await read()).gameplay.career.release.published,true);
  await active().getByTestId('career-ending').click();await until(async()=>(await read()).gameplay.career.ending,'balanced');report.nativeCareerUI=18;report.nativeFinalRelease=true;
+ await page.getByTestId('ending-story').waitFor();await page.keyboard.press('Escape');await page.getByTestId('credits-desktop').click();report.endingAndCredits=true;
  await page.locator('.pc-start-button').click();await page.locator('.pc-start-apps').getByRole('button',{name:'연습 의뢰',exact:true}).click();await page.getByTestId('code-lab-tab').click();
  await page.getByTestId('lab-source').locator('textarea').fill('function solve(input) { return input.price * input.quantity; }');await page.getByTestId('lab-run').click();
  await until(async()=>(await read()).gameplay.lab.completed.includes('receipt'),true);report.nativeCodeLab=true;
@@ -94,8 +105,9 @@ async function until(fn,value){const end=Date.now()+12000;while(Date.now()<end){
  await launch();assert.equal(await page.locator('html').getAttribute('lang'),'ko');await page.locator('.pc-play').click();
  await page.locator('.pc-tray-settings').click();assert.equal(await page.getByTestId('audio-settings').getByRole('slider',{name:'전체 음량',exact:true}).inputValue(),'64');assert.equal(await page.getByTestId('audio-settings').getByRole('slider',{name:'조작음',exact:true}).inputValue(),'30');assert.equal(await page.getByTestId('reduce-motion').getAttribute('aria-pressed'),'true');report.nativeFeedbackPersist=true;await page.screenshot({animations:'disabled',path:path.join(out,'native-audio-settings.png')});await page.getByRole('button',{name:'설정 닫기',exact:true}).click();
  await page.locator('.pc-shortcuts').getByRole('button',{name:'터미널',exact:true}).click();await command('code /home/dev/code-lab/receipt.js');await page.getByTestId('virtual-file-editor').waitFor({state:'visible'});
- // Import an actually UI-earned save from the browser edition through Settings.
- await page.locator('.pc-tray-settings').click();await page.locator('.save-tools input[type=file]').setInputFiles(path.join(out,'completed-career-save.json'));
+ // Import this run's UI-earned save; do not depend on an untracked prior browser run.
+ const earnedBackup=path.join(profile,'ui-earned-backup.json');await fs.writeFile(earnedBackup,JSON.stringify(first));
+ await page.locator('.pc-tray-settings').click();await page.locator('.save-tools input[type=file]').setInputFiles(earnedBackup);
  await page.getByRole('button',{name:'이 저장으로 이어하기',exact:true}).click();await until(async()=>(await read()).gameplay.career.ending,'balanced');
  await page.locator('.pc-play').click();await page.locator('.pc-shortcuts').getByRole('button',{name:'에디터',exact:true}).click();assert.equal(await page.getByTestId('virtual-file-editor').count(),0);report.importClearsEditorTarget=true;await page.locator('.quest-next button').click();await page.locator('.career-conclusion').waitFor({state:'visible'});
  await page.screenshot({animations:'disabled',path:path.join(out,'native-ending.png')});

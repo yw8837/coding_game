@@ -90,6 +90,7 @@ jobs:
         run: |
           $results = $env:NATIVE_RESULTS.Split(',')
           if ($results.Count -ne 5 -or ($results | Where-Object { $_ -ne 'success' })) { throw "Native verification incomplete: $env:NATIVE_RESULTS" }
+          node scripts/verify-native-evidence.mjs
       - name: Package Steam candidate without uploading
         run: node desktop/scripts/package.mjs --steam
       - name: Archive candidate and record source
