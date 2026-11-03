@@ -32,7 +32,10 @@ jobs:
       - name: Full quality gate including real Windows junction fixtures
         run: pnpm verify
       - name: Audit production dependencies
-        run: pnpm audit --prod
+        run: |
+          pnpm audit --prod
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm audit --prefix desktop
       - name: Build renderer from this exact commit
         shell: pwsh
         run: |
@@ -44,7 +47,15 @@ jobs:
           npm install --prefix output/qa-tools --no-save --no-package-lock playwright-core@1.62.0
           node output/qa-tools/node_modules/playwright-core/cli.js install chromium
           "PLAYWRIGHT_PACKAGE=$env:GITHUB_WORKSPACE/output/qa-tools/node_modules/playwright-core" >> $env:GITHUB_ENV
+      - name: Package and launch isolated QA build
+        run: |
+          node desktop/scripts/package.mjs --qa
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node desktop/scripts/verify-launch.mjs "$env:GITHUB_WORKSPACE/desktop/release/CODE-SHIFT-QA-win32-x64/CODE-SHIFT.exe"
       - name: Native terminal input
+        env:
+          DEBUG: pw:browser
+          ELECTRON_ENABLE_LOGGING: '1'
         run: node tests/e2e/terminal-editing-native.cjs
       - name: Native context menus and clipboard IPC
         run: |
@@ -56,10 +67,6 @@ jobs:
         run: node tests/e2e/full-studio-native.cjs
       - name: Authored websites and webapps in all three languages
         run: node tests/e2e/authored-project-native.cjs
-      - name: Package and launch isolated QA build
-        run: |
-          node desktop/scripts/package.mjs --qa
-          node desktop/scripts/verify-launch.mjs "$env:GITHUB_WORKSPACE/desktop/release/CODE-SHIFT-QA-win32-x64/CODE-SHIFT.exe"
       - name: Package Steam candidate without uploading
         run: node desktop/scripts/package.mjs --steam
       - name: Archive candidate and record source
