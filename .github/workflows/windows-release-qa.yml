@@ -29,6 +29,11 @@ jobs:
           run_install: false
       - run: pnpm install --frozen-lockfile
       - run: npm ci --prefix desktop
+      - name: Install the pinned Electron runtime for native automation
+        run: |
+          node desktop/node_modules/electron/install.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (!(Test-Path desktop/node_modules/electron/dist/electron.exe)) { throw 'Pinned Electron executable is missing' }
       - name: Full quality gate including real Windows junction fixtures
         run: pnpm verify
       - name: Audit production dependencies
@@ -53,20 +58,38 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node desktop/scripts/verify-launch.mjs "$env:GITHUB_WORKSPACE/desktop/release/CODE-SHIFT-QA-win32-x64/CODE-SHIFT.exe"
       - name: Native terminal input
+        id: terminal
+        continue-on-error: true
         env:
           DEBUG: pw:browser
           ELECTRON_ENABLE_LOGGING: '1'
         run: node tests/e2e/terminal-editing-native.cjs
       - name: Native context menus and clipboard IPC
+        id: context
+        continue-on-error: true
         run: |
           node tests/e2e/context-menu-seed.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/e2e/context-menu-native.cjs
       - name: Native campaign and save lifecycle
+        id: campaign
+        continue-on-error: true
         run: node tests/e2e/native.cjs
       - name: Native studio and portable export
+        id: studio
+        continue-on-error: true
         run: node tests/e2e/full-studio-native.cjs
       - name: Authored websites and webapps in all three languages
+        id: authored
+        continue-on-error: true
         run: node tests/e2e/authored-project-native.cjs
+      - name: Require every native suite before creating a distribution candidate
+        if: always()
+        env:
+          NATIVE_RESULTS: '${{ steps.terminal.outcome }},${{ steps.context.outcome }},${{ steps.campaign.outcome }},${{ steps.studio.outcome }},${{ steps.authored.outcome }}'
+        run: |
+          $results = $env:NATIVE_RESULTS.Split(',')
+          if ($results.Count -ne 5 -or ($results | Where-Object { $_ -ne 'success' })) { throw "Native verification incomplete: $env:NATIVE_RESULTS" }
       - name: Package Steam candidate without uploading
         run: node desktop/scripts/package.mjs --steam
       - name: Archive candidate and record source
