@@ -1,4 +1,5 @@
 'use client';
+import {TextContextMenu} from './TextContextMenu';
 import {localizeUI,useLanguage} from '@/lib/game/i18n';
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {ChevronRight,TerminalSquare,CornerDownLeft} from 'lucide-react';
@@ -42,13 +43,17 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false,expe
   const next=cycle?(selected+1)%options.length:0;
   setSuggestions(options);setSelected(next);applyCompletion(options[next]);return true;
  };
- return localizeUI(<div ref={body} className={'terminal-body '+(compact?'compact':'')}>
+ return localizeUI(<TextContextMenu key={state.machine} field={field} output clear={()=>onCommand('clear')} replace={(text,start,end)=>{change(text);requestAnimationFrame(()=>{field.current?.focus();field.current?.setSelectionRange(start,end);});}}><div ref={body} className={'terminal-body '+(compact?'compact':'')}>
   <div className="terminal-output" ref={scroll} aria-live="polite" aria-label="터미널 출력"><div className="terminal-welcome"><TerminalSquare size={18}/><span>SHIFT SHELL<br/><span data-no-translate>{tr('Linux 개발 터미널','Linux development terminal','Linux開発ターミナル')}</span><br/><span data-no-translate>{tr('help · 명령과 옵션 / Tab · 경로 완성','help · commands and options / Tab · path completion','help · コマンドとオプション / Tab · パス補完')}</span></span></div>{visible.map((h,i)=><div className="terminal-entry" key={i}><div className="terminal-prompt"><span>dev@{h.machine==='local'?'workstation':'mono-server'}</span><span className="path">{h.cwd.replace('/home/dev','~')}</span><span>$</span><strong data-no-translate>{h.command}</strong></div>{h.output&&<pre className={h.error?'terminal-error':''}>{translateTerminalOutput(h.command,h.output,language)}</pre>}</div>)}</div>
   {!!suggestions.length&&<div className="terminal-completions" aria-label="명령어 자동완성 후보">{suggestions.map((c,i)=><button type="button" className={i===selected?'selected':''} key={c.value} onClick={()=>{close();applyCompletion(c);field.current?.focus();}}>{c.value}</button>)}</div>}
   {fix&&!input&&!expected&&<button type="button" className="terminal-fix" data-testid="terminal-fix" data-no-translate onClick={applyFix}><span>{tr('혹시 이거였나요?','Did you mean','もしかして')}</span><code>{fix}</code><kbd>Tab</kbd></button>}
   {expected&&<div className={'terminal-ghost'+(typo?' has-typo':'')+(ready?' is-ready':'')} data-testid="terminal-ghost" aria-hidden="true" data-no-translate><span className="ghost-done">{expected.slice(0,matched)}</span>{typo&&<span className="ghost-typo">{input.slice(matched)}</span>}<span className="ghost-rest">{typo?'':expected.slice(matched)}</span><small>{ready?'Enter ↵':typo?'Backspace ⌫':'Tab ⇥'}</small></div>}
   <form className="terminal-form" onSubmit={e=>{e.preventDefault();send();}}><label htmlFor={compact?'terminal-dock':'terminal-main'}><span>dev@{state.machine==='local'?'workstation':'mono-server'}</span><b>{m.cwd.replace('/home/dev','~')}</b><ChevronRight size={16}/></label><input id={compact?'terminal-dock':'terminal-main'} ref={field} value={input} onChange={e=>change(e.target.value)} onPointerDown={close} autoComplete="off" autoCapitalize="off" spellCheck={false} placeholder="명령어 입력 · Tab으로 완성" aria-label="가상 터미널 명령어" onKeyDown={e=>{
    if(e.key!=='Enter'&&isKeystrokeKey(e))playGameFeedback('keystroke');
+   // Plain Tab belongs to this terminal even when there is no completion.
+   // Keep Shift+Tab for focus navigation and leave OS/browser modifier shortcuts alone.
+   const completionTab=e.key==='Tab'&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey;
+   if(completionTab)e.preventDefault();
    if(e.nativeEvent.isComposing||e.keyCode===229)return;
    if(e.key==='Escape'&&suggestions.length){e.preventDefault();e.stopPropagation();close();return;}
    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='l'){e.preventDefault();onCommand('clear');setIndex(-1);draft.current=input;close();return;}
@@ -56,11 +61,11 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false,expe
     const element=e.currentTarget,hasSelection=element.selectionStart!==element.selectionEnd||Boolean(window.getSelection()?.toString());
     if(!hasSelection){e.preventDefault();change('');}return;
    }
-   if(e.key==='Tab'&&!e.shiftKey){if(fix&&!input&&!expected){e.preventDefault();applyFix();return;}if(complete())e.preventDefault();return;}
+   if(completionTab){if(fix&&!input&&!expected){applyFix();return;}complete();return;}
    if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)||((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'))close();
    if(e.key==='ArrowUp'){e.preventDefault();if(index===-1)draft.current=input;const n=Math.min(index+1,state.history.length-1);setIndex(n);setInput(state.history[state.history.length-1-n]?.command??draft.current);close();}
    if(e.key==='ArrowDown'){e.preventDefault();const n=Math.max(-1,index-1);setIndex(n);setInput(n<0?draft.current:state.history[state.history.length-1-n]?.command??'');close();}
   }}/><button type="button" onClick={()=>{complete();field.current?.focus();}} title="자동완성 (Tab)" aria-label="명령어 자동완성">Tab</button><button type="submit" title="명령 실행" aria-label="명령 실행"><CornerDownLeft size={17}/></button></form>
   {!compact&&<div className="terminal-shortcuts">{['help','pwd','ls','git status','ps'].map(c=><button key={c} onClick={()=>{change(c);field.current?.focus();}}>{c}</button>)}<span>↑↓ 기록 · Tab 완성 · Ctrl+L 정리 · Shift+Tab 이동</span></div>}
- </div>);
+ </div></TextContextMenu>);
 }

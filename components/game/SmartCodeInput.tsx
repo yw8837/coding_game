@@ -1,4 +1,5 @@
 'use client';
+import {TextContextMenu} from './TextContextMenu';
 import {localizeUI} from '@/lib/game/i18n';
 import {forwardRef,useEffect,useImperativeHandle,useRef,useState,type UIEvent} from 'react';
 import {codeCompletions,indentSelection,type Completion} from '@/lib/game/input-tools';
@@ -19,7 +20,7 @@ export const SmartCodeInput=forwardRef<SmartCodeHandle,{file:string;value:string
  const accept=(c:Completion)=>edit({text:value.slice(0,c.start)+c.text+value.slice(c.end),start:c.start+c.text.length,end:c.start+c.text.length});
  useImperativeHandle(ref,()=>({undo,redo,complete,replace:text=>edit({text,start:0,end:0}),select:(start,end)=>{setOptions([]);const el=field.current;if(!el)return;el.focus();el.setSelectionRange(start,end);el.scrollTop=Math.max(0,(value.slice(0,start).split("\n").length-3)*24);el.dispatchEvent(new Event("scroll",{bubbles:true}));}}));
  useEffect(()=>setOptions([]),[file]);
- return localizeUI(<><textarea ref={field} value={value} aria-label={`${file} 코드 편집`} spellCheck={false} autoCapitalize="off" autoComplete="off" onCompositionStart={()=>{composing.current=true;setOptions([]);}} onCompositionEnd={()=>{composing.current=false;}} onClick={()=>setOptions([])} onScroll={onScroll} onChange={e=>{const text=e.target.value;if(text.length>60000)return;const h=stack();h.undo.push({text:value,start:Math.max(0,e.target.selectionStart-1),end:Math.max(0,e.target.selectionStart-1)});h.undo=h.undo.slice(-80);h.redo=[];onChange(text);setActive(0);setOptions(!composing.current&&(text.slice(0,e.target.selectionStart).match(/[\w.-]+$/)?.[0].length??0)>=2?codeCompletions(file,text,e.target.selectionStart):[]);}} onKeyDown={e=>{
+ return localizeUI(<><TextContextMenu key={file} field={field} undo={undo} redo={redo} replace={(text,start,end)=>edit({text,start,end})}><textarea ref={field} value={value} aria-label={`${file} 코드 편집`} spellCheck={false} autoCapitalize="off" autoComplete="off" onCompositionStart={()=>{composing.current=true;setOptions([]);}} onCompositionEnd={()=>{composing.current=false;}} onClick={()=>setOptions([])} onScroll={onScroll} onChange={e=>{const text=e.target.value;if(text.length>60000)return;const h=stack();h.undo.push({text:value,start:Math.max(0,e.target.selectionStart-1),end:Math.max(0,e.target.selectionStart-1)});h.undo=h.undo.slice(-80);h.redo=[];onChange(text);setActive(0);setOptions(!composing.current&&(text.slice(0,e.target.selectionStart).match(/[\w.-]+$/)?.[0].length??0)>=2?codeCompletions(file,text,e.target.selectionStart):[]);}} onKeyDown={e=>{
   if(isKeystrokeKey(e))playGameFeedback('keystroke');
   if(composing.current||e.nativeEvent.isComposing||e.keyCode===229)return;
   const el=e.currentTarget,start=el.selectionStart,end=el.selectionEnd,mod=e.ctrlKey||e.metaKey;
@@ -49,5 +50,5 @@ export const SmartCodeInput=forwardRef<SmartCodeHandle,{file:string;value:string
   }
   if(!mod&&start===end&&[')',']','}'].includes(e.key)&&value[start]===e.key){e.preventDefault();el.setSelectionRange(start+1,start+1);return;}
   if(e.key==='Backspace'&&start===end&&pairs[value[start-1]]===value[start]){e.preventDefault();edit({text:value.slice(0,start-1)+value.slice(start+1),start:start-1,end:start-1});}
- }}/>{!!options.length&&<div className="editor-completions" aria-label="코드 자동완성 후보">{options.map((c,i)=><button key={c.label} className={active===i?'selected':''} onMouseDown={e=>e.preventDefault()} onClick={()=>accept(c)}>{c.label}</button>)}</div>}</>);
+ }}/></TextContextMenu>{!!options.length&&<div className="editor-completions" aria-label="코드 자동완성 후보">{options.map((c,i)=><button key={c.label} className={active===i?'selected':''} onMouseDown={e=>e.preventDefault()} onClick={()=>accept(c)}>{c.label}</button>)}</div>}</>);
 });

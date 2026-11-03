@@ -1,4 +1,5 @@
 'use client';
+import {FileContextMenu} from './FileContextMenu';
 
 import {useEffect,useRef,useState} from 'react';
 import {FileCode2,Terminal,Play} from 'lucide-react';
@@ -11,7 +12,8 @@ import {SmartCodeInput,type SmartCodeHandle} from './SmartCodeInput';
 import type {GameProps} from './types';
 
 /** Absolute editor targets use the canonical local virtual filesystem, including deletions. */
-export function VirtualFileEditor({state,onAction,onCommand,onOpen,editorTarget}:GameProps){
+export function VirtualFileEditor(props:GameProps){
+ const {state,onAction,onCommand,onOpen,editorTarget}=props;
  const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[language];
  const [path,setPath]=useState(editorTarget?.file??''),[notice,setNotice]=useState<string|null>(null);
  const smart=useRef<SmartCodeHandle>(null),numbers=useRef<HTMLDivElement>(null);
@@ -28,8 +30,8 @@ export function VirtualFileEditor({state,onAction,onCommand,onOpen,editorTarget}
  const test=()=>{if(canTest&&suite){onCommand('node --test '+suite);onOpen('terminal');}else setNotice(tr('이 파일의 검사는 터미널에서 해당 명령을 직접 입력해 주세요.','Type the appropriate test command in the terminal for this file.','このファイルの検査コマンドはターミナルに直接入力してください。'));};
  return <div className="virtual-file-editor" data-testid="virtual-file-editor" data-no-translate>
   <header className="virtual-editor-header"><div><FileCode2 size={19}/><strong>{name||tr('파일','File','ファイル')}</strong><span>{exists?(readOnly?tr('읽기 전용','Read only','読み取り専用'):tr('자동 저장','Autosaved','自動保存')):tr('파일 없음','File missing','ファイルなし')}</span></div><button type="button" data-testid="virtual-file-terminal" onClick={()=>onOpen('terminal')}><Terminal size={15}/>{tr('터미널로 돌아가기','Back to terminal','ターミナルへ戻る')}</button></header>
-  <p className="virtual-editor-path" data-testid="virtual-file-path">{path}</p>
-  <nav className="virtual-editor-files" aria-label={tr('같은 폴더의 파일','Files in this folder','同じフォルダーのファイル')}>{siblings.map(file=><button type="button" key={file} data-testid={'virtual-file-'+file.slice(prefix.length)} aria-pressed={path===file} onClick={()=>{setPath(file);setNotice(null);}}>{file.slice(prefix.length)}</button>)}</nav>
+  <FileContextMenu props={props} path={folder} folder><p className="virtual-editor-path" data-testid="virtual-file-path" tabIndex={0}>{path}</p></FileContextMenu>
+  <nav className="virtual-editor-files" aria-label={tr('같은 폴더의 파일','Files in this folder','同じフォルダーのファイル')}>{siblings.map(file=><FileContextMenu key={file} props={props} path={file} open={()=>{setPath(file);setNotice(null);}}><button type="button" key={file} data-testid={'virtual-file-'+file.slice(prefix.length)} aria-pressed={path===file} onClick={()=>{setPath(file);setNotice(null);}}>{file.slice(prefix.length)}</button></FileContextMenu>)}</nav>
   {notice&&<p className="virtual-editor-notice" role="status">{notice}</p>}
   {!exists?<section className="virtual-editor-missing" role="status"><h2>{tr('이 파일이 없거나 이동됐습니다.','This file is missing or was moved.','このファイルは存在しないか移動されました。')}</h2><p>{tr('열린 화면에 옛 내용을 남기지 않습니다. 위 목록에서 다른 파일을 고르거나 터미널에서 ls로 확인하세요.','The editor does not retain old contents. Choose another file above or inspect the folder with ls in the terminal.','古い内容は表示しません。上の一覧で別のファイルを選ぶか、ターミナルのlsで確認してください。')}</p><button type="button" onClick={()=>onOpen('terminal')}>{tr('터미널 열기','Open terminal','ターミナルを開く')}</button></section>:<>
    {readOnly?<p className="virtual-editor-notice">{sourceData?tr('의뢰 원본 데이터는 읽기 전용이에요. 수정할 코드 파일을 위 목록에서 고르세요.','Job source data is read only. Choose the code file to edit from the list above.','依頼の元データは読み取り専用です。上の一覧で修正するコードを選びましょう。'):tr('전달·배포한 파일은 읽기 전용입니다. 실험하려면 터미널에서 다른 폴더로 복사해 주세요.','Delivered or released files are read only. Copy them to another folder in the terminal to experiment.','提出・公開済みファイルは読み取り専用です。試すにはターミナルで別フォルダーへコピーしてください。')}</p>:<div className="virtual-editor-tools"><button type="button" onClick={()=>smart.current?.undo()}>{tr('실행 취소','Undo','元に戻す')}</button><button type="button" onClick={()=>smart.current?.redo()}>{tr('다시 실행','Redo','やり直す')}</button><button type="button" data-testid="virtual-editor-complete" onClick={()=>smart.current?.complete()}>{tr('자동완성','Complete','補完')}</button><span>Ctrl + Space · Tab · Ctrl / ⌘ + Enter</span></div>}

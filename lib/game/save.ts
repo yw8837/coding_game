@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v3';
 import type {GameState} from './engine.ts';
 import {createGameplay} from './gameplay.ts';
 import {createPractice,PRACTICE_IDS} from './practice.ts';

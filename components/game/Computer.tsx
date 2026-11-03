@@ -1,10 +1,11 @@
 'use client';
+import {FileContextMenu} from './FileContextMenu';
 import {useState} from 'react';
 import {Monitor,Folder,FolderOpen,FileText,FileCode,ChevronRight,Check,Download,Package,Play,Globe,TerminalSquare,HardDrive,ArrowLeft} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
 import {editionAllowsProject} from '@/lib/game/edition';
 import {DemoBoundary} from './DemoBoundary';
-import {dirtyFiles,projectFiles} from '@/lib/game/engine';
+import {dirtyFiles} from '@/lib/game/engine';
 import {runSetupStep,setupReadiness,type SetupStep} from '@/lib/game/setup';
 import {CAREER_JOBS} from '@/lib/game/career-content';
 import {careerFiles,careerRoot} from '@/lib/game/career';
@@ -14,7 +15,12 @@ export function ComputerView(props:GameProps){
  const {state,onOpen,onCommand,onNavigate}=props,language=useLanguage();
  const tr=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='en'?en:ja;
  const [tab,setTab]=useState<'pc'|'project'|'jobs'>('project'),[failure,setFailure]=useState('');
- const ready=setupReadiness(state),files=projectFiles(state),edited=new Set(dirtyFiles(state));
+ const [browsedFolder,setBrowsedFolder]=useState<string|null>(null);
+ const root=state.repo?.root??'/home/dev';
+ const currentFolder=browsedFolder&&(browsedFolder===root||browsedFolder.startsWith(root+'/'))&&state.machines.local.dirs.includes(browsedFolder)?browsedFolder:root;
+ const prefix=currentFolder+'/';
+ const folders=state.machines.local.dirs.filter(path=>path.startsWith(prefix)&&!path.slice(prefix.length).includes('/')).sort();
+ const ready=setupReadiness(state),edited=new Set(dirtyFiles(state));
  const allowed=state.accepted&&state.discovered.repo;
  // First job only: softly point at the file the client's message is about, until it is opened or edited.
  const hintFile=!state.gameplay.fileHintSeen&&state.mission===0&&state.accepted&&!state.completed.includes(0)&&!edited.has('index.html')?'index.html':null;
@@ -42,12 +48,12 @@ export function ComputerView(props:GameProps){
   {id:'prepare' as const,Icon:Package,done:ready.prepared,enabled:allowed&&ready.copied,title:tr('준비물 받기','Prepare tools','必要なものをそろえる'),description:tr('사이트를 켤 Node와 npm, 필요한 파일을 준비해요.','Set up Node, npm and the files needed to run the site.','サイトを動かすNode、npmと必要なファイルをそろえます。')},
   {id:'preview' as const,Icon:Play,done:ready.preview,enabled:allowed&&ready.prepared,title:tr('미리보기 켜기','Start preview','プレビューを起動'),description:tr('내 파일로 카페 사이트를 켜요. 바꾸면 화면에도 반영돼요.','Run the cafe site from your files. Edits appear in the preview.','自分のファイルでサイトを起動します。編集が画面にも反映されます。')},
  ];
- const names=Object.keys(files).sort((a,b)=>a.localeCompare(b));
+ const names=Object.keys(state.machines.local.files).filter(path=>path.startsWith(prefix)&&!path.slice(prefix.length).includes('/')).map(path=>path.slice(prefix.length)).sort((a,b)=>a.localeCompare(b));
  if(state.repo&&!editionAllowsProject(props.edition,state.repo.root))return <DemoBoundary/>;
  return <div className="computer-view" data-no-translate>
   <div className="computer-toolbar">
-   <button className="computer-back" onClick={()=>setTab('pc')} disabled={tab==='pc'} aria-label={tr('내 PC로 이동','Go to This PC','PCに移動')}><ArrowLeft size={16}/></button>
-   <div className="computer-address"><Monitor size={17}/><button onClick={()=>setTab('pc')}>{tr('내 PC','This PC','PC')}</button>{tab==='project'&&<><ChevronRight size={14}/><Folder size={16}/><span>{projectName}</span></>}</div>
+   <button className="computer-back" onClick={()=>{if(tab==='project'&&currentFolder!==root)setBrowsedFolder(currentFolder.slice(0,currentFolder.lastIndexOf('/')));else setTab('pc');}} disabled={tab==='pc'} aria-label={tr('내 PC로 이동','Go to This PC','PCに移動')}><ArrowLeft size={16}/></button>
+   <div className="computer-address"><Monitor size={17}/><button onClick={()=>setTab('pc')}>{tr('내 PC','This PC','PC')}</button>{tab==='project'&&<><ChevronRight size={14}/><Folder size={16}/><span>{currentFolder.slice(root.lastIndexOf('/')+1)}</span></>}</div>
    <button className="outline-button" disabled={!ready.preview} onClick={()=>onNavigate('http://localhost:5173')}><Globe size={16}/>{tr('사이트 열기','Open site','サイトを開く')}</button>
   </div>
   <div className="computer-layout">
@@ -58,7 +64,7 @@ export function ComputerView(props:GameProps){
     <button onClick={()=>onOpen('terminal')}><TerminalSquare size={18}/>{tr('터미널','Terminal','ターミナル')}</button>
    </nav>
    <div className="computer-content">
-    {props.edition!=='demo'&&tab==='jobs'&&<section className="computer-files"><h2>{tr('고객 의뢰 파일','Client job files','顧客の依頼ファイル')}</h2><p>/home/dev/jobs</p>{state.gameplay.career.accepted.length===0&&<button className="primary-button" onClick={()=>onOpen('career')}>{tr('의뢰 센터 열기','Open Contracts','依頼センターを開く')}</button>}{CAREER_JOBS.filter(j=>state.gameplay.career.accepted.includes(j.id)).map(job=><div key={job.id}><h3>{job.title[language]}</h3><p>{careerRoot(job.id)}</p>{Object.keys(careerFiles(state,job.id)).map(file=><button key={file} className="computer-file-row" onClick={()=>{if(props.openCareerFile)props.openCareerFile(job.id,file);else{props.onAction({type:'career-accept',id:job.id});onOpen('career');}}}><span><FileCode size={19}/>{file}</span><span>{tr('의뢰 센터에서 열기','Open in Contracts','依頼センターで開く')}</span></button>)}</div>)}</section>}
+    {props.edition!=='demo'&&tab==='jobs'&&<section className="computer-files"><h2>{tr('고객 의뢰 파일','Client job files','顧客の依頼ファイル')}</h2><p>/home/dev/jobs</p>{state.gameplay.career.accepted.length===0&&<button className="primary-button" onClick={()=>onOpen('career')}>{tr('의뢰 센터 열기','Open Contracts','依頼センターを開く')}</button>}{CAREER_JOBS.filter(j=>state.gameplay.career.accepted.includes(j.id)).map(job=><div key={job.id}><h3>{job.title[language]}</h3><p>{careerRoot(job.id)}</p>{Object.keys(careerFiles(state,job.id)).map(file=><FileContextMenu key={file} props={props} path={careerRoot(job.id)+'/'+file} open={()=>props.openFile(careerRoot(job.id)+'/'+file)}><button key={file} className="computer-file-row" onClick={()=>{if(props.openCareerFile)props.openCareerFile(job.id,file);else{props.onAction({type:'career-accept',id:job.id});onOpen('career');}}}><span><FileCode size={19}/>{file}</span><span>{tr('의뢰 센터에서 열기','Open in Contracts','依頼センターで開く')}</span></button></FileContextMenu>)}</div>)}</section>}
 
     {!ready.ready&&<section className="computer-setup" aria-label={tr('카페 사이트 준비','Prepare the cafe site','カフェのサイトを準備')}>
      <div className="computer-setup-heading"><FolderOpen size={28}/><div><h2>{tr('카페 사이트 준비','Prepare the cafe site','カフェのサイトを準備')}</h2><p>{tr('세 버튼을 차례로 누르면 시작할 수 있어요.','Use these three buttons in order to get started.','三つのボタンを順番に押すと始められます。')}</p></div></div>
@@ -73,8 +79,8 @@ export function ComputerView(props:GameProps){
     </section>}
     {tab==='pc'&&<section className="computer-devices"><h2>{tr('폴더와 드라이브','Folders and drives','フォルダーとドライブ')}</h2><button className="computer-drive" onClick={()=>setTab('project')}><HardDrive size={37}/><span><strong>{tr('내 프로젝트','My project','自分のプロジェクト')}</strong><small>{ready.copied?projectName:tr('프로젝트를 복사하면 여기에 생겨요.','Your project appears here after you copy it.','コピーしたプロジェクトがここに表示されます。')}</small></span><ChevronRight size={18}/></button></section>}
     {tab==='project'&&ready.copied&&<section className="computer-files" aria-label={tr('프로젝트 파일','Project files','プロジェクトのファイル')}>
-     <div className="computer-files-heading"><div><h2><FolderOpen size={23}/>{projectName}</h2><p>{tr('파일을 누르면 에디터에서 열려요.','Select a file to open it in the editor.','ファイルを押すとエディターで開きます。')}</p></div><span className={'computer-preview-status '+(ready.preview?'running':'')}><i/>{ready.preview?tr('미리보기 실행 중','Preview running','プレビュー実行中'):tr('미리보기 꺼짐','Preview stopped','プレビュー停止中')}</span></div>
-     <div className="computer-file-table"><div className="computer-file-columns" aria-hidden="true"><span>{tr('이름','Name','名前')}</span><span>{tr('역할','Purpose','役割')}</span><span>{tr('상태','Status','状態')}</span></div>{names.map(file=><button className={'computer-file-row'+(file===hintFile?' file-hint-glow':'')} key={file} onClick={()=>{if(file===hintFile)props.onAction({type:'file-hint-seen'});openFile(file);}} aria-label={tr(file+' 열기','Open '+file,file+'を開く')}><span>{/\.(html|css|js|py|json)$/.test(file)?<FileCode size={19}/>:<FileText size={19}/>}<strong>{file}</strong>{file===hintFile&&<em className="file-hint-badge">{tr('여기부터!','Start here!','ここから！')}</em>}</span><span>{fileType(file)}</span><span className={edited.has(file)?'edited':''}>{edited.has(file)?tr('수정됨','Edited','変更あり'):tr('저장됨','Saved','保存済み')}</span></button>)}</div>
+     <FileContextMenu props={props} path={currentFolder} folder><div className="computer-files-heading" tabIndex={0}><div><h2><FolderOpen size={23}/>{currentFolder.split('/').at(-1)}</h2><p>{tr('파일을 누르면 에디터에서 열려요.','Select a file to open it in the editor.','ファイルを押すとエディターで開きます。')}</p></div><span className={'computer-preview-status '+(ready.preview?'running':'')}><i/>{ready.preview?tr('미리보기 실행 중','Preview running','プレビュー実行中'):tr('미리보기 꺼짐','Preview stopped','プレビュー停止中')}</span></div></FileContextMenu>
+     <div className="computer-file-table"><div className="computer-file-columns" aria-hidden="true"><span>{tr('이름','Name','名前')}</span><span>{tr('역할','Purpose','役割')}</span><span>{tr('상태','Status','状態')}</span></div>{folders.map(path=><FileContextMenu key={path} props={props} path={path} folder open={()=>setBrowsedFolder(path)}><button className="computer-file-row" onClick={()=>setBrowsedFolder(path)}><span><Folder size={19}/><strong>{path.slice(prefix.length)}</strong></span><span>{tr('폴더','Folder','フォルダー')}</span><span><ChevronRight size={16}/></span></button></FileContextMenu>)}{names.map(file=><FileContextMenu key={file} props={props} path={prefix+file} open={()=>{if(currentFolder===root&&file===hintFile)props.onAction({type:'file-hint-seen'});openFile(currentFolder===root?file:prefix+file);}}><button className={'computer-file-row'+(currentFolder===root&&file===hintFile?' file-hint-glow':'')} key={file} onClick={()=>{if(currentFolder===root&&file===hintFile)props.onAction({type:'file-hint-seen'});openFile(currentFolder===root?file:prefix+file);}} aria-label={tr(file+' 열기','Open '+file,file+'を開く')}><span>{/\.(html|css|js|py|json)$/.test(file)?<FileCode size={19}/>:<FileText size={19}/>}<strong>{file}</strong>{currentFolder===root&&file===hintFile&&<em className="file-hint-badge">{tr('여기부터!','Start here!','ここから！')}</em>}</span><span>{fileType(file)}</span><span className={edited.has((prefix+file).slice(root.length+1))?'edited':''}>{edited.has((prefix+file).slice(root.length+1))?tr('수정됨','Edited','変更あり'):tr('저장됨','Saved','保存済み')}</span></button></FileContextMenu>)}</div>
      <div className="computer-files-footer"><span>{names.length} {tr('개 파일','files','個のファイル')}</span><span>{tr('미리보기는 브라우저에서 사이트가 어떻게 보이는지 확인하는 화면이에요.','The preview shows how your site looks in the browser.','プレビューではブラウザーでのサイトの見た目を確認できます。')}</span></div>
     </section>}
    </div>

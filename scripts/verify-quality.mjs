@@ -5,6 +5,8 @@ import {fileURLToPath} from 'node:url';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const output=path.join(root,'output','quality-gate');
+const timeoutMs=Number(process.env.CODESHIFT_QA_TIMEOUT_MS??120_000);
+if(!Number.isSafeInteger(timeoutMs)||timeoutMs<120_000||timeoutMs>900_000)throw new Error('CODESHIFT_QA_TIMEOUT_MS must be an integer from 120000 to 900000.');
 mkdirSync(output,{recursive:true});
 const checks=[
   ['lint',['node_modules/eslint/bin/eslint.js','.','--ignore-pattern','dist','--ignore-pattern','.next','--max-warnings','0','--format','json','--output-file',path.join(output,'lint.json')]],
@@ -15,9 +17,10 @@ const checks=[
 ];
 const receipt={version:JSON.parse(readFileSync(path.join(root,'package.json'),'utf8')).version,startedAt:new Date().toISOString(),passed:false,checks:[]};
 for(const [name,args] of checks){
-  const run=spawnSync(process.execPath,args,{cwd:root,encoding:'utf8',timeout:120_000,maxBuffer:16*1024*1024});
+  const started=Date.now();
+  const run=spawnSync(process.execPath,args,{cwd:root,encoding:'utf8',timeout:timeoutMs,maxBuffer:16*1024*1024});
   writeFileSync(path.join(output,name+'.log'),(run.stdout||'')+(run.stderr||'')+(run.error?String(run.error):''));
-  const result={name,exit:run.status,signal:run.signal,passed:run.status===0&&!run.error};
+  const result={name,exit:run.status,signal:run.signal,timeoutMs,elapsedMs:Date.now()-started,passed:run.status===0&&!run.error};
   receipt.checks.push(result);
   writeFileSync(path.join(output,'receipt.json'),JSON.stringify(receipt,null,2));
   console.log(`${name}: ${result.passed?'PASS':'FAIL'} (exit ${run.status})`);

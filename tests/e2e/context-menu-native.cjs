@@ -1,0 +1,41 @@
+'use strict';
+// Real Electron IPC and renderer, isolated D: save; memory clipboard avoids touching user data.
+const path=require('node:path'),fs=require('node:fs/promises'),assert=require('node:assert/strict');
+const {_electron}=require(process.env.PLAYWRIGHT_PACKAGE||path.join(process.env.USERPROFILE,'.codex/skills/webapp-testing/.venv/Lib/site-packages/playwright/driver/package'));
+const root=path.resolve(__dirname,'../..'),out=path.join(root,'output/context-menu-qa'),profile=path.join(out,'native-'+Date.now());
+let app,page;
+(async()=>{
+  await fs.mkdir(path.join(profile,'saves'),{recursive:true});
+  await fs.writeFile(path.join(profile,'.codeshift-qa-profile'),'CODE:SHIFT isolated QA profile\n');
+  await fs.copyFile(path.join(out,'seed.json'),path.join(profile,'saves/game.json'));
+  const env={...process.env};delete env.ELECTRON_RUN_AS_NODE;
+  app=await _electron.launch({executablePath:path.join(root,'desktop/node_modules/electron/dist/electron.exe'),args:[path.join(root,'desktop'),...(process.env.QA_DISABLE_GPU==='1'?['--disable-gpu']:[]),'--qa-user-data='+profile],env,timeout:60000});
+  page=await app.firstWindow();page.setDefaultTimeout(60000);
+  page.on('console',message=>{if(message.type()==='error')console.error(message.text());});
+  page.on('requestfailed',request=>console.error('Request failed:',request.url(),request.failure()?.errorText));
+  const errors=[];page.on('pageerror',error=>errors.push(String(error)));
+  await page.getByTestId('title-settings').waitFor({state:'visible',timeout:60000});
+  console.log('Native title ready');
+  await page.getByTestId('title-settings').click();
+  await page.getByRole('combobox',{name:'Language',exact:true}).selectOption('en');await page.keyboard.press('Escape');
+  await page.getByTestId('title-continue').click();
+  await page.locator('.pc-shortcuts').getByRole('button',{name:'Terminal',exact:true}).click();
+  await app.evaluate(({clipboard,BrowserWindow})=>{
+    let text='echo native\nclipboard';
+    clipboard.readText=()=>text;clipboard.writeText=value=>{text=value;};
+    BrowserWindow.getAllWindows()[0].focus();
+  });
+  const field=page.locator('#terminal-main');
+  await field.click({button:'right'});await page.getByRole('menuitem',{name:'Paste',exact:true}).click();
+  await page.waitForFunction(()=>document.querySelector('#terminal-main').value==='echo native clipboard');
+  await field.press('Control+a');await field.click({button:'right'});await page.getByRole('menuitem',{name:'Copy',exact:true}).click();
+  await page.waitForFunction(async()=>await window.desktopBridge.readClipboard()==='echo native clipboard');
+  assert.equal(await page.locator('.terminal-entry').count(),5,'paste must not execute');
+  await field.press('Enter');await page.waitForFunction(()=>document.querySelector('#terminal-main').value==='');
+  assert.match(await page.locator('.terminal-entry').last().innerText(),/native clipboard/);
+  await page.screenshot({path:path.join(out,'native-terminal.png')});
+  assert.deepEqual(errors,[]);
+  const report={passed:true,gpuDisabled:process.env.QA_DISABLE_GPU==='1',realElectronIPC:true,clipboardBackend:'in-memory test adapter; user clipboard untouched',pasteRequiresEnter:true,pageErrors:errors};
+  await fs.writeFile(path.join(out,'native-report.json'),JSON.stringify(report,null,2));
+  console.log(JSON.stringify(report));
+})().catch(async error=>{console.error(error);if(page)await page.screenshot({path:path.join(out,'native-failure.png'),timeout:5000}).catch(()=>{});process.exitCode=1;}).finally(async()=>{if(app)await app.close();});

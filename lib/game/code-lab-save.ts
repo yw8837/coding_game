@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v3';
 import {createLab,LAB_IDS,labJob,equalValue,type LabProgress} from './code-lab.ts';
 import type {CodeValue} from './code-lab-runtime.ts';
 function validValue(value:unknown,depth=0,budget={nodes:0}):value is CodeValue{

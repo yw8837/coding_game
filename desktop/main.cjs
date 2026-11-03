@@ -1,5 +1,5 @@
 'use strict';
-const {app, BrowserWindow, dialog, ipcMain, protocol, session, Menu} = require('electron');
+const {app, BrowserWindow, clipboard, dialog, ipcMain, protocol, session, Menu} = require('electron');
 const {nativeMenuTemplate} = require('./native-menu.cjs');
 const path = require('node:path');
 const fs = require('node:fs/promises');
@@ -11,6 +11,7 @@ const {createSteam, readConfig} = require('./steam.cjs');
 const {ENTRY, CSP, MIME, isAppURL, resolveAsset, isTrustedSender} = require('./security.cjs');
 const {selectProfile, prepareProfile} = require('./profile.cjs');
 const qaBuild = require('./qa-build.cjs');
+const {createTextClipboard} = require('./clipboard.cjs');
 const {createLaunchProbe} = require('./launch-probe.cjs');
 
 app.setName('CODE-SHIFT');
@@ -137,6 +138,9 @@ async function boot() {
     uiLanguage = language;
     return {ok: true};
   });
+  const textClipboard = createTextClipboard(clipboard, () => !!window && !window.isDestroyed() && window.isFocused());
+  handle('desktop:clipboard-read', () => textClipboard.read());
+  handle('desktop:clipboard-write', text => textClipboard.write(text));
   handle('desktop:load', () => store.load());
   handle('desktop:backup', () => store.loadBackup());
   handle('desktop:save', raw => store.save(raw));
