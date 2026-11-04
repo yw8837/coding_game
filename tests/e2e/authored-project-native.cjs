@@ -23,6 +23,9 @@ async function launch(record=false){
  page.on('pageerror',error=>report.errors.push({case:current.id,message:String(error)}));
  page.on('request',request=>{if(request.url().includes('invalid.example'))current.externalProbeRequests++;});
  await page.waitForFunction(()=>{const button=document.querySelector('[data-testid="title-continue"]');return button&&!button.disabled;});
+ // Explicit windowed size for preview pixel comparisons and recording.
+ await page.evaluate(()=>window.desktopBridge.setFullscreen(false));
+ await page.waitForFunction(async()=>!await window.desktopBridge.getFullscreen());
  await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].setContentSize(1280,800));
 }
 async function close(){

@@ -4,6 +4,14 @@ contextBridge.exposeInMainWorld('desktopBridge', Object.freeze({
   readClipboard: () => ipcRenderer.invoke('desktop:clipboard-read'),
   writeClipboard: text => ipcRenderer.invoke('desktop:clipboard-write', text),
   getPlatformInfo: () => ipcRenderer.invoke('desktop:platform'),
+  getFullscreen: () => ipcRenderer.invoke('desktop:fullscreen'),
+  setFullscreen: enabled => ipcRenderer.invoke('desktop:set-fullscreen', enabled),
+  onFullscreenChange: callback => {
+    if (typeof callback !== 'function') throw new TypeError('Callback required');
+    const listener = (_event, enabled) => callback(enabled);
+    ipcRenderer.on('desktop:fullscreen-changed', listener);
+    return () => ipcRenderer.removeListener('desktop:fullscreen-changed', listener);
+  },
   setLanguage: language => ipcRenderer.invoke('desktop:language', language),
   loadSave: () => ipcRenderer.invoke('desktop:load'),
   loadBackup: () => ipcRenderer.invoke('desktop:backup'),

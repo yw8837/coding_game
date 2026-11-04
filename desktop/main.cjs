@@ -109,7 +109,7 @@ async function boot() {
   window = new BrowserWindow({
     width: 1440, height: 960, minWidth: 960, minHeight: 640,
     backgroundColor: '#0b121b', title: 'Localhost Hero', show: false,
-    autoHideMenuBar: true,
+    autoHideMenuBar: true, fullscreen: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'), session: local,
       contextIsolation: true, sandbox: true, nodeIntegration: false,
@@ -121,6 +121,14 @@ async function boot() {
   const nativeMenu = nativeMenuTemplate(process.platform);
   if (nativeMenu) Menu.setApplicationMenu(Menu.buildFromTemplate(nativeMenu));
   else window.setMenu(null);
+  window.webContents.on('before-input-event', (event, input) => {
+    if (input.key !== 'F11' || input.control || input.alt || input.meta || input.shift) return;
+    event.preventDefault();
+    if (input.type === 'keyDown' && !input.isAutoRepeat) window.setFullScreen(!window.isFullScreen());
+  });
+  for (const name of ['enter-full-screen', 'leave-full-screen']) {
+    window.on(name, () => window.webContents.send('desktop:fullscreen-changed', window.isFullScreen()));
+  }
   window.webContents.on('did-finish-load', () => launchProbe.mark('renderer-loaded'));
   window.webContents.on('render-process-gone', () => launchProbe.fail('renderer-process-gone'));
   window.webContents.on('did-fail-load', () => launchProbe.fail('renderer-load-failed'));
@@ -133,6 +141,12 @@ async function boot() {
   handle('desktop:platform', () => ({runtime: 'desktop', version: app.getVersion(),
     steamAvailable: steam.available, ...(steam.language ? {steamLanguage: steam.language} : {}),
     osLanguages: app.getPreferredSystemLanguages().slice(0, 20)}));
+  handle('desktop:fullscreen', () => window.isFullScreen());
+  handle('desktop:set-fullscreen', enabled => {
+    if (typeof enabled !== 'boolean') throw new TypeError('Boolean required');
+    window.setFullScreen(enabled);
+    return {ok: true};
+  });
   handle('desktop:language', language => {
     if (!['ko', 'en', 'ja'].includes(language)) return {ok: false};
     uiLanguage = language;

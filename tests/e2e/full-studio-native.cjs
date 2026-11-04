@@ -14,6 +14,9 @@ async function launch(){
  app=await _electron.launch({executablePath:path.join(root,'desktop/node_modules/electron/dist/electron.exe'),args:[path.join(root,'desktop'),'--qa-user-data='+profile],env,timeout:25000});
  page=await app.firstWindow();page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(String(e)));
  await page.waitForFunction(()=>document.querySelector('[data-testid="title-continue"]')&&!document.querySelector('[data-testid="title-continue"]').disabled);
+ // This suite measures explicit windowed viewport sizes; fullscreen has its own native suite.
+ await page.evaluate(()=>window.desktopBridge.setFullscreen(false));
+ await page.waitForFunction(async()=>!await window.desktopBridge.getFullscreen());
 }
 async function close(){const stopped=app.waitForEvent('close');await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].close());await stopped;app=null;}
 async function language(lang){await page.locator('.pc-tray-settings').click();await page.getByRole('combobox',{name:'Language'}).selectOption(lang);await page.keyboard.press('Escape');}

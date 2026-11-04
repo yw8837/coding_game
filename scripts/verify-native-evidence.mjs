@@ -3,6 +3,12 @@ import {readFile} from 'node:fs/promises';
 
 // Exit codes alone cannot prove an asynchronous test reached its final assertion.
 const read = async file => JSON.parse(await readFile(new URL('../output/' + file, import.meta.url), 'utf8'));
+const fullscreen = await read('full-version-quality/fullscreen-native.json');
+assert.equal(fullscreen.passed, true);
+assert.deepEqual(fullscreen.errors, []);
+for (const name of ['starts-fullscreen', 'F11-roundtrip', 'Escape-keeps-native-fullscreen', 'settings-and-keyboard-stay-synchronized', 'rejects-invalid-mode']) {
+  assert.ok(fullscreen.checks.includes(name), 'Missing fullscreen evidence: ' + name);
+}
 const terminal = await read('full-version-quality/terminal-editing-final.json');
 assert.equal(terminal.passed, true, 'Terminal suite did not finish successfully');
 assert.deepEqual(terminal.errors, []);

@@ -57,6 +57,8 @@ jobs:
           node desktop/scripts/package.mjs --qa
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node desktop/scripts/verify-launch.mjs "$env:GITHUB_WORKSPACE/desktop/release/CODE-SHIFT-QA-win32-x64/CODE-SHIFT.exe"
+      - name: Native fullscreen startup and display controls
+        run: node tests/e2e/fullscreen-native.cjs
       - name: Native terminal input
         id: terminal
         continue-on-error: true
@@ -114,6 +116,7 @@ jobs:
           path: |
             output/quality-gate/
             output/full-version-quality/*.json
+            output/full-version-quality/fullscreen-settings.png
             output/context-menu-qa/*report.json
             output/steam-qa/*.json
             output/steam-qa/*.png
