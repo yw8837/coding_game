@@ -6,6 +6,13 @@ const {_electron}=require(process.env.PLAYWRIGHT_PACKAGE);
 const root=process.cwd(),out=path.join(root,'output/full-version-quality');
 const report={passed:false,checks:[],errors:[]};
 let app;
+async function pressNative(keyCode){
+ await app.evaluate(({BrowserWindow},key)=>{
+  const window=BrowserWindow.getAllWindows()[0];window.focus();
+  window.webContents.sendInputEvent({type:'keyDown',keyCode:key});
+  window.webContents.sendInputEvent({type:'keyUp',keyCode:key});
+ },keyCode);
+}
 async function waitForMode(expected){
  for(let i=0;i<100;i++){
   const actual=await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isFullScreen());
@@ -22,15 +29,15 @@ async function waitForMode(expected){
  page.on('pageerror',error=>report.errors.push(String(error)));
  await page.waitForFunction(()=>document.querySelector('.pc-play')&&!document.querySelector('.pc-play').disabled);
  await waitForMode(true);report.checks.push('starts-fullscreen');
- await page.keyboard.press('F11');await waitForMode(false);
- await page.keyboard.press('F11');await waitForMode(true);report.checks.push('F11-roundtrip');
- await page.keyboard.press('Escape');await waitForMode(true);report.checks.push('Escape-keeps-native-fullscreen');
+ await pressNative('F11');await waitForMode(false);
+ await pressNative('F11');await waitForMode(true);report.checks.push('F11-roundtrip');
+ await pressNative('Escape');await waitForMode(true);report.checks.push('Escape-keeps-native-fullscreen');
  await page.getByTestId('title-settings').click();
  const toggle=page.getByTestId('display-mode-toggle');
  await toggle.waitFor({state:'visible'});
  await toggle.click();await waitForMode(false);
  await page.waitForFunction(()=>document.querySelector('[data-testid="display-mode-toggle"]')?.getAttribute('aria-pressed')==='false');
- await page.keyboard.press('F11');await waitForMode(true);
+ await pressNative('F11');await waitForMode(true);
  await page.waitForFunction(()=>document.querySelector('[data-testid="display-mode-toggle"]')?.getAttribute('aria-pressed')==='true');
  await toggle.click();await waitForMode(false);report.checks.push('settings-and-keyboard-stay-synchronized');
  const rejected=await page.evaluate(async()=>{try{await window.desktopBridge.setFullscreen('true');return false;}catch{return true;}});
