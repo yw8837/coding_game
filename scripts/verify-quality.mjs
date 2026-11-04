@@ -12,6 +12,7 @@ const checks=[
   ['lint',['node_modules/eslint/bin/eslint.js','.','--ignore-pattern','dist','--ignore-pattern','.next','--max-warnings','0','--format','json','--output-file',path.join(output,'lint.json')]],
   ['typecheck',['node_modules/typescript/bin/tsc','--noEmit']],
   ['dependency-mitigation',['scripts/verify-braces-install.mjs']],
+  ['dev-tool-compat',['scripts/verify-dev-tool-compat.mjs']],
   ['game-units',['--test','--test-concurrency=2',...readdirSync(path.join(root,'lib/game')).filter(f=>f.endsWith('.test.ts')).map(f=>'lib/game/'+f)]],
   ['desktop-units',['--test',...readdirSync(path.join(root,'desktop/tests')).filter(f=>f.endsWith('.test.cjs')).map(f=>'desktop/tests/'+f)]],
 ];
