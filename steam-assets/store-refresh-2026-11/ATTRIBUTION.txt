@@ -1,11 +1,6 @@
-"Realizer" — Kevin MacLeod (incompetech.com)
-Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0).
+“Realizer” by Kevin MacLeod (incompetech.com), licensed under CC BY 4.0.
 https://creativecommons.org/licenses/by/4.0/
 Source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024
-Changes: 40-second excerpt, 0.18-second fade-in, 1.5-second fade-out,
-loudness normalization and AAC encoding. Original pitch and tempo preserved.
-Credit appears on the closing card and in MP4 metadata.
-Retain this attribution alongside the trailer when publishing.
+The 25.6-second cut uses an excerpt beginning at 0:04, with fades, normalization, original editorial typing and register sounds, and AAC encoding. Credit appears on the closing card and in the MP4 metadata.
 
-Gameplay and studio-evening artwork: existing Localhost Hero project assets.
-No external creator gameplay, stock footage, or generated replacement gameplay.
+The opening receipt is an editorial illustration of the actual six-roll order. The bakery, desktop, CatHub, terminal, delivery, neighborhood, and cafe shots use English in-game captures. The After Hours website was created, checked and published through the English game UI for this cut. Its live title changes and neighborhood ending are drawn from that play session. The late-game session started from a QA route with twelve completed commissions. Footage is an edited montage.
