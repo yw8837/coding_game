@@ -1,0 +1,35 @@
+name: Development Windows QA
+
+on:
+  push:
+    branches: [codex/terminal-editing-polish]
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 35
+    env:
+      CODESHIFT_QA_TIMEOUT_MS: '600000'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25.9.0
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - run: pnpm install --frozen-lockfile
+      - run: npm ci --prefix desktop
+      - name: Check game and desktop code on NTFS
+        run: pnpm verify
+      - name: Build offline game
+        run: pnpm desktop:build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-verification
+          path: output/quality-gate/
+          retention-days: 7
