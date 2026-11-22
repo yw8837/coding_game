@@ -36,7 +36,10 @@ test('preflight reads synthetic packaged artifacts, generates preview-only VDF a
  const files=await generateSteamPipe(result);assert.deepEqual(files,['app_1001.vdf','depot_1002.vdf','preflight.json']);
  const app=await fs.readFile(path.join(fixtureData.out,files[0]),'utf8'),depot=await fs.readFile(path.join(fixtureData.out,files[1]),'utf8');
  assert.match(app, /"AppID" "1001"/);assert.match(app,/"Preview" "1"/);assert.match(app,/"1002" "depot_1002.vdf"/);
- assert.ok(app.includes(fixtureData.packagePath.replaceAll('\\','/')));assert.match(depot,/"DepotID" "1002"/);assert.match(depot,/"recursive" "1"/);
+ // Windows TEMP may use an 8.3 alias. SteamPipe receives the physical directory.
+ const contentRoot=(await fs.realpath(fixtureData.packagePath)).replaceAll('\\','/');
+ for(const manifest of [app,depot])assert.ok(manifest.includes(`"ContentRoot" "${contentRoot}"`));
+ assert.match(depot,/"DepotID" "1002"/);assert.match(depot,/"recursive" "1"/);
  assert.doesNotMatch(app+depot,/SetLive|YOUR_|password|login/i);
  await assert.rejects(generateSteamPipe(result),/already exist/);
 });
