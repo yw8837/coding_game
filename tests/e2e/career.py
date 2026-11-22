@@ -1,7 +1,8 @@
 """UI-only contract completion from a cafe save produced by campaign.py.
-Answers are read from the visible optional answer panel and typed into the editor.
+The test enters known source fixtures through the editor.
 This is an assisted functional playthrough, not a novice usability study.
 """
+from contract_fixtures import contract_files
 from playwright.sync_api import sync_playwright,expect
 from pathlib import Path
 import json,os
@@ -35,16 +36,12 @@ with sync_playwright() as pw:
      w.get_by_role('tab').nth(0).click()
      w.locator('.career-code-input textarea').fill('{broken')
      w.get_by_test_id('career-test').click();assert not state(p)['gameplay']['career']['proofs'][job]['passed']
-    w.locator('.career-answer>button').click()
-    answers=[]
-    for answer in w.locator('.career-answer>div>div').all():
-     answers.append((answer.locator('strong').inner_text(),answer.locator('pre').inner_text()))
+    answers=contract_files()[job].items()
     assert answers,job
     w.get_by_role('tab').nth(0).click()
     for filename,source in answers:
      w.locator('.career-file-tabs button').filter(has=p.get_by_text(filename,exact=True)).click()
      w.locator('.career-code-input textarea').fill(source)
-    w.locator('.career-answer>button').click()
     w.get_by_test_id('career-test').click()
     assert state(p)['gameplay']['career']['proofs'][job]['passed'],job
     if index in [0,6,12]:p.screenshot(path=str(out/f'{lang}-job-{index+1}.png'))
@@ -53,13 +50,13 @@ with sync_playwright() as pw:
     assert len(state(p)['gameplay']['career']['completed'])==index+1
     assert state(p)['credits']==before+([200,350,550][index//6])
    active(p).get_by_test_id('career-final-project').click()
-   w=active(p);w.get_by_test_id('release-start').click();w.get_by_test_id('release-code-mode').click();w.get_by_test_id('release-example-toggle').click()
-   release_answers=[(answer.locator('strong').inner_text(),answer.locator('pre').inner_text()) for answer in w.locator('.release-examples>div').all()]
+   w=active(p);w.get_by_test_id('release-start').click();w.get_by_test_id('release-code-mode').click()
+   release_answers=contract_files()['legacyRelease'].items()
    assert len(release_answers)==3
    for filename,source in release_answers:
     w.locator('.release-files .career-file-tabs button').filter(has=p.get_by_text(filename,exact=True)).click()
     w.locator('.release-code textarea').fill(source)
-   w.get_by_test_id('release-example-toggle').click();w.get_by_test_id('release-test').click()
+   w.get_by_test_id('release-test').click()
    assert state(p)['gameplay']['career']['release']['proof']['passed']
    w.get_by_test_id('release-build').click();w.get_by_test_id('release-publish').click();w.get_by_test_id('release-letter').click()
    assert state(p)['gameplay']['career']['release']['published']

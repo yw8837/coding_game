@@ -110,12 +110,12 @@ test('HTML accessibility parses edited form semantics and rejects active content
 
 test('authored localizations expose goals, file meanings, hints and both reply styles',()=>{
  for(const job of CAREER_JOBS){
-  assert.equal(job.hints.length,3,job.id);
+  assert.equal(job.hints.length,2,job.id);
   assert.ok(job.choices.some(c=>c.style==='care'));
   assert.ok(job.choices.some(c=>c.style==='craft'));
   assert.deepEqual(Object.keys(job.files).sort(),Object.keys(job.fileDescriptions).sort());
-  for(const copy of [job.client,job.title,job.brief,...Object.values(job.fileDescriptions),...job.hints,...job.choices.flatMap(c=>[c.label,c.reply])]){
-   for(const language of ['ko','en','ja'] as const)assert.ok(copy[language]?.trim().length>0,`${job.id}: ${language}`);
+  for(const copy of [job.client,job.title,job.brief,job.solutionNote,...Object.values(job.fileDescriptions),...job.hints,...job.choices.flatMap(c=>[c.label,c.reply])]){
+   for(const language of ['ko','en','ja','zh'] as const)assert.ok(copy[language]?.trim().length>0,`${job.id}: ${language}`);
   }
  }
 });
@@ -174,7 +174,7 @@ test('bad numeric types, truncated CSV, active HTML and oversized inputs return 
 });
 
 test('each customer has distinct choices and completed-outcome replies instead of a shared request',()=>{
- for(const lang of ['ko','en','ja'] as const){
+ for(const lang of ['ko','en','ja','zh'] as const){
   const labels=CAREER_JOBS.flatMap(j=>j.choices.map(c=>c.label[lang]));
   const replies=CAREER_JOBS.flatMap(j=>j.choices.map(c=>c.reply[lang]));
   assert.equal(new Set(labels).size,36,`${lang} player choices`);

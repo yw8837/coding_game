@@ -58,3 +58,20 @@ test('act three teaches actual JSON property syntax and bounded expression pract
  const backup=CAREER_JOBS.find(j=>j.id==='archive-backup')!;
  assert.deepEqual(applyLearningStep(backup.id,'inclusive',backup.files,'daysOld <= 7; process.exit()'),{ok:false,reason:'input'});
 });
+
+test('equivalent boundary comparisons and commuted totals update the same client policy',()=>{
+ for(const [id,key,input,expected] of [
+  ['archive-backup','inclusive','(7 >= daysOld)',true],['archive-backup','inclusive','daysOld<8',true],
+  ['archive-backup','inclusive','7>daysOld',false],['festival-report','operation','unit*quantity',true],
+  ['festival-report','operation','unit + quantity',false],
+ ] as const){
+  const files=CAREER_JOBS.find(job=>job.id===id)!.files;
+  const result=applyLearningStep(id,key,files,input);
+  assert.equal(result.ok&&result.correct,expected);
+  assert.equal(result.ok,true);
+ }
+ const files=CAREER_JOBS.find(job=>job.id==='festival-report')!.files;
+ for(const expr of ['units*quantity','unit * unit','u nit * quantity','unit*quantity + 0']){
+  assert.deepEqual(applyLearningStep('festival-report','operation',files,expr),{ok:false,reason:'input'});
+ }
+});

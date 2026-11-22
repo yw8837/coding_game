@@ -45,7 +45,7 @@ async function nav(testid){
 }
 async function keyboardActivate(locator){await locator.focus();assert.equal(await locator.evaluate(element=>document.activeElement===element),true);await page.keyboard.press('Enter');}
 async function hintsClosed(){
- assert.equal(await page.locator('.career-answer>button').getAttribute('aria-expanded'),'false');
+ assert.equal(await page.locator('.career-answer>button').count(),0);
  assert.equal(await page.locator('.career-answer>div').count(),0);
  assert.equal(await page.locator('.career-help-section p').count(),0);
  assert.equal(await page.locator('.career-hint-buttons button[aria-pressed="true"]').count(),0);

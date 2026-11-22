@@ -9,6 +9,17 @@ import type {Localized} from './career-content.ts';
 export type CoachConcept='exit'|'cd'|'clone'|'apt-update'|'apt-install'|'npm-install'|'npm-dev'|'pkill';
 export type CoachCommand={command:string;concept:CoachConcept;lesson:Localized};
 
+export const SETUP_GOALS:Record<CoachConcept,Localized>={
+ exit:localizedCopy('카페 파일은 내 PC에서 준비해야 해요. 접속 중인 서버에서 내 작업공간으로 돌아오세요.','The café files belong on your PC. Return there from the connected server.','カフェの準備は自分のPCで行います。接続先のサーバーから戻りましょう。','咖啡馆的文件需要放在自己的电脑上。从服务器返回本机。'),
+ cd:localizedCopy('작업 위치를 옮기세요. 터미널 프롬프트에서 현재 폴더를 확인할 수 있어요.','Change your working folder. The prompt shows where you are now.','作業フォルダーを移りましょう。プロンプトで現在地を確認できます。','切换工作目录。提示符会显示你当前所在的位置。'),
+ clone:localizedCopy('지우가 CatHub에 올린 menu-site를 내 PC로 가져오세요. 복사되면 새 폴더가 보여요.','Bring Jiwoo’s menu-site project from CatHub onto your PC. Look for a new folder afterwards.','ジウがCatHubに置いたmenu-siteを自分のPCに取り込みましょう。終わると新しいフォルダーが見えます。','把智友的 menu-site 项目从 CatHub 复制到自己的电脑上，再检查新出现的文件夹。'),
+ 'apt-update':localizedCopy('설치 관리자가 최신 프로그램 목록을 갖도록 새로 받아 오세요.','Refresh the package manager’s list of available software.','パッケージ管理ツールで入手できるソフトの一覧を更新しましょう。','刷新软件包管理器的可用软件列表。'),
+ 'apt-install':localizedCopy('이 PC에서 카페 사이트를 실행하려면 Node.js와 npm이 필요해요. 빠진 도구를 설치하세요.','The café site needs Node.js and npm on this PC. Install the missing tools.','カフェのサイトにはNode.jsとnpmが必要です。足りないツールをインストールしましょう。','咖啡馆网站需要 Node.js 和 npm。安装缺少的工具。'),
+ 'npm-install':localizedCopy('프로젝트 폴더에서 package.json에 적힌 라이브러리를 받아 오세요.','Get the libraries listed in the project’s package.json from inside its folder.','プロジェクト内でpackage.jsonに書かれたライブラリを用意しましょう。','在项目目录里安装 package.json 中列出的依赖。'),
+ 'npm-dev':localizedCopy('카페의 미리보기 서버를 켜고 손님의 화면이 열리는지 확인하세요.','Start the café preview server so you can see what a customer sees.','プレビューサーバーを起動し、お客さんが見る画面を開きましょう。','启动预览服务器，看看顾客会看到什么。'),
+ pkill:localizedCopy('다른 프로젝트가 미리보기 포트를 쓰고 있어요. 먼저 그 서버를 멈추세요.','Another project is using the preview port. Stop its server first.','別のプロジェクトがポートを使用中です。先にそのサーバーを止めましょう。','另一个项目占用了预览端口。先停止那个服务器。'),
+};
+
 export const COACH_LESSONS:Record<CoachConcept,Localized>={
  exit:localizedCopy('exit는 지금 접속한 서버에서 나와 내 PC로 돌아가요.','exit leaves the server you are connected to and returns to your PC.','exitは接続中のサーバーから出て、自分のPCに戻ります。'),
  cd:localizedCopy('cd(change directory)는 작업할 폴더로 들어가요. 프롬프트의 경로가 바뀌는지 보세요.','cd (change directory) moves into a folder. Watch the path in the prompt change.','cd（change directory）は作業するフォルダーに入ります。プロンプトのパスが変わるのを見ましょう。'),

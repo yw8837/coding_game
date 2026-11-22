@@ -38,8 +38,8 @@ export const CAREER_LEARNING:Record<string,CareerLearningStep[]>={
   h('button','type','submit','button',L('예약 버튼을 제출하는 버튼으로 바꿔 주세요.','Make the booking button submit the form.','予約ボタンを送信ボタンにしましょう。'),L('submit은 폼을 제출합니다. button은 혼자 누를 수 있지만 폼 제출을 맡지 않아요.','submit sends the form. button can be clicked but does not submit it.','submitはフォームを送信します。buttonは押せても送信は担当しません。')),
  ],
  'market-filter':[
-  j('filter.json','operator','>','>=',L('재고가 0보다 큰 상품만 남기려면 어떤 기호일까요?','Which symbol keeps stock greater than zero?','在庫が0より多い商品を残す記号は？'),L('>는 초과입니다. stock > 0이면 재고 0인 milk가 빠집니다.','> means greater than. stock > 0 excludes milk with no stock.','>はより大きいという意味。stock > 0なら在庫0のmilkを除けます。')),
-  j('filter.json','requireFresh',true,false,L('신선한 상품 조건도 켜 주세요. true 또는 false를 입력하세요.','Enable the fresh-only condition. Enter true or false.','新鮮な商品だけにします。trueかfalseを入力しましょう。'),L('두 조건을 모두 만족해야 합니다. 재고가 있어도 신선하지 않은 candy는 빠져요.','Both conditions must hold. Candy is excluded even with stock because it is not fresh.','両方の条件が必要です。在庫があっても新鮮でないcandyは除きます。')),
+  j('filter.json','operator','>','>=',L('마지막 당근과 품절 우유를 구분할 비교 기호는 무엇일까요?','Which comparison separates the last carrot from the sold-out milk?','最後のニンジンと売り切れの牛乳を見分ける比較記号は？','哪种比较符号能区分最后一根胡萝卜和售罄的牛奶？'),L('>는 초과입니다. stock > 0이면 재고 0인 milk가 빠집니다.','> means greater than. stock > 0 excludes milk with no stock.','>はより大きいという意味。stock > 0なら在庫0のmilkを除けます。')),
+  j('filter.json','requireFresh',true,false,L('사탕은 재고가 남았는데 왜 진열하면 안 될까요?','The candy is still in stock. What else should decide whether it goes on sale?','飴には在庫があります。売ってよいかは他に何で決まりますか？','糖果还有库存。还有什么条件会影响它能否出售？'),L('두 조건을 모두 만족해야 합니다. 재고가 있어도 신선하지 않은 candy는 빠져요.','Both conditions must hold. Candy is excluded even with stock because it is not fresh.','両方の条件が必要です。在庫があっても新鮮でないcandyは除きます。')),
  ],
  'school-sort':[
   j('sort.json','direction','desc','asc',L('높은 점수부터: desc 또는 asc 중 하나를 입력하세요.','Highest scores first: enter desc or asc.','高い点数から並べます。descかascを入力しましょう。'),L('desc는 큰 값부터 줄어드는 순서입니다. 동점일 때는 기존 name 규칙을 씁니다.','desc orders large values first. The existing name rule breaks ties.','descは大きい値から減る順です。同点では既存のnameルールを使います。')),
@@ -100,11 +100,32 @@ function readOrWrite(source:string,step:CareerLearningStep,value?:Value):{value:
 }
 
 export function careerLearningSteps(id:string):CareerLearningStep[]{return CAREER_LEARNING[id]??[];}
+export function learningFormatHint(step:CareerLearningStep,act:number):Localized {
+ if(step.id==='inclusive'&&step.expression)return L('daysOld는 사본을 만든 뒤 지난 일수예요. <는 경계 날짜를 빼고, <=는 포함해요. 지난주 같은 요일의 사본으로 시험해 보세요.','daysOld is the age in days. < leaves the boundary out and <= keeps it. Try the copy from this weekday last week.','daysOldは経過日数です。< は境界を除き、<= は含みます。先週の同じ曜日のコピーで試しましょう。','daysOld 是副本的天数。< 排除边界，<= 包含边界。用上周同一天的副本试一试。');
+ if(step.expression)return L('quantity는 수량, unit은 한 개 가격이에요. +는 덧셈, *는 곱셈이에요. 같은 물건을 두 개 샀을 때의 금액으로 시험해 보세요.','quantity is the count and unit is the price of one item. + adds and * multiplies. Try a sale of two identical items.','quantityは個数、unitは単価です。+ は足し算、* は掛け算。同じ物を2個買った場合で試しましょう。','quantity 是数量，unit 是单价。+ 表示加法，* 表示乘法。用买两件相同商品的情况试算。');
+ if(act===3)return L('입력란에 표시된 키와 콜론 뒤에 값을 써요. 글자는 큰따옴표로 감싸고 숫자와 true 또는 false는 그대로 써요.','Use the key shown in the field, a colon, then your value. Quote text. Leave numbers and true or false unquoted.','欄にあるキーとコロンの後に値を書きます。文字列は二重引用符で囲み、数値とtrue・falseはそのまま書きます。','输入框内显示的键名后写冒号和值。文本用双引号，数字和 true、false 不加引号。');
+ if(Array.isArray(step.correct))return L('대괄호 안에 요일 약자를 큰따옴표로 써요. 예를 들어 수요일은 ["wed"]예요.','Put quoted weekday codes in brackets. For example, Wednesday is ["wed"].','角括弧に曜日の略称を二重引用符で書きます。例：水曜は ["wed"] です。','把星期的英文缩写用双引号括起来，放在方括号里。例如星期三写作 ["wed"]。');
+ if(typeof step.correct==='boolean')return L('이 규칙을 켜려면 true, 끄려면 false예요. 손님 사례 하나가 어떻게 달라질지 예상해 보세요.','Use true to turn the rule on or false to turn it off. Predict what will change for one customer.','規則を使うならtrue、使わないならfalseです。1人のお客さんの結果を予想しましょう。','true 开启规则，false 关闭规则。先预测一位客户会看到什么变化。');
+ if(typeof step.correct==='number')return L('단위와 쉼표를 빼고 숫자를 써요. 결과 표에서 한 사례를 골라 손으로 계산한 값과 비교해 보세요.','Write a number without units or commas. Pick a case in the results and compare it with your own calculation.','単位と桁区切りを除いて数字を書きます。結果を1件選び、自分の計算と比べましょう。','输入不带单位和逗号的数字。在结果里选一个例子，和自己的计算比较。');
+ return L('파일을 펼쳐 현재 표기를 확인하세요. 바꾸려는 값만 입력한 뒤 요청과 결과를 비교해 보세요.','Open the files to see the current notation. Enter just the value you want to change, then compare the result with the request.','ファイルを開いて現在の表記を確認し、変えたい値だけを入力して結果と依頼を比べましょう。','展开文件查看当前写法，只输入想修改的值，再将结果与客户的要求比较。');
+}
 export function learningInput(step:CareerLearningStep,value:Value,act:number):string{if(act===3){if(step.expression)return value===step.correct?step.expression.correct:step.expression.wrong;if(step.target.kind==='json')return JSON.stringify(step.target.path.at(-1))+': '+JSON.stringify(value);if(step.target.kind==='css')return step.target.property+': '+String(value)+';';}return typeof value==='string'?value:JSON.stringify(value);}
 export function learningStepState(step:CareerLearningStep,files:Record<string,string>){try{const read=readOrWrite(files[step.file],step);return {supported:true,current:read.value,done:JSON.stringify(read.value)===JSON.stringify(step.correct)};}catch{return {supported:false,current:null,done:false};}}
 export function learningProgress(id:string,files:Record<string,string>){const steps=careerLearningSteps(id);const states=steps.map(step=>learningStepState(step,files));return {steps,states,done:states.filter(state=>state.done).length,blockedFiles:[...new Set(steps.filter((_,index)=>!states[index].supported).map(step=>step.file))]};}
+// Translate the two guided exercises into their settings without executing player code.
+function guidedExpression(step:CareerLearningStep,raw:string):Value {
+ const flat=raw.replace(/^\(([^()]*)\)$/,'$1').trim();
+ if(step.id==='inclusive'){
+  if(/^(?:daysOld\s*<=\s*7|7\s*>=\s*daysOld|daysOld\s*<\s*8|8\s*>\s*daysOld)$/.test(flat))return true;
+  if(/^(?:daysOld\s*<\s*7|7\s*>\s*daysOld|daysOld\s*<=\s*6|6\s*>=\s*daysOld)$/.test(flat))return false;
+ }else{
+  const pair=/^(quantity|unit)\s*([*+])\s*(quantity|unit)$/.exec(flat);
+  if(pair&&pair[1]!==pair[3])return pair[2]==='*'?'multiply':'add';
+ }
+ throw Error('input');
+}
 function parseInput(step:CareerLearningStep,input:string,act:number):Value{
- let raw=input.trim();if(raw.length>100)throw Error('input');if(act===3){if(step.expression){if(raw===step.expression.correct)return step.correct;if(raw===step.expression.wrong)return step.choices.find(value=>JSON.stringify(value)!==JSON.stringify(step.correct))!;throw Error('input');}if(step.target.kind==='json'){const fragment:unknown=JSON.parse('{'+raw.replace(/,\s*$/,'')+'}'),key=step.target.path.at(-1)!;if(!object(fragment)||Object.keys(fragment).length!==1||!Object.hasOwn(fragment,key))throw Error('input');raw=JSON.stringify(fragment[key]);}else if(step.target.kind==='css'){const match=raw.match(new RegExp('^'+step.target.property+'\\s*:\\s*(.+?);?$'));if(!match)throw Error('input');raw=match[1];}}
+ let raw=input.trim();if(raw.length>100)throw Error('input');if(act===3){if(step.expression)return guidedExpression(step,raw);if(step.target.kind==='json'){const fragment:unknown=JSON.parse('{'+raw.replace(/,\s*$/,'')+'}'),key=step.target.path.at(-1)!;if(!object(fragment)||Object.keys(fragment).length!==1||!Object.hasOwn(fragment,key))throw Error('input');raw=JSON.stringify(fragment[key]);}else if(step.target.kind==='css'){const match=raw.match(new RegExp('^'+step.target.property+'\\s*:\\s*(.+?);?$'));if(!match)throw Error('input');raw=match[1];}}
  if(typeof step.correct==='boolean'){if(raw==='true')return true;if(raw==='false')return false;throw Error('input');}
  if(typeof step.correct==='number'){if(!/^-?\d+(?:\.\d+)?$/.test(raw))throw Error('input');const value=Number(raw);if(!Number.isFinite(value)||Math.abs(value)>10000000||(Number.isInteger(step.correct)&&!Number.isInteger(value)))throw Error('input');return value;}
  if(Array.isArray(step.correct)){const value:unknown=JSON.parse(raw);if(!Array.isArray(value)||!value.every(v=>typeof v==='string')||value.length>7)throw Error('input');return value;}

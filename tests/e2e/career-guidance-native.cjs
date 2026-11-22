@@ -41,7 +41,7 @@ async function nav(id){
  if(!(await active.getAttribute('class')).includes('arranged'))await active.getByRole('button',{name:'Maximize or restore window',exact:true}).click();
  const saved=async()=>JSON.parse(await fs.readFile(save,'utf8'));
  const cache=async()=>JSON.parse(careerFiles(await saved(),'photo-cache')['cache.json']);
- for(const lang of ['en','ko','ja']){
+ for(const lang of ['en','ko','ja','zh']){
   if(lang!=='en'){await page.locator('.pc-tray-settings').click();await page.getByRole('combobox',{name:'Language',exact:true}).selectOption(lang);await page.keyboard.press('Escape');await until(()=>page.locator('html').getAttribute('lang'),lang);}
   for(const id of ids)await check(lang+': '+id+' asks for a decision without exposing an answer line',async()=>{
    await nav(id);const job=CAREER_JOBS.find(item=>item.id===id),steps=careerLearningSteps(id);
@@ -56,11 +56,11 @@ async function nav(id){
     assert.equal(await page.getByTestId('career-learning-apply').isEnabled(),false);
    }
   });
-  await check(lang+': help is opt-in and only fills a draft; wrong values need correction',async()=>{
+  await check(lang+': help is opt-in and leaves the decision to the player; wrong values need correction',async()=>{
    await nav('photo-cache');await page.getByTestId('career-learning-step-0').click();
    const before=await saved(),beforeSource=careerFiles(before,'photo-cache')['cache.json'];
-   await page.getByTestId('career-learning-help').click();await page.getByTestId('career-learning-choice-1').click();
-   assert.equal(await page.getByTestId('career-learning-input').inputValue(),'"privateMaxAge": 0');
+   await page.getByTestId('career-learning-help').click();assert.equal(await page.locator('[data-testid^=career-learning-choice-]').count(),0);
+   assert.equal(await page.getByTestId('career-learning-input').inputValue(),'');
    assert.equal(careerFiles(await saved(),'photo-cache')['cache.json'],beforeSource);
    await page.getByTestId('career-learning-help').click();assert.equal(await page.locator('.career-learning-choices').count(),0);
    await page.getByTestId('career-learning-input').fill('"privateMaxAge": nope');await page.getByTestId('career-learning-apply').click();

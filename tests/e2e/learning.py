@@ -3,6 +3,17 @@ from playwright.sync_api import sync_playwright,expect
 from pathlib import Path
 import json, os
 out=Path(os.environ.get('CODESHIFT_QA_DIR','output/0.12-qa'));out.mkdir(parents=True,exist_ok=True);reports=[]
+# Authored test inputs, independent of the game's answer key.
+values={
+ 'bakery-price':['6','10000'],'library-loans':['true','false'],'florist-stock':['5','3'],
+ 'bike-hours':['17','["sun"]'],'contacts-clean':['true']*4,'clinic-form':['name','true','submit'],
+ 'market-filter':['>','true'],'school-sort':['desc'],'workshop-slots':['10:00'],
+ 'delivery-fees':['20000','10'],'museum-layout':['100%','border-box'],'bookstore-invoice':['15000','true'],
+ 'community-api':['"path": "/api/events"','"method": "GET"','"persist": true'],
+ 'photo-cache':['"privateMaxAge": 0','"varyAuth": true'],'transit-logs':['"level": "ERROR"','"status": 503'],
+ 'archive-backup':['7 >= daysOld'],'tutor-timezone':['"offsetHours": 9','"carryDay": true'],
+ 'festival-report':['"includeStatus": "paid"','unit*quantity'],
+}
 def state(p):return p.evaluate("JSON.parse(localStorage.getItem('codeshift-intro-demo-v1'))")
 with sync_playwright() as pw:
  b=pw.chromium.launch(channel='chrome',headless=True)
@@ -31,12 +42,15 @@ with sync_playwright() as pw:
      if test.is_visible():test.click();break
      feedback=p.get_by_test_id('career-learning-feedback')
      if 'done' not in (feedback.get_attribute('class') or ''):
+      draft=p.get_by_test_id('career-learning-input').input_value()
       if p.get_by_test_id('career-learning-help').get_attribute('aria-expanded')!='true':p.get_by_test_id('career-learning-help').click()
-      choices=p.locator('[data-testid^=career-learning-choice-]')
-      for choice in choices.all():
-       choice.click()
-       p.get_by_test_id('career-learning-apply').click()
-       if 'done' in (feedback.get_attribute('class') or ''):break
+      expect(p.get_by_test_id('career-learning-clue')).to_be_visible()
+      expect(p.get_by_test_id('career-learning-input')).to_have_value(draft)
+      assert p.get_by_test_id('career-learning-apply').is_disabled()==(not draft.strip())
+      current=p.locator('.career-learning-progress [aria-current=step]').get_attribute('data-testid')
+      part=int(current.rsplit('-',1)[1])
+      p.get_by_test_id('career-learning-input').fill(values[id.removeprefix('career-job-')][part])
+      p.get_by_test_id('career-learning-apply').click()
       assert 'done' in (feedback.get_attribute('class') or ''),(lang,id)
      nxt=p.get_by_test_id('career-learning-next')
      if nxt.is_visible():nxt.click()

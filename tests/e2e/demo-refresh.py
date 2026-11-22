@@ -35,6 +35,9 @@ with sync_playwright() as pw:
   for _ in range(10):
    if page.get_by_test_id('coach-inspect').is_visible():break
    prompt=page.get_by_test_id('coach-next-command').locator('code')
+   expect(prompt).to_have_count(0)
+   expect(page.get_by_test_id('terminal-ghost')).to_have_count(0)
+   page.get_by_test_id('coach-command-help').click()
    expect(prompt).to_be_visible()
    command=prompt.inner_text().removeprefix('$ ').strip()
    assert command and command not in commands,commands

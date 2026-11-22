@@ -1,3 +1,4 @@
+from contract_fixtures import contract_files
 from playwright.sync_api import sync_playwright,expect
 from pathlib import Path
 import json
@@ -14,11 +15,11 @@ with sync_playwright() as pw:
   p.locator('.pc-shortcuts').get_by_role('button',name='의뢰 센터',exact=True).click();w=p.locator('.pc-window[data-active="true"]');w.locator('.pc-window-buttons button').nth(3).click()
   expect(p.get_by_test_id('neighborhood-map')).to_be_visible();p.screenshot(path=str(out/'map.png'),animations='disabled')
   p.locator('.map-chapters button').nth(1).click();expect(p.get_by_test_id('map-open-request')).to_be_disabled()
-  p.locator('.map-chapters button').nth(0).click();p.get_by_test_id('map-pin-bakery-price').click();p.get_by_test_id('map-open-request').click();p.get_by_test_id('career-accept').click();p.get_by_test_id('career-inspect').click();p.locator('.career-answer>button').click()
-  answers=[(a.locator('strong').inner_text(),a.locator('pre').inner_text()) for a in p.locator('.career-answer>div>div').all()]
+  p.locator('.map-chapters button').nth(0).click();p.get_by_test_id('map-pin-bakery-price').click();p.get_by_test_id('map-open-request').click();p.get_by_test_id('career-accept').click();p.get_by_test_id('career-inspect').click()
+  answers=contract_files()['bakery-price'].items()
   for filename,source in answers:
    p.locator('.career-file-tabs button').filter(has=p.get_by_text(filename,exact=True)).click();p.locator('.career-code-input textarea').fill(source)
-  p.locator('.career-answer>button').click();p.get_by_test_id('career-test').click();p.get_by_test_id('career-reply-care').check();p.get_by_test_id('career-deliver').click();expect(p.locator('.game-moment')).to_be_visible();expect(p.locator('.delivery-stamp')).to_be_visible();p.screenshot(path=str(out/'delivery.png'),animations='disabled')
+  p.get_by_test_id('career-test').click();p.get_by_test_id('career-reply-care').check();p.get_by_test_id('career-deliver').click();expect(p.locator('.game-moment')).to_be_visible();expect(p.locator('.delivery-stamp')).to_be_visible();p.screenshot(path=str(out/'delivery.png'),animations='disabled')
   p.get_by_test_id('career-map-button').click();expect(p.get_by_test_id('map-pin-bakery-price')).to_have_class('map-pin delivered');p.screenshot(path=str(out/'map-delivered.png'),animations='disabled');p.locator('.game-moment').wait_for(state='hidden')
   assert not errors,errors
   p.set_viewport_size({'width':390,'height':844});p.locator('.quest-tracker .panel-close').click();p.screenshot(path=str(out/'map-mobile.png'),animations='disabled');assert p.evaluate('document.documentElement.scrollWidth<=innerWidth')

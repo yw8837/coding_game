@@ -1,6 +1,7 @@
 """Ending credits preserve the earned release and allow unfinished work afterward."""
 from pathlib import Path
 import json, os
+from contract_fixtures import contract_files
 from playwright.sync_api import sync_playwright, expect
 
 OUT=Path(os.environ.get('CODESHIFT_QA_DIR','output/launch-quality-20261010/web'))
@@ -46,9 +47,8 @@ with sync_playwright() as pw:
     page.get_by_test_id('ending-credits-open').click();page.get_by_test_id('credits-continue').click()
     page.get_by_test_id('career-job-florist-stock').click();page.get_by_test_id('career-accept').click()
     page.get_by_test_id('career-inspect').click();page.get_by_test_id('career-code-mode').click()
-    # Use the job's opt-in example to verify the post-ending save/check/deliver path.
-    page.locator('.career-answer>button').click()
-    answers=page.locator('.career-answer>div>div').evaluate_all('els=>els.map(el=>[el.querySelector("strong").textContent,el.querySelector("pre").textContent])')
+    # Verify the post-ending save/check/deliver path through the editor.
+    answers=contract_files()['florist-stock'].items()
     for name,source in answers:
      page.locator('.career-file-tabs button').filter(has=page.get_by_text(name,exact=True)).click()
      page.locator('.career-code-input textarea').fill(source)

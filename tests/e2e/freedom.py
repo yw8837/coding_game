@@ -1,5 +1,6 @@
 """Chosen contracts and alternate JS implementations through actual UI, not a learning study."""
 from pathlib import Path
+from contract_fixtures import contract_files
 from playwright.sync_api import sync_playwright,expect
 import json,os
 
@@ -41,12 +42,10 @@ with sync_playwright() as pw:
      if index==0:p.screenshot(path=str(out/f'{lang}-alternate-code.png'),animations='disabled')
     else:
      if p.get_by_test_id('career-code-mode').get_attribute('aria-pressed')!='true':p.get_by_test_id('career-code-mode').click()
-     p.locator('.career-answer>button').click()
-     answers=p.locator('.career-answer>div>div').evaluate_all('els=>els.map(el=>[el.querySelector("strong").textContent,el.querySelector("pre").textContent])')
+     answers=contract_files()[id].items()
      for file,source in answers:
       if id=='workshop-slots':source='id,start,end\nA,09:30,10:30\nB,10:45,11:45\nC,12:00,13:00\n'
       p.locator('.career-file-tabs button').filter(has_text=file).click();p.locator('.career-code-input textarea').fill(source)
-     p.locator('.career-answer>button').click()
     p.get_by_test_id('career-test').click();p.get_by_test_id('career-reply-'+('care' if index<8 else 'craft')).check();p.get_by_test_id('career-deliver').click()
     assert len(state(p)['gameplay']['career']['completed'])==index+1
    p.get_by_test_id('career-final-project').click();p.get_by_test_id('release-start').click()
