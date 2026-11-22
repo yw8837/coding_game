@@ -1,7 +1,9 @@
-import { aboutCopy, type AboutLanguage } from './content';
+import { aboutCopy, type AboutLanguage, type AboutCopy } from './content';
+import { chineseDemoCopy } from './zh-content';
 
 /** Public web copy describes the playable demo, not the unreleased full build. */
-export const demoCopy: typeof aboutCopy = {
+export const demoCopy: Record<AboutLanguage, AboutCopy> = {
+  zh: chineseDemoCopy,
   ko: {
     ...aboutCopy.ko,
     title: 'Localhost Hero 무료 데모 | 우리 동네 코딩 시뮬레이터',
@@ -56,6 +58,7 @@ export const demoCopy: typeof aboutCopy = {
 };
 
 export const trailerScope: Record<AboutLanguage, string> = {
+  zh: '完整版开发版本的英语实机剪辑，包含试玩版未开放的内容。',
   ko: '본편 개발 빌드 영상 · 데모에서 잠긴 콘텐츠 포함',
   en: 'Full development build trailer · Includes content locked in the demo',
   ja: '本編開発ビルドの映像 · デモでロックされた内容を含みます',

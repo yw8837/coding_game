@@ -1,7 +1,7 @@
-export type AboutLanguage = 'ko' | 'en' | 'ja';
+export type AboutLanguage = 'ko' | 'en' | 'ja' | 'zh';
 
 type Chapter = { title: string; problem: string; action: string; code: string };
-type AboutCopy = {
+export type AboutCopy = {
   title: string; description: string; nav: [string, string, string]; navLabel: string;
   languageLabel: string; skip: string; workingTitle: string; hero: string; lead: string;
   play: string; facts: { label: string; value: string }[]; overviewTitle: string;
@@ -12,7 +12,7 @@ type AboutCopy = {
   footer: string;
 };
 
-export const aboutCopy: Record<AboutLanguage, AboutCopy> = {
+export const aboutCopy: Record<Exclude<AboutLanguage, 'zh'>, AboutCopy> = {
   ko: {
     title: 'CODE:SHIFT 게임 소개 | 브라우저 코딩 퍼즐',
     description: '가상 PC에서 카페 입문 3장과 동네 의뢰 18개, 선택 연습 6개와 코드 의뢰 12개를 플레이하는 코딩 퍼즐. 현재 웹 버전은 무료·가입 없이 이용하며 진행을 자동 저장하고 백업할 수 있습니다.',

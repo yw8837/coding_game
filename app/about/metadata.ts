@@ -4,13 +4,13 @@ import { demoCopy as aboutCopy } from './demo-content';
 import { GAME_BRAND, GAME_VERSION_LABEL } from '@/lib/game/brand';
 
 export const SITE_ORIGIN = 'https://code.yeolmaeapps.kr';
-export const aboutPaths: Record<AboutLanguage, string> = { ko: '/about', en: '/about/en', ja: '/about/ja' };
+export const aboutPaths: Record<AboutLanguage, string> = { ko: '/about', en: '/about/en', ja: '/about/ja', zh: '/about/zh' };
 
 export function aboutMetadata(language: AboutLanguage): Metadata {
   const copy = aboutCopy[language];
   const url = SITE_ORIGIN + aboutPaths[language];
-  const poster = SITE_ORIGIN + '/media/first-release-poster' + (language === 'en' ? '-en' : '') + '.jpg';
-  const locales = { ko: 'ko_KR', en: 'en_US', ja: 'ja_JP' };
+  const poster = SITE_ORIGIN + '/media/first-release-poster' + (language === 'en' || language === 'zh' ? '-en' : '') + '.jpg';
+  const locales = { ko: 'ko_KR', en: 'en_US', ja: 'ja_JP', zh: 'zh_CN' };
   return {
     title: GAME_BRAND,
     description: copy.description,
@@ -20,6 +20,7 @@ export function aboutMetadata(language: AboutLanguage): Metadata {
         ko: SITE_ORIGIN + aboutPaths.ko,
         en: SITE_ORIGIN + aboutPaths.en,
         ja: SITE_ORIGIN + aboutPaths.ja,
+        'zh-Hans': SITE_ORIGIN + aboutPaths.zh,
         'x-default': SITE_ORIGIN + aboutPaths.ko,
       },
     },
