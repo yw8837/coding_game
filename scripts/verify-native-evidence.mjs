@@ -36,7 +36,7 @@ const authored = await read('authored-project-native/report.json');
 assert.equal(authored.passed, true);
 assert.deepEqual(authored.errors, []);
 assert.ok(authored.cases.length >= 4 && authored.cases.every(row => row.passed), 'Authored project cases incomplete');
-for (const id of ['en-website', 'en-webapp', 'ko-webapp', 'ja-webapp']) {
+for (const id of ['en-website', 'en-webapp', 'ko-webapp', 'ja-webapp', 'zh-webapp']) {
   assert.ok(authored.cases.some(row => row.id === id && row.offlineExport), 'Missing authored export: ' + id);
 }
 console.log('Native evidence verified: terminal locales, clipboard IPC, 3 cafe chapters, 18 jobs, final release, save recovery, studio, authored exports.');

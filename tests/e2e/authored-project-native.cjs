@@ -6,10 +6,10 @@ const {pathToFileURL}=require('node:url');
 const playwrightPath=process.env.PLAYWRIGHT_PACKAGE||path.join(process.env.USERPROFILE,'.codex/skills/webapp-testing/.venv/Lib/site-packages/playwright/driver/package');
 const {_electron,chromium}=require(playwrightPath),{PNG}=require(path.join(playwrightPath,'lib/utilsBundle.js'));
 const root=path.resolve(__dirname,'../..'),out=path.resolve(process.env.CODESHIFT_QA_DIR||path.join(root,'output/authored-project-native'));
-const requested=process.env.CODESHIFT_QA_LANGUAGES?.split(',')||['en','ko','ja'];
+const requested=process.env.CODESHIFT_QA_LANGUAGES?.split(',')||['en','ko','ja','zh'];
 const contract={editor:'project-editor',preview:'project-preview',test:'project-test',phone:'project-phone',export:'project-export'};
-const names={ko:'의뢰 센터',en:'Contracts',ja:'依頼センター'};
-const restoreName={ko:'복원하기',en:'Restore snapshot',ja:'版を復元'};
+const names={ko:'의뢰 센터',en:'Contracts',ja:'依頼センター',zh:'委托中心'};
+const restoreName={ko:'복원하기',en:'Restore snapshot',ja:'版を復元',zh:'恢复这个版本'};
 const report={seedMethod:'Cafe completion fixture; twelve customer jobs accepted, inspected, edited, tested and delivered through act. Final start, authoring, import, checks, publication and studio work use native UI.',cases:[],errors:[]};
 let app,page,browser,current;
 const moduleAt=file=>import(pathToFileURL(path.join(root,'lib/game',file)).href);
@@ -80,8 +80,8 @@ async function author(kind,language){
  await page.getByTestId('title-settings').click();await page.getByRole('combobox',{name:'Language'}).selectOption(language);await page.keyboard.press('Escape');await page.getByTestId('title-continue').click();
  await page.locator('.pc-shortcuts').getByRole('button',{name:names[language],exact:true}).click();await page.getByTestId('career-release-button').click();
  await page.getByTestId('project-choice-'+kind).click();await page.getByTestId('release-start').click();assert.equal(await page.getByTestId('project-help').count(),0);
- current.title={ko:'내 작은 기록과 사진',en:'My small stories and photos',ja:'私の小さな記録と写真'}[language]+' · '+kind;
- current.note={ko:'내가 작성한 소개입니다. 친구들과 이 화면을 나눕니다.',en:'This is an introduction I wrote. I am sharing this page with friends.',ja:'自分で書いた紹介です。この画面を友人と共有します。'}[language];
+ current.title={ko:'내 작은 기록과 사진',en:'My small stories and photos',ja:'私の小さな記録と写真',zh:'我的随笔与照片'}[language]+' · '+kind;
+ current.note={ko:'내가 작성한 소개입니다. 친구들과 이 화면을 나눕니다.',en:'This is an introduction I wrote. I am sharing this page with friends.',ja:'自分で書いた紹介です。この画面を友人と共有します。',zh:'我想用自己做的网页跟朋友分享旅行见闻。'}[language];
  const html='<!doctype html>\n<html lang="'+language+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'+current.title+'</title><link rel="stylesheet" href="style.css"></head><body><main class="portal"><h1>'+current.title+'</h1><p class="authored-note">'+current.note+'</p><section class="qa-pixel"></section>'+ (kind==='webapp'?'<section data-app="items"></section><section data-app="inquiry"></section>':'')+'</main></body></html>\n';
  await fillFile('index.html',html);
  await fillFile('style.css','body { margin: 0; font-family: system-ui, sans-serif; background: #f5f3ed; color: #24332d; }\n.portal { width: 960px; max-width: 100%; margin: 0 auto; padding: 20px; box-sizing: border-box; }\nh1 { color: #356553; }\n.authored-note { color: #183a49; line-height: 1.7; padding: 8px; border-left: 3px solid #aa5533; }\n.qa-pixel { width: 64px; height: 24px; background: #aa5533; }\nimg { width: 96px; max-width: 100%; height: auto; border-radius: 8px; }\n');
@@ -132,7 +132,7 @@ async function legacyUpgrade(){
 }
 async function portable(){
  browser=await chromium.launch({channel:'chrome',headless:true});
- for(const row of report.cases){current=row;const context=await browser.newContext({locale:{en:'en-US',ko:'ko-KR',ja:'ja-JP'}[row.language],viewport:{width:row.previewWidth,height:740}}),portablePage=await context.newPage();let external=0;portablePage.on('request',request=>{if(/^https?:/.test(request.url()))external++;});portablePage.on('pageerror',error=>report.errors.push({case:row.id,portable:String(error)}));
+ for(const row of report.cases){current=row;const context=await browser.newContext({locale:{en:'en-US',ko:'ko-KR',ja:'ja-JP',zh:'zh-CN'}[row.language],viewport:{width:row.previewWidth,height:740}}),portablePage=await context.newPage();let external=0;portablePage.on('request',request=>{if(/^https?:/.test(request.url()))external++;});portablePage.on('pageerror',error=>report.errors.push({case:row.id,portable:String(error)}));
   await portablePage.goto(pathToFileURL(row.exported).href);await portablePage.locator('img[alt="QA imported photo"]').waitFor();await portablePage.waitForFunction(()=>Array.from(document.images).every(image=>image.complete&&image.naturalWidth>0));
   const value=await snapshot(portablePage);assert.equal(value.noOverflow,true);assert.equal(value.importLoaded,true);
   // Electron's fractional display scale changes layout-unit rounding by less than 1/32 CSS pixel.

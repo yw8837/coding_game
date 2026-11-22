@@ -103,7 +103,7 @@ jobs:
         id: studio
         continue-on-error: true
         run: node tests/e2e/full-studio-native.cjs
-      - name: Authored websites and webapps in all three languages
+      - name: Authored websites and webapps across all four languages
         id: authored
         continue-on-error: true
         run: node tests/e2e/authored-project-native.cjs
