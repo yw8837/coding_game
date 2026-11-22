@@ -27,6 +27,13 @@ export function CareerLearning({job,files,onEdit,onTest,onCodeMode}:{job:CareerJ
  const next=progress.states.findIndex((item,i)=>i>index&&!item.done);
  const remaining=progress.states.findIndex(item=>!item.done);
  const allDone=progress.done===progress.steps.length;
+ // A valid custom timetable, for example, can satisfy every client check without matching the guided edit.
+ if(evaluation.passed&&!allDone)return <section className="career-learning" data-testid="career-learning">
+  <div className="career-learning-complete" data-testid="career-learning-alternate">
+   <strong>{tr('내 풀이로 손님의 요청을 모두 맞췄어요.','Your solution meets every client requirement.','自分の解き方ですべての依頼条件を満たしました。','你用自己的方案满足了客户的所有要求。')}</strong>
+   <button type="button" className="primary-button" data-testid="career-learning-test" onClick={onTest}>{tr('현재 파일 검사','Check current files','現在のファイルを検査')}</button>
+  </div>
+ </section>;
  return <section className="career-learning" data-testid="career-learning" aria-label={tr('한 부분씩 고치기','Fix one part at a time','1つずつ直す')}>
   <header><div><span>{tr(`${job.act}장 · ${job.act<3?'직접 값 쓰기':'한 줄 써 보기'}`,`Act ${job.act} · ${job.act<3?'Type a value':'Write one line'}`,`${job.act}章 · ${job.act<3?'値を自分で書く':'1行を書く'}`,`第${job.act}章 · ${job.act<3?'亲手输入数值':'试写一行代码'}`)}</span><h3>{tr('지금은 한 가지만 고쳐요.','One small change at a time.','今は1つだけ直しましょう。')}</h3></div><strong aria-label={tr('고친 부분','Parts fixed','直した部分')}>{progress.done} / {progress.steps.length}</strong></header>
   <nav className="career-learning-progress" aria-label={tr('수정할 부분','Parts to fix','修正する部分')}>{progress.steps.map((item,i)=><button type="button" key={item.id} aria-current={i===index?'step':undefined} data-testid={'career-learning-step-'+i} onClick={()=>move(i)} aria-label={`${i+1}. ${item.title[language]}`}>{progress.states[i].done?'✓':i+1}</button>)}</nav>

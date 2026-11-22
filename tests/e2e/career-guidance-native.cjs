@@ -74,6 +74,13 @@ async function nav(id){
    await page.screenshot({path:path.join(out,'career-guidance-'+tag+'-'+lang+'.png')});
   });
  }
+ await check('a different valid workshop timetable is recognized in guided mode and can be delivered',async()=>{
+  await nav('workshop-slots');await page.getByTestId('career-code-mode').click();
+  await page.locator('.career-code-input textarea').fill('id,start,end\nA,09:30,10:30\nB,10:45,11:45\nC,12:00,13:00\n');
+  await page.getByTestId('career-code-mode').click();await page.getByTestId('career-learning-alternate').waitFor();
+  await page.getByTestId('career-learning-test').click();await page.getByTestId('career-reply-care').check();
+  await page.getByTestId('career-deliver').click();await until(async()=>(await saved()).gameplay.career.completed.includes('workshop-slots'),true);
+ });
  report.passed=report.checks.every(item=>item.passed)&&report.errors.length===0;
 })().catch(async error=>{
  report.errors.push(String(error.stack||error));
