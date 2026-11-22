@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { type AboutLanguage } from './content';
 import { demoCopy as aboutCopy } from './demo-content';
+import { GAME_BRAND, GAME_VERSION_LABEL } from '@/lib/game/brand';
 
 export const SITE_ORIGIN = 'https://code.yeolmaeapps.kr';
 export const aboutPaths: Record<AboutLanguage, string> = { ko: '/about', en: '/about/en', ja: '/about/ja' };
@@ -25,11 +26,11 @@ export function aboutMetadata(language: AboutLanguage): Metadata {
     robots: { index: true, follow: true },
     openGraph: {
       type: 'website', title: copy.title, description: copy.description,
-      url, siteName: 'CODE:SHIFT', locale: locales[language],
+      url, siteName: GAME_BRAND, locale: locales[language],
       images: [{ url: poster, width: 1280, height: 720, alt: copy.title }],
       alternateLocale: Object.entries(locales).filter(([key]) => key !== language).map(([, value]) => value),
     },
     twitter: { card: 'summary_large_image', title: copy.title, description: copy.description, images: [poster] },
-    other: { 'content-language': language, 'game-version': '0.13.2 RC' },
+    other: { 'content-language': language, 'game-version': GAME_VERSION_LABEL },
   };
 }

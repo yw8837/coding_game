@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v3';
 import {CAREER_JOBS} from './career-content.ts';
 import {createCareer,CAREER_UPGRADES} from './career.ts';
 import {createRelease} from './release.ts';

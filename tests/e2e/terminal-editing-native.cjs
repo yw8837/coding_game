@@ -26,7 +26,7 @@ async function command(value){await field.fill(value);await field.press('Enter')
  let fixture=createGame();fixture=runCommand(fixture,'mkdir "my notes"').state;
  await fs.writeFile(path.join(profile,'saves/game.json'),JSON.stringify(fixture));
  const env={...process.env};delete env.ELECTRON_RUN_AS_NODE;
- app=await _electron.launch({executablePath:path.join(root,'desktop/node_modules/electron/dist/electron.exe'),args:[path.join(root,'desktop'),'--qa-user-data='+profile],env,timeout:25000});
+ app=await _electron.launch({executablePath:path.join(root,'desktop/node_modules/electron/dist/electron.exe'),args:[path.join(root,'desktop'),'--qa-user-data='+profile],env,timeout:60000});
  page=await app.firstWindow();page.setDefaultTimeout(10000);page.on('pageerror',error=>report.errors.push(String(error.stack||error)));
  await page.getByTestId('title-settings').click();await page.getByRole('combobox',{name:'Language',exact:true}).selectOption('en');await page.keyboard.press('Escape');
  await until(()=>page.getByTestId('title-continue').isEnabled(),true);await page.getByTestId('title-continue').click();
@@ -118,9 +118,10 @@ async function command(value){await field.fill(value);await field.press('Enter')
    await field.press('ArrowDown');assert.equal(await field.inputValue(),'clear');
    await field.press('ArrowDown');assert.equal(await field.inputValue(),'unsubmitted draft');
   });
-  await check(lang+': Shift+Tab and Tab with no match still allow keyboard focus navigation',async()=>{
+  await check(lang+': Tab without a match retains input focus; Shift+Tab leaves it',async()=>{
    await field.fill('cat no-such-file');await field.press('Tab');
-   assert.equal(await field.evaluate(element=>document.activeElement===element),false);
+   assert.equal(await field.inputValue(),'cat no-such-file');
+   assert.equal(await field.evaluate(element=>document.activeElement===element),true);
    await field.focus();await field.press('Shift+Tab');
    assert.equal(await field.evaluate(element=>document.activeElement===element),false);
   });
@@ -128,7 +129,9 @@ async function command(value){await field.fill(value);await field.press('Enter')
    const value=lang==='ja'?'cat メモ':lang==='ko'?'cat 메모':'cat composing';
    await field.fill(value);
    await field.evaluate(element=>{
-    element.dispatchEvent(new KeyboardEvent('keydown',{key:'Tab',code:'Tab',bubbles:true,cancelable:true,isComposing:true}));
+    const tab=new KeyboardEvent('keydown',{key:'Tab',code:'Tab',bubbles:true,cancelable:true,isComposing:true});
+    element.dispatchEvent(tab);
+    if(!tab.defaultPrevented)throw new Error('IME Tab allowed focus navigation');
     element.dispatchEvent(new KeyboardEvent('keydown',{key:'c',code:'KeyC',ctrlKey:true,bubbles:true,cancelable:true,isComposing:true}));
    });
    assert.equal(await field.inputValue(),value);

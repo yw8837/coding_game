@@ -1,3 +1,4 @@
+import {careerCheckCopy} from './career-check-copy.ts';
 import {CAREER_JOBS,L,type Localized} from './career-content.ts';
 import {runCode,type CodeValue,type CodeError,type CodeResult} from './code-lab-runtime.ts';
 import type {CareerCheck,CareerEvaluation} from './career-evaluation.ts';
@@ -214,7 +215,7 @@ export function evaluateCareerCode(id:string,files:Record<string,string>):Career
  let last:CareerCodeRun|null=null;
  const add=(ko:string,en:string,ja:string,want:unknown,actual:unknown,from:CareerCodeRun|null=last)=>{
   const passed=display(want)===display(actual),hint=passed?null:from?.diagnosis??null;
-  checks.push({name:L(ko,en,ja),expected:display(want),actual:display(actual),passed,...(hint?{hint}:{})});
+  checks.push({name:careerCheckCopy(ko,en,ja),expected:display(want),actual:display(actual),passed,...(hint?{hint}:{})});
  };
  const result=(input:CodeValue)=>{last=run(id,source,input);return last.error?failure(last.error):last.actual;};
  const cases:CodeValue[]=[];
@@ -299,7 +300,7 @@ export function evaluateCareerCode(id:string,files:Record<string,string>):Career
  }
  for(const [index,input] of cases.entries()){
   const row=run(id,source,input),actual=row.error?failure(row.error):row.actual;
-  checks.push({name:L(`변경 입력 ${index+1} · ${JSON.stringify(input)}`,`Varied input ${index+1} · ${JSON.stringify(input)}`,`別の入力 ${index+1} · ${JSON.stringify(input)}`),expected:display(row.expected),actual:display(actual),passed:row.passed,...(row.diagnosis?{hint:row.diagnosis}:{})});
+  checks.push({name:L(`변경 입력 ${index+1} · ${JSON.stringify(input)}`,`Varied input ${index+1} · ${JSON.stringify(input)}`,`別の入力 ${index+1} · ${JSON.stringify(input)}`,`变更输入${index+1} · ${JSON.stringify(input)}`),expected:display(row.expected),actual:display(actual),passed:row.passed,...(row.diagnosis?{hint:row.diagnosis}:{})});
   // One bounded failure is sufficient; avoid repeating a budget failure 32 times.
   if(row.error)break;
  }

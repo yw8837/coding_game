@@ -1,16 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULT_FEEDBACK_PREFERENCES,feedbackVolumeGain} from './feedback-preferences.ts';
-import {createFeedbackPlayer,feedbackBus,feedbackVariation,isKeystrokeKey,FEEDBACK_BUS_DB,FEEDBACK_CUES,FEEDBACK_DUCK_RELEASE,FEEDBACK_GAIN_WOBBLE_DB,FEEDBACK_MASTER_DB,FEEDBACK_MAX_VOICES,FEEDBACK_SFX_VOICES,dbGain,midiFrequency,type Feedback} from './audio-feedback.ts';
+import {createFeedbackPlayer,feedbackBus,feedbackVariation,isKeystrokeKey,keyPackId,FEEDBACK_BUS_DB,FEEDBACK_CUES,FEEDBACK_DUCK_DB,FEEDBACK_DUCK_RELEASE,FEEDBACK_GAIN_WOBBLE_DB,FEEDBACK_MASTER_DB,FEEDBACK_MAX_VOICES,FEEDBACK_SFX_VOICES,KEY_PACK_IDS,KEY_PACKS,TYPEWRITER_BELL,dbGain,midiFrequency,type Feedback} from './audio-feedback.ts';
 
 function audioContext(state='running'){
- const sources:ReturnType<typeof node>[]=[],gains:ReturnType<typeof node>[]=[];
+ const sources:ReturnType<typeof node>[]=[],gains:ReturnType<typeof node>[]=[],filters:ReturnType<typeof node>[]=[];
  function param(){return {value:0,events:[] as Array<[string,number,number]>,setTargetAtTime(value:number,at:number){this.events.push(['target',value,at]);},setValueAtTime(value:number,at:number){this.events.push(['set',value,at]);},linearRampToValueAtTime(value:number,at:number){this.events.push(['linear',value,at]);},exponentialRampToValueAtTime(value:number,at:number){this.events.push(['exponential',value,at]);},cancelScheduledValues(at:number){this.events.push(['cancel',0,at]);}};}
  function node(){return {type:'',threshold:param(),knee:param(),ratio:param(),attack:param(),release:param(),frequency:param(),Q:param(),gain:param(),playbackRate:param(),buffer:null as unknown,connections:[] as unknown[],disconnected:false,onended:null as null|(()=>void),starts:[] as number[],offsets:[] as Array<number|undefined>,stops:[] as Array<number|undefined>,connect(target:unknown){this.connections.push(target);},disconnect(){this.disconnected=true;},start(at:number,offset?:number){this.starts.push(at);this.offsets.push(offset);},stop(at?:number){this.stops.push(at);}};}
  const limiter=node();let resumes=0,resolveResume:()=>void=()=>{};
- const ctx={state,currentTime:0,sampleRate:48000,destination:{},createDynamicsCompressor(){return limiter;},createGain(){const result=node();gains.push(result);return result;},createOscillator(){const source=node();sources.push(source);return source;},createBufferSource(){const source=node();sources.push(source);return source;},createBiquadFilter:node,createBuffer(_channels:number,length:number){return {getChannelData:()=>new Float32Array(length)};},resume(){resumes++;return new Promise<void>(resolve=>{resolveResume=()=>{ctx.state='running';resolve();};});}};
+ const ctx={state,currentTime:0,sampleRate:48000,destination:{},createDynamicsCompressor(){return limiter;},createGain(){const result=node();gains.push(result);return result;},createOscillator(){const source=node();sources.push(source);return source;},createBufferSource(){const source=node();sources.push(source);return source;},createBiquadFilter(){const result=node();filters.push(result);return result;},createBuffer(_channels:number,length:number){return {getChannelData:()=>new Float32Array(length)};},resume(){resumes++;return new Promise<void>(resolve=>{resolveResume=()=>{ctx.state='running';resolve();};});}};
  // 생성 순서: master, 버스(ui·events·sfx), 덕킹(ui·sfx), 이후 소리마다 게인.
- return {ctx:ctx as unknown as AudioContext,raw:ctx,limiter,sources,get master(){return gains[0];},get buses(){return {ui:gains[1],events:gains[2],sfx:gains[3]};},get ducks(){return {ui:gains[4],sfx:gains[5]};},get resumes(){return resumes;},finishResume:()=>resolveResume()};
+ return {ctx:ctx as unknown as AudioContext,raw:ctx,limiter,sources,gains,filters,get master(){return gains[0];},get buses(){return {ui:gains[1],events:gains[2],sfx:gains[3]};},get ducks(){return {ui:gains[4],sfx:gains[5]};},get resumes(){return resumes;},finishResume:()=>resolveResume()};
 }
 const sequence=(...values:number[])=>{let i=0;return()=>values[i++%values.length];};
 const LEGACY:readonly Feedback[]=['click','open','close','save','command','purchase','success','retry','reward','opening','release'];
@@ -25,10 +25,11 @@ test('cues stay in bright C major / add9 and repeated input has bounded headroom
  assert.equal(midiFrequency(69),440);
 });
 
-test('the eleven legacy cues keep their buses and the three new cues join SFX or events',()=>{
- assert.equal(Object.keys(FEEDBACK_CUES).length,14);
+test('the eleven legacy cues keep their buses and the newer cues join SFX or events',()=>{
+ assert.equal(Object.keys(FEEDBACK_CUES).length,16);
  for(const kind of LEGACY)assert.equal(feedbackBus(kind),['click','open','close','save','command'].includes(kind)?'ui':'events');
  assert.equal(feedbackBus('keystroke'),'sfx');assert.equal(feedbackBus('eval-pulse'),'sfx');assert.equal(feedbackBus('eval-pass'),'events');
+ assert.equal(feedbackBus('level-up'),'events');assert.equal(feedbackBus('achievement'),'events');
  assert.deepEqual(FEEDBACK_CUES.success.notes.map(n=>n.midi),[72,76,79,86]);assert.equal(FEEDBACK_CUES.reward.percussion.length,2);
 });
 
@@ -168,4 +169,99 @@ test('clicks coalesce briefly and disposal invalidates future or pending playbac
  const audio=audioContext(),player=createFeedbackPlayer(audio.ctx);player.play('click');player.play('click');assert.equal(audio.sources.length,1);
  audio.raw.currentTime=.07;player.play('click');assert.equal(audio.sources.length,2);player.dispose();player.play('opening');assert.equal(audio.sources.length,2);
  const suspended=audioContext('suspended'),pending=createFeedbackPlayer(suspended.ctx);pending.play('opening');pending.dispose();suspended.finishResume();await Promise.resolve();assert.equal(suspended.sources.length,0);
+});
+
+test('level-up fanfare and achievement chime ride the events bus, duck UI and SFX, and fit the budget together',()=>{
+ const up=FEEDBACK_CUES['level-up'],chime=FEEDBACK_CUES.achievement,voices=(kind:Feedback)=>FEEDBACK_CUES[kind].notes.length+FEEDBACK_CUES[kind].percussion.length;
+ assert.ok(Math.abs(end('level-up')-1.2)<=.1,'level-up lasts about 1.2 s');assert.ok(Math.abs(end('achievement')-.8)<=.1,'achievement lasts about 0.8 s');
+ assert.ok(up.notes.slice(0,5).every((n,i,all)=>i===0||n.midi>all[i-1].midi),'the fanfare opens with a rising arpeggio');
+ assert.equal(new Set(chime.notes.slice(0,2).map(n=>n.midi)).size,2,'a two-note chime before the sparkle');
+ assert.ok(voices('level-up')+voices('achievement')<=FEEDBACK_MAX_VOICES);
+ assert.equal(FEEDBACK_DUCK_DB['level-up'],FEEDBACK_DUCK_DB.reward,'level-up ducks like a reward');
+ const audio=audioContext(),player=createFeedbackPlayer(audio.ctx);player.play('level-up');
+ assert.equal(audio.sources.length,voices('level-up'));
+ assert.ok(audio.gains.slice(6).every(gain=>gain.connections[0]===audio.buses.events),'every fanfare voice lands on the events bus');
+ for(const duck of Object.values(audio.ducks)){const [,,dip,restore]=duck.gain.events;assert.deepEqual(dip,['target',dbGain(-9),.005]);assert.deepEqual(restore,['target',1,.005+end('level-up')]);}
+ const fanfare=[...audio.sources];player.play('achievement');
+ assert.equal(audio.sources.length,voices('level-up')+voices('achievement'),'an achievement unlocked by the same level-up is not clipped');
+ assert.ok(fanfare.every(v=>!v.disconnected));
+ player.setMix({...DEFAULT_FEEDBACK_PREFERENCES,events:50});assert.equal(audio.buses.events.gain.events.at(-1)?.[1],feedbackVolumeGain(50));
+});
+
+test('level-up and achievement respect the events slider, master and their own cooldowns',()=>{
+ const audio=audioContext(),player=createFeedbackPlayer(audio.ctx);
+ player.setMix({...DEFAULT_FEEDBACK_PREFERENCES,ui:0});player.play('level-up');assert.equal(audio.sources.length,8,'the interface slider does not silence events');
+ for(const source of [...audio.sources])source.onended?.();
+ audio.raw.currentTime=.5;player.play('level-up');assert.equal(audio.sources.length,8,'a second fanfare waits out its cooldown');
+ audio.raw.currentTime=.85;player.play('level-up');assert.equal(audio.sources.length,16);
+ for(const source of [...audio.sources])source.onended?.();
+ audio.raw.currentTime=1;player.play('achievement');audio.raw.currentTime=1.2;player.play('achievement');assert.equal(audio.sources.length,20,'chimes 0.2 s apart coalesce');
+ for(const mix of [{...DEFAULT_FEEDBACK_PREFERENCES,events:0},{...DEFAULT_FEEDBACK_PREFERENCES,master:0}]){
+  const fresh=audioContext(),muted=createFeedbackPlayer(fresh.ctx);muted.setMix(mix);muted.play('level-up');muted.play('achievement');assert.equal(fresh.sources.length,0);
+ }
+});
+
+// 소리 하나가 만든 노드 설정을 비교 가능한 값으로 펼친다. 변주 난수를 0.5로 고정해 피치·음량 변주를 0으로 만든다.
+function render(pack?:string|null,kind:Feedback='keystroke'){
+ const audio=audioContext(),player=createFeedbackPlayer(audio.ctx,()=>.5);
+ if(pack!==undefined)player.setKeyPack(pack);
+ player.play(kind);
+ return {
+  sources:audio.sources.map(s=>({type:s.type,noise:Boolean(s.buffer),rate:s.playbackRate.value,frequency:s.frequency.events,starts:s.starts,stops:s.stops})),
+  filters:audio.filters.map(f=>({type:f.type,frequency:f.frequency.value,Q:f.Q.value})),
+  gains:audio.gains.slice(6).map(g=>({events:g.gain.events,bus:g.connections[0]===audio.buses.sfx?'sfx':g.connections[0]===audio.buses.ui?'ui':'other'})),
+  player,
+ };
+}
+const shape=({sources,filters,gains}:ReturnType<typeof render>)=>({sources,filters,gains});
+
+test('mechanical stays the default key pack and is the exact previous keystroke; unknown ids fall back to it',()=>{
+ const base=shape(render());
+ for(const id of ['mechanical','nope','',null])assert.deepEqual(shape(render(id)),base,String(id));
+ assert.equal(render('nope').player.keyPack,'mechanical');assert.equal(keyPackId('retro'),'retro');assert.equal(keyPackId(undefined),'mechanical');
+ assert.equal(KEY_PACKS.mechanical,FEEDBACK_CUES.keystroke);
+ // 이전 keystroke 정의(84→79 삼각파 틱 + 2.6–9 kHz 노이즈 딸깍)를 숫자로 고정한다.
+ assert.deepEqual(base.sources.map(s=>[s.type,s.noise]),[['triangle',false],['',true]]);
+ assert.deepEqual(base.sources[0].frequency,[['set',midiFrequency(84),.005],['exponential',midiFrequency(79),.005+.024]]);
+ assert.deepEqual(base.filters,[{type:'lowpass',frequency:4800,Q:.5},{type:'highpass',frequency:2600,Q:.5},{type:'lowpass',frequency:9000,Q:.5}]);
+ assert.deepEqual(base.gains.map(g=>g.events[1]),[['linear',.02,.01],['linear',.03,.008]]);
+ assert.ok(base.gains.every(g=>g.bus==='sfx'));
+});
+
+test('each key pack has its own oscillator and filter voice and fits the SFX share',()=>{
+ const packs=Object.fromEntries(KEY_PACK_IDS.map(id=>[id,shape(render(id))]));
+ for(const a of KEY_PACK_IDS)for(const b of KEY_PACK_IDS)if(a<b)assert.notDeepEqual(packs[a],packs[b],a+' vs '+b);
+ for(const id of KEY_PACK_IDS){
+  const cue=KEY_PACKS[id];assert.ok(cue.notes.length+cue.percussion.length<=FEEDBACK_SFX_VOICES/2,id);
+  assert.ok(packs[id].gains.every(g=>g.bus==='sfx'),id);
+  assert.ok([...cue.notes,...cue.percussion].every(item=>item.peak<=.045),'packs stay at keystroke loudness');
+ }
+ const tone=(id:string)=>packs[id].sources.find(s=>!s.noise)!,toneFilter=(id:string)=>packs[id].filters[0];
+ assert.equal(tone('soft').type,'sine');assert.ok(tone('soft').frequency[0][1]<300,'soft is a low thock');assert.ok(toneFilter('soft').frequency<1200);
+ assert.ok(packs.soft.filters.at(-1)!.frequency<3000,'soft noise is muffled');
+ assert.equal(tone('typewriter').type,'square');assert.ok(packs.typewriter.filters[1].frequency>packs.mechanical.filters[1].frequency,'typewriter clack is sharper');
+ assert.ok(packs.retro.sources.every(s=>s.type==='square'&&!s.noise),'retro is a pure square blip');
+ // 같은 묶음이라도 난수에 따라 블립 피치가 ±6% 안에서 흔들린다.
+ const audio=audioContext(),player=createFeedbackPlayer(audio.ctx,sequence(.1,.5,.9,.5));player.setKeyPack('retro');
+ player.play('keystroke');audio.raw.currentTime=.05;player.play('keystroke');
+ const [first,,second]=audio.sources.map(s=>s.frequency.events[0][1]/midiFrequency(84));
+ assert.notEqual(first,second);assert.ok([first,second].every(p=>Math.abs(p-1)<=.06+1e-9));
+ // 다른 큐는 묶음과 무관하다.
+ assert.deepEqual(shape(render('retro','click')),shape(render(undefined,'click')));
+});
+
+test('only the typewriter pack rings a small bell, and only on command',()=>{
+ const plain=render(undefined,'command');assert.equal(plain.sources.length,2);
+ for(const id of KEY_PACK_IDS){
+  const command=render(id,'command'),typed=render(id);
+  assert.equal(command.sources.length,2+(id==='typewriter'?TYPEWRITER_BELL.notes.length:0),id);
+  if(id!=='typewriter')assert.deepEqual(shape(command),shape(plain),id);
+  assert.ok(typed.sources.every(s=>s.frequency[0]?.[1]!==midiFrequency(96)),id+' keystrokes never ring');
+ }
+ const bell=render('typewriter','command');
+ assert.deepEqual(bell.sources.slice(0,2),plain.sources,'the normal command blip still plays first');
+ assert.equal(bell.sources[2].frequency[0][1],midiFrequency(96));assert.ok(bell.gains.every(g=>g.bus==='ui'),'the bell follows the interface slider');
+ const audio=audioContext(),player=createFeedbackPlayer(audio.ctx);player.setKeyPack('typewriter');player.setMix({...DEFAULT_FEEDBACK_PREFERENCES,ui:0});player.play('command');assert.equal(audio.sources.length,0);
+ const loudest=Math.max(...[...TYPEWRITER_BELL.notes,...KEY_PACK_IDS.flatMap(id=>[...KEY_PACKS[id].notes,...KEY_PACKS[id].percussion])].map(item=>item.peak));
+ assert.ok(FEEDBACK_MAX_VOICES*loudest*dbGain(FEEDBACK_GAIN_WOBBLE_DB.sfx)*dbGain(FEEDBACK_MASTER_DB)<.5);
 });

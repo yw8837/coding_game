@@ -5,6 +5,8 @@ import {validDemoPulse,dashboardOwnerAllowed,stageLabel} from '../demo-metrics.t
 test('telemetry only accepts bounded stages, intervals and known fields',()=>{
  const pulse={session:'03fd149f-3c09-4cc3-baa9-5fb80acd5200',language:'ko',stage:'cafe-0-sign',seconds:15,mode:'new'};
  assert.equal(validDemoPulse(pulse),true);
+ assert.equal(validDemoPulse({...pulse,language:"zh"}),true);
+ assert.equal(validDemoPulse({...pulse,language:["zh"]}),false);
  for(const patch of [{seconds:31},{seconds:-1},{seconds:Infinity},{stage:'user code'},{language:'fr'},{mode:'x'},{source:'secret source code'},{session:'guessable'}])assert.equal(validDemoPulse({...pulse,...patch}),false);
  assert.equal(validDemoPulse(null),false);
  assert.equal(stageLabel('cafe-0-sign'),'1장 · 카페 이름 고치기');

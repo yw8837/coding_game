@@ -1,6 +1,7 @@
-export type PracticeLanguage='ko'|'en'|'ja';
+import {localizedCopy} from './zh.ts';
+export type PracticeLanguage='ko'|'en'|'ja'|'zh';
 export type PracticeCopy=Record<PracticeLanguage,string>;
-const copy=(ko:string,en:string,ja:string):PracticeCopy=>({ko,en,ja});
+const copy=(ko:string,en:string,ja:string,zh?:string):PracticeCopy=>localizedCopy(ko,en,ja,zh);
 export const PRACTICE_IDS=['total','discount','stock','delivery','route','width'] as const;
 export type PracticeId=typeof PRACTICE_IDS[number];
 export type PracticeValue=number|string|boolean;

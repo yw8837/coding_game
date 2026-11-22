@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useLanguage} from '@/lib/game/i18n';
 import {isDemoComplete} from '@/lib/game/edition';
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from '@/components/ui/dialog';
@@ -6,7 +7,7 @@ import type {GameState} from '@/lib/game/engine';
 import type {GameProps} from './types';
 import {CafeScene} from './CafeScene';
 
-function useDemoCopy(){const lang=useLanguage();return {lang,tr:(ko:string,en:string,ja:string)=>({ko,en,ja})[lang]};}
+function useDemoCopy(){const lang=useLanguage();return {lang,tr:(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang]};}
 export function DemoGoal({state}:{state:GameState}){
  const {tr}=useDemoCopy();
  return <section className="campaign-goal demo-goal" data-no-translate><small>{tr('무료 웹 데모','FREE WEB DEMO','無料ウェブデモ')}</small><h3>{tr('모노 카페의 OPEN 간판 켜기','Turn on the café’s OPEN sign','カフェのOPEN看板を点ける')}</h3><p>{tr('메뉴판, 계산대, 주문함을 고치고 오픈 행사까지 함께해요.','Fix the menu board, checkout and order box, then join the opening ceremony.','メニュー、レジ、注文箱を直して開店セレモニーまで。')}</p><strong>{Math.min(3,state.completed.filter(i=>[0,1,2].includes(i)).length)} / 3 · {isDemoComplete(state)?tr('OPEN 완료','OPEN complete','OPEN完了'):tr('OPEN 준비 중','Preparing OPEN','OPEN準備中')}</strong><p>{tr('새 고객 의뢰, 최종 배포, 코드 랩과 연습은 전체판에 포함됩니다.','Client contracts, the final release, Code Lab and practice jobs are included in the full edition.','新規顧客の依頼、最終公開、コードラボ、練習は製品版に含まれます。')}</p></section>;

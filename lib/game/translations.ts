@@ -1,8 +1,12 @@
 import {workflowRows} from './workflow-translations.ts';
 import {beginnerRows} from './beginner-translations.ts';
-export type Language='ko'|'en'|'ja';
+import {translateZh} from './zh.ts';
+export type Language='ko'|'en'|'ja'|'zh';
 // Each row is Korean ¦ English ¦ Japanese. Source/code and commands are never translated.
 const rows=String.raw`
+현재 저장한 파일을 검사합니다. 결과는 이 터미널 아래에 표시됩니다.¦Checking your saved files. Results will appear below in this terminal.¦保存済みのファイルを検査します。結果はこのターミナルの下部に表示されます。
+style.css의 .menu-grid 너비를 100%로 바꿔 360px 화면에 맞춰 주세요.¦In style.css, set the width of .menu-grid to 100% so it fits the 360px screen.¦style.css の .menu-grid の幅を 100% にして、360px の画面に収めましょう。
+메뉴 3개의 이름과 주문 버튼을 모두 보이게 해 주세요. 주문 버튼 높이는 44px 이상이어야 해요.¦Make all three menu names and their order buttons visible. Each order button must be at least 44px tall.¦3 品すべての名前と注文ボタンを表示してください。各ボタンの高さは 44px 以上必要です。
 카페가 문을 열었어요. 성취를 확인하거나 연습 의뢰에 도전해 보세요.¦The cafe is open. View your achievements or try a practice job.¦カフェがオープンしました。実績を確認したり、練習の依頼に挑戦したりしましょう。
 내 PC에서 카페 사이트 준비하기¦Prepare the cafe site in This PC¦PCでカフェのサイトを準備
 컴퓨터에서 프로젝트 복사 → 준비물 받기 → 미리보기 켜기를 차례로 누르세요.¦In This PC, click Copy project → Prepare tools → Start preview.¦PCで「プロジェクトをコピー」→「必要なものをそろえる」→「プレビューを起動」の順に押してください。
@@ -672,28 +676,35 @@ CatHub 검토 열기¦Open CatHub review¦CatHubの確認画面を開く
 / 3 · 자동 저장된 이야기¦/ 3 · Saved story¦/ 3 · 保存された物語
 마우스로 선택 · Tab / Enter로 조작¦Click to select · Tab / Enter to navigate¦クリックで選択 · Tab / Enterで操作
 price는 한 잔 가격, quantity는 잔 수에 붙인 이름이에요. 이런 이름표가 변수예요. 두 수를 곱하는 규칙을 정하면 어떤 메뉴와 잔 수에도 쓸 수 있어요.¦price names the cost per cup, and quantity names the cup count. These labels are variables. Multiplying the two works for any drink and quantity.¦priceは1杯の価格、quantityは杯数の名前。この名札が変数です。二つを掛けるルールはどのメニューにも使えます。
+여기부터!¦Start here!¦ここから！
+의뢰 원본 데이터는 읽기 전용이에요. cp로 복사해서 실험해 보세요.¦Job source data is read-only. Copy it with cp to experiment.¦依頼の元データは読み取り専用です。cpでコピーして試しましょう。
 `;
 export const catalog:Record<string,[string,string]>=Object.fromEntries((rows+additional+beginnerRows+workflowRows).trim().split('\n').filter(Boolean).map(row=>{const [ko,en,ja]=row.split('¦');if(!ko||en===undefined||ja===undefined)throw new Error('Invalid translation: '+row);return [ko,[en,ja]];}));
 export function translate(input:string,language:Language):string{
  if(language==='ko')return input;
- const index=language==='en'?0:1,key=input.trim().replace(/\s+/g,' ');
- const found=catalog[key]??catalog[input.trim()];
- if(found)return input.replace(input.trim(),found[index]);
- const patterns:[RegExp,(m:RegExpMatchArray)=>[string,string]][]=[
-  [/^(.+) 배경을 적용했어요\.$/,m=>[`${translate(m[1],'en')} wallpaper applied.`,`${translate(m[1],'ja')}の壁紙を適用しました。`]],
-  [/^(.+) 배경을 구입하고 적용했어요\.$/,m=>[`${translate(m[1],'en')} wallpaper purchased and applied.`,`${translate(m[1],'ja')}の壁紙を購入して適用しました。`]],
-  [/^실제 결과: ([\d,]+)원$/,m=>[`Actual result: ${m[1]} KRW`,`実際の結果：${m[1]}ウォン`]],
-  [/^현재 보관된 주문: (\d+)건$/,m=>[`Stored orders: ${m[1]}`,`保存された注文：${m[1]}件`]],
-  [/^모노 카페\. (\d+)\/3 오픈 준비 완료\. (.+)$/,m=>[`Mono Cafe. ${m[1]}/3 ready. ${translate(m[2],'en')}`,`モノカフェ。${m[1]}/3準備完了。${translate(m[2],'ja')}`]],
-  [/^화면 360px \/ 콘텐츠 (\d+)px · 메뉴 (\d+)개$/,m=>[`Screen 360px / content ${m[1]}px · ${m[2]} items`,`画面360px / 内容${m[1]}px・メニュー${m[2]}個`]],
-  [/^([\d,]+)원$/,m=>[`${m[1]} KRW`,`${m[1]}ウォン`]],
-  [/^손님이 기대한 금액은 ([\d,]+)원이에요\.$/,m=>[`The customer expects ${m[1]} KRW.`,`お客さんの予想は${m[1]}ウォンです。`]],
-  [/^시험 주문 (\d+)건 도착$/,m=>[`${m[1]} test order(s) received`,`テスト注文${m[1]}件到着`]],
-  [/^(\d+) cr · 크레딧 부족$/,m=>[`${m[1]} cr · Not enough credits`,`${m[1]} cr・クレジット不足`]],
-  [/^(\d+) cr로 구입$/,m=>[`Buy for ${m[1]} cr`,`${m[1]} crで購入`]],
-  [/^(.+) 달성!$/,m=>[`${translate(m[1],'en')} earned!`,`${translate(m[1],'ja')}達成！`]],
-  [/^(.+) 창$/,m=>[`${translate(m[1],'en')} window`,`${translate(m[1],'ja')}ウィンドウ`]],
-  [/^(.+) 코드 편집$/,m=>[`${m[1]} code editor`,`${m[1]}コードエディター`]],
+ const index=language==='en'?0:language==='ja'?1:2,key=input.trim().replace(/\s+/g,' ');
+ if(language==='zh'){
+  const translated=translateZh(input);
+  if(translated!==input)return translated;
+ }else{
+  const row=Object.hasOwn(catalog,key)?catalog[key]:Object.hasOwn(catalog,input.trim())?catalog[input.trim()]:null;
+  if(row)return input.replace(input.trim(),()=>row[language==='en'?0:1]);
+ }
+ const patterns:[RegExp,(m:RegExpMatchArray)=>[string,string,string]][]=[
+  [/^(.+) 배경을 적용했어요\.$/,m=>[`${translate(m[1],'en')} wallpaper applied.`,`${translate(m[1],'ja')}の壁紙を適用しました。`,`已应用壁纸：${translate(m[1],'zh')}。`]],
+  [/^(.+) 배경을 구입하고 적용했어요\.$/,m=>[`${translate(m[1],'en')} wallpaper purchased and applied.`,`${translate(m[1],'ja')}の壁紙を購入して適用しました。`,`已购买并应用壁纸：${translate(m[1],'zh')}。`]],
+  [/^실제 결과: ([\d,]+)원$/,m=>[`Actual result: ${m[1]} KRW`,`実際の結果：${m[1]}ウォン`,`实际结果：${m[1]} 韩元`]],
+  [/^현재 보관된 주문: (\d+)건$/,m=>[`Stored orders: ${m[1]}`,`保存された注文：${m[1]}件`,`已保存订单：${m[1]} 笔`]],
+  [/^모노 카페\. (\d+)\/3 오픈 준비 완료\. (.+)$/,m=>[`Mono Cafe. ${m[1]}/3 ready. ${translate(m[2],'en')}`,`モノカフェ。${m[1]}/3準備完了。${translate(m[2],'ja')}`,`莫诺咖啡馆。已完成 ${m[1]}/3 项开业准备。${translate(m[2],'zh')}`]],
+  [/^화면 360px \/ 콘텐츠 (\d+)px · 메뉴 (\d+)개$/,m=>[`Screen 360px / content ${m[1]}px · ${m[2]} items`,`画面360px / 内容${m[1]}px・メニュー${m[2]}個`,`屏幕 360px / 内容 ${m[1]}px · ${m[2]} 项菜单`]],
+  [/^([\d,]+)원$/,m=>[`${m[1]} KRW`,`${m[1]}ウォン`,`${m[1]} 韩元`]],
+  [/^손님이 기대한 금액은 ([\d,]+)원이에요\.$/,m=>[`The customer expects ${m[1]} KRW.`,`お客さんの予想は${m[1]}ウォンです。`,`顾客预期的金额为 ${m[1]} 韩元。`]],
+  [/^시험 주문 (\d+)건 도착$/,m=>[`${m[1]} test order(s) received`,`テスト注文${m[1]}件到着`,`收到 ${m[1]} 笔测试订单`]],
+  [/^(\d+) cr · 크레딧 부족$/,m=>[`${m[1]} cr · Not enough credits`,`${m[1]} cr・クレジット不足`,`${m[1]} cr · 点数不足`]],
+  [/^(\d+) cr로 구입$/,m=>[`Buy for ${m[1]} cr`,`${m[1]} crで購入`,`用 ${m[1]} cr 购买`]],
+  [/^(.+) 달성!$/,m=>[`${translate(m[1],'en')} earned!`,`${translate(m[1],'ja')}達成！`,`获得${translate(m[1],'zh')}！`]],
+  [/^(.+) 창$/,m=>[`${translate(m[1],'en')} window`,`${translate(m[1],'ja')}ウィンドウ`,`${translate(m[1],'zh')}窗口`]],
+  [/^(.+) 코드 편집$/,m=>[`${m[1]} code editor`,`${m[1]}コードエディター`,`${m[1]} 代码编辑器`]],
  ];
  for(const [pattern,format] of patterns){const match=key.match(pattern);if(match)return format(match)[index];}
  return input;

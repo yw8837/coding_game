@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import type {Language} from '@/lib/game/i18n';
 import type {DemoPulse} from '@/lib/demo-metrics';
@@ -41,7 +42,7 @@ export function useDemoTelemetry({available,language,stage,mode}:{available:bool
 }
 
 export function DemoFeedbackSettings({language,stage,enabled,onEnabled}:{language:Language;stage:string;enabled:boolean;onEnabled:(value:boolean)=>void}){
- const tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[language];
+ const tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language];
  const [message,setMessage]=useState(''),[experience,setExperience]=useState('none'),[website,setWebsite]=useState(''),[status,setStatus]=useState<'idle'|'sending'|'sent'|'error'>('idle');
  return <section className="demo-feedback-settings" data-no-translate>
   <div className="settings-row"><div><strong>{tr('데모 개선에 참여','Help improve the demo','デモの改善に協力')}</strong><p>{tr('동의하면 진행 단계·활동 시간·언어를 익명으로 전송해요. 코드·명령어·저장 파일은 보내지 않아요. 언제든 끌 수 있어요. 90일 지난 기록은 다음 신규 집계 때 정리해요.','Opt in to share anonymous progress steps, active time and language. Your code, commands and save files stay here. You can turn this off any time. Records older than 90 days are cleared when new sessions are collected.','同意すると進行段階・操作時間・言語を匿名で送信します。コード・コマンド・セーブは送りません。いつでもオフにできます。90日を過ぎた記録は、次の新規セッション集計時に削除します。')}</p></div><input type="checkbox" data-testid="demo-metrics-consent" aria-label={tr('익명 플레이 통계 제공','Share anonymous play statistics','匿名プレイ統計を送信')} checked={enabled} onChange={event=>onEnabled(event.target.checked)}/></div>

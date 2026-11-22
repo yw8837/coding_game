@@ -1,7 +1,7 @@
 export type PlatformInfo={runtime:'desktop';version:string;steamAvailable:boolean;steamLanguage?:string;osLanguages:string[]};
 export type DesktopBridge={
  getPlatformInfo:()=>Promise<PlatformInfo>;
- setLanguage:(language:'ko'|'en'|'ja')=>Promise<{ok:boolean}>;
+ setLanguage:(language:'ko'|'en'|'ja'|'zh')=>Promise<{ok:boolean}>;
  loadSave:()=>Promise<{raw:string|null;recovered:boolean;error?:string}>;
  loadBackup:()=>Promise<{raw:string|null;recovered:boolean;error?:string}>;
  saveGame:(raw:string)=>Promise<{ok:boolean;error?:string}>;

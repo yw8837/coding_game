@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useState} from 'react';
 import {useLanguage} from '@/lib/game/i18n';
 import {PracticeJobs} from './PracticeJobs';
@@ -6,7 +7,7 @@ import {CodeLab} from './CodeLab';
 import type {GameProps} from './types';
 
 export function ChallengesHub(props:GameProps){
- const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='ja'?ja:en;
+ const language=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language];
  const [tab,setTab]=useState<'rules'|'code'>(props.guided===false?'code':'rules');
  return <div className="challenges-hub" data-no-translate>
   <nav className="challenges-tabs" aria-label={tr('실험실 선택','Choose a lab','実験室を選ぶ')}>

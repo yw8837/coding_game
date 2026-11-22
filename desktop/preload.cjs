@@ -1,6 +1,8 @@
 'use strict';
 const {contextBridge, ipcRenderer} = require('electron');
 contextBridge.exposeInMainWorld('desktopBridge', Object.freeze({
+  readClipboard: () => ipcRenderer.invoke('desktop:clipboard-read'),
+  writeClipboard: text => ipcRenderer.invoke('desktop:clipboard-write', text),
   getPlatformInfo: () => ipcRenderer.invoke('desktop:platform'),
   setLanguage: language => ipcRenderer.invoke('desktop:language', language),
   loadSave: () => ipcRenderer.invoke('desktop:load'),

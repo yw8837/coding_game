@@ -1,2 +1,4 @@
 # Preserve upstream license bytes: the notice manifest verifies their SHA-256.
 desktop/vendor-notices/*.LICENSE -text
+# pnpm records patch content hashes in the lockfile.
+patches/*.patch text eol=lf

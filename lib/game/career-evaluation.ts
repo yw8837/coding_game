@@ -1,3 +1,4 @@
+import {careerCheckCopy} from './career-check-copy.ts';
 import {CAREER_JOBS,L,type Localized} from './career-content.ts';
 import {careerCodeMode,careerCodeSpec,evaluateCareerCode} from './career-code.ts';
 /** `hint` is a localized next step, set only on failed JavaScript-mode checks. */
@@ -63,7 +64,7 @@ export function evaluateCareer(id:string,files:Record<string,string>):CareerEval
   for(const path of Object.keys(job.files))if(typeof files[path]!=='string'||files[path].length>20000)throw new Error('missing or oversized file');
   if(careerCodeSpec(id)&&careerCodeMode(files)==='javascript')return evaluateCareerCode(id,files);
   const cases:{name:Localized;expected:unknown;actual:unknown}[]=[];
-  const add=(ko:string,en:string,ja:string,expected:unknown,actual:unknown)=>cases.push({name:L(ko,en,ja),expected,actual});
+  const add=(ko:string,en:string,ja:string,expected:unknown,actual:unknown)=>cases.push({name:careerCheckCopy(ko,en,ja),expected,actual});
   const unchanged=(path:string,columns:string[],numbers:string[]=[])=>sameRecords(csv(files,path,columns),csv(job.files,path,columns),columns,numbers);
   switch(id){
    case 'bakery-price':{

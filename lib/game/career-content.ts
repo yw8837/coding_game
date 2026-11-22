@@ -1,14 +1,15 @@
+import {localizedCopy} from './zh.ts';
 /** Authored local cases. All money, people and records below belong to the simulation. */
-export type Localized = {ko:string;en:string;ja:string};
+export type Localized = {ko:string;en:string;ja:string;zh:string};
 export type CareerChoice = {id:string;label:Localized;reply:Localized;style:'care'|'craft'};
 export type CareerJob = {id:string;act:1|2|3;client:Localized;title:Localized;brief:Localized;files:Record<string,string>;fileDescriptions:Record<string,Localized>;hints:Localized[];credits:number;xp:number;kind:string;choices:CareerChoice[]};
-export const L=(ko:string,en:string,ja:string):Localized=>({ko,en,ja});
+export const L=(ko:string,en:string,ja:string,zh?:string):Localized=>localizedCopy(ko,en,ja,zh);
 function job(id:string,act:1|2|3,client:Localized,title:Localized,brief:Localized,files:Record<string,string>,fileDescriptions:Record<string,Localized>,hints:Localized[],kind:string):CareerJob {
  const sourceRule=SOURCE_RULES[id];
  if(sourceRule){
-  brief=L(brief.ko+' '+sourceRule.copy.ko,brief.en+' '+sourceRule.copy.en,brief.ja+' '+sourceRule.copy.ja);
+  brief=L(brief.ko+' '+sourceRule.copy.ko,brief.en+' '+sourceRule.copy.en,brief.ja+' '+sourceRule.copy.ja,brief.zh+' '+sourceRule.copy.zh);
   const original=fileDescriptions[sourceRule.file];
-  fileDescriptions={...fileDescriptions,[sourceRule.file]:L(original.ko+' '+sourceRule.copy.ko,original.en+' '+sourceRule.copy.en,original.ja+' '+sourceRule.copy.ja)};
+  fileDescriptions={...fileDescriptions,[sourceRule.file]:L(original.ko+' '+sourceRule.copy.ko,original.en+' '+sourceRule.copy.en,original.ja+' '+sourceRule.copy.ja,original.zh+' '+sourceRule.copy.zh)};
  }
  return {id,act,client,title,brief,files,fileDescriptions,hints,kind,credits:({1:200,2:350,3:550})[act],xp:({1:80,2:130,3:200})[act],choices:DIALOGUE[id]};
 }

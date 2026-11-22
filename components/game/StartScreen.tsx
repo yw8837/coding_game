@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useEffect,useRef,useState,type KeyboardEvent} from 'react';
 import {ArrowRight,Play,RotateCcw,Settings2} from 'lucide-react';
 import {type Language} from '@/lib/game/i18n';
@@ -10,7 +11,7 @@ export function TitleScreen({hasSave,language,onStart,onSettings,onNew,loading=f
  const animate=ready;
  const start=useRef<HTMLButtonElement>(null),resume=useRef<HTMLButtonElement>(null),room=useRef<HTMLDivElement>(null);
  const frame=useRef(0);
- const tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[language];
+ const tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language];
  // eslint-disable-next-line react-hooks/set-state-in-effect -- Gate controls until hydration and save loading finish.
  useEffect(()=>{setReady(true);return()=>cancelAnimationFrame(frame.current);},[]);
  useEffect(()=>{
@@ -33,7 +34,7 @@ export function TitleScreen({hasSave,language,onStart,onSettings,onNew,loading=f
   event.preventDefault();buttons[next]?.focus();
  };
  const blocked=!ready||loading||unavailable;
- return <section className="pc-title-screen title-home" data-no-translate data-paused={paused} data-motion={animate?'animated':'still'} aria-label={tr('타이틀 화면','Title screen','タイトル画面')} onPointerMove={event=>{
+ return <section suppressHydrationWarning className="pc-title-screen title-home" data-no-translate data-paused={paused} data-motion={animate?'animated':'still'} aria-label={tr('타이틀 화면','Title screen','タイトル画面')} onPointerMove={event=>{
   if(!animate||paused||event.pointerType!=='mouse'||window.matchMedia('(pointer: coarse)').matches)return;
   const bounds=event.currentTarget.getBoundingClientRect();
   moveRoom((event.clientX/bounds.width-.5)*-16,(event.clientY/bounds.height-.5)*-10);

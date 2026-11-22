@@ -37,7 +37,11 @@ with sync_playwright() as pw:
   page.locator('.pc-play').click();expect(page.get_by_test_id('demo-complete')).to_be_visible()
   before=page.evaluate('(k)=>JSON.parse(localStorage.getItem(k))',key)
   expected_seed=json.loads(seed.read_text(encoding='utf-8'))
-  assert before['gameplay']['career']==expected_seed['gameplay']['career']
+  # This pre-studio fixture predates the optional post-release workspace.
+  # Assert exact preservation of every old field, plus its documented null default.
+  expected_career={**expected_seed['gameplay']['career']}
+  expected_career.setdefault('studio',None)
+  assert before['gameplay']['career']==expected_career
   page.get_by_test_id('demo-complete').locator('.primary-button').click()
   expect(page.locator('.pc-window[data-window=career]')).to_have_count(0)
   expect(page.get_by_test_id('opening-first-client')).to_have_count(0)

@@ -6,18 +6,18 @@ export type LanguageContext=LanguagePlatformInfo&{browserLanguages?:readonly str
 export const LANGUAGE_PREFERENCE_KEY='codeshift-language';
 
 export function parseLanguagePreference(value:unknown):LanguagePreference{
- return value==='ko'||value==='en'||value==='ja'?value:'auto';
+ return value==='ko'||value==='en'||value==='ja'||value==='zh'?value:'auto';
 }
 
 export function normalizeLanguage(value:unknown):Language|null{
  if(typeof value!=='string')return null;
  const base=value.trim().toLowerCase().replaceAll('_','-').split('-')[0];
- return base==='ko'||base==='en'||base==='ja'?base:null;
+ return base==='ko'||base==='en'||base==='ja'||base==='zh'?base:null;
 }
 
 export function steamLanguage(value:unknown):Language|null{
  if(typeof value!=='string')return null;
- const codes:Record<string,Language>={koreana:'ko',english:'en',japanese:'ja'};
+ const codes:Record<string,Language>={koreana:'ko',english:'en',japanese:'ja',schinese:'zh'};
  const code=value.trim().toLowerCase();return Object.hasOwn(codes,code)?codes[code]:null;
 }
 
@@ -31,9 +31,10 @@ export function resolveLanguage(preference:LanguagePreference,context:LanguageCo
  const host=(context.hostname||'').toLowerCase();
  const isKoreaRegion=tz.includes('seoul')||host.endsWith('.kr')||host.includes('yeolmaeapps.kr');
  const isJapanRegion=tz.includes('tokyo')||host.endsWith('.jp');
+ for(const value of preferred){const supported=normalizeLanguage(value);if(supported)return supported;}
  if(isKoreaRegion)return 'ko';
  if(isJapanRegion)return 'ja';
- for(const value of preferred){const supported=normalizeLanguage(value);if(supported)return supported;}
+ if(tz.includes('shanghai')||tz.includes('chongqing')||host.endsWith('.cn'))return 'zh';
  return 'en';
 }
 
@@ -72,7 +73,7 @@ export function createLocaleStore(environment:LocaleEnvironment){
     let platform:LanguagePlatformInfo|null|undefined;
     try{platform=await environment.platformInfo?.();}catch{/* Keep browser fallback when the desktop bridge fails. */}
     next=resolveLanguage('auto',{...platform,browserLanguages:browser});
-   }else if(environment.regionLanguage){
+   }else if(environment.regionLanguage&&!browser.some(value=>normalizeLanguage(value)!==null)){
     next=await environment.regionLanguage(controller.signal);
    }
   }catch{/* Detection failure keeps the immediate browser fallback. */}

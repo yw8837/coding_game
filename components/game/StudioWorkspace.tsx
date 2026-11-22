@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useEffect,useRef,useState} from 'react';
 import {useLanguage} from '@/lib/game/i18n';
 import {desktopBridge} from '@/lib/game/platform';
@@ -12,7 +13,7 @@ import type {GameProps} from './types';
 import './studio.css';
 
 export function StudioWorkspace({props,onBack}:{props:GameProps;onBack:()=>void}){
- const {state,onAction}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const {state,onAction}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  const progress=state.gameplay.career.studio,files=studioFiles(state),hash=releaseHash(files),evaluation=evaluateRelease(files,true);
  const checked=progress?.proof?.hash===hash,fresh=studioFresh(state),changed=studioHasUnsnapshottedChanges(state);
  const [file,setFile]=useState('index.html'),[help,setHelp]=useState(false),[query,setQuery]=useState(''),[category,setCategory]=useState('');
@@ -45,7 +46,7 @@ export function StudioWorkspace({props,onBack}:{props:GameProps;onBack:()=>void}
  };
  const preview=evaluation.preview,visible=filterReleaseItems(preview.product.items,query,category),categories=[...new Set(preview.product.items.map(item=>item.category).filter(Boolean))];
  const expected=(id:string)=>id==='title'?tr('제목, 소개와 직접 작성한 항목 1개 이상','Title, description and at least one authored item','名前、紹介と自分で書いた項目1件以上'):id==='width'?tr('320·360·960px에서 넘치지 않고 너비가 min(화면×80%, 640px) 이상','No overflow at 320/360/960px; width ≥ min(screen × 80%, 640px)','320・360・960pxではみ出さず、幅がmin(画面×80%, 640px)以上'):id==='route'?'GET /api/places → 200':'saveRequests: true';
- const actual=(id:string,raw:string)=>id==='title'?(!files['project.json']?tr('project.json이 없어요.','project.json is missing.','project.jsonがありません。'):!preview.productValid?tr('콘텐츠 형식 오류','Invalid content format','内容の形式エラー'):!preview.title?tr('제목을 읽을 수 없음','Unreadable heading','見出しを読めません'):preview.title+' · '+tr(`${preview.product.items.length}개 항목 · ${preview.product.description?'소개 있음':'소개 없음'}`,`${preview.product.items.length} items · ${preview.product.description?'description written':'description missing'}`,`${preview.product.items.length}項目 · ${preview.product.description?'紹介あり':'紹介なし'}`)):id==='width'&&!preview.width?tr('너비를 읽을 수 없음','Unreadable width','幅を読めません'):id==='storage'&&!preview.storageReady?tr('문의가 보관되지 않음','Inquiry not stored','問い合わせが保存されません'):raw;
+ const actual=(id:string,raw:string)=>id==='title'?(!files['project.json']?tr('project.json이 없어요.','project.json is missing.','project.jsonがありません。'):!preview.productValid?tr('콘텐츠 형식 오류','Invalid content format','内容の形式エラー'):!preview.title?tr('제목을 읽을 수 없음','Unreadable heading','見出しを読めません'):preview.title+' · '+tr(`${preview.product.items.length}개 항목 · ${preview.product.description?'소개 있음':'소개 없음'}`,`${preview.product.items.length} items · ${preview.product.description?'description written':'description missing'}`,`${preview.product.items.length}項目 · ${preview.product.description?'紹介あり':'紹介なし'}`,`${preview.product.items.length}个条目 · ${preview.product.description?'已有介绍':'缺少介绍'}`)):id==='width'&&!preview.width?tr('너비를 읽을 수 없음','Unreadable width','幅を読めません'):id==='storage'&&!preview.storageReady?tr('문의가 보관되지 않음','Inquiry not stored','問い合わせが保存されません'):raw;
  const checkFile=(id:string)=>id==='title'?'index.html / project.json':id==='width'?'style.css':'server.json';
  return <section className="studio-workspace" data-testid="studio-workspace" data-no-translate>
   <div className="studio-content" inert={restore!==null}>

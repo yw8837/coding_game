@@ -1,3 +1,4 @@
+import {localizedCopy} from './zh.ts';
 import {CAREER_JOBS,type CareerJob,type Localized} from './career-content.ts';
 import {careerRouteReady} from './career-progress.ts';
 import {careerFootprint} from './career-tags.ts';
@@ -28,7 +29,7 @@ export const createRelease=():ReleaseProgress=>({formatRevision:2,started:false,
 export type ReleaseAction={type:'career-release-start'|'career-release-test'|'career-release-build'|'career-release-publish'}|{type:'career-release-edit';file:string;content:string};
 type Host={completed:number[];gameplay:{openingCelebrated:boolean;career:{completed:string[];release:ReleaseProgress}};machines:{local:{files:Record<string,string>;dirs:string[]}}};
 export type ReleaseEvaluation={passed:boolean;checks:{id:string;title:Localized;expected:string;actual:string;passed:boolean}[];preview:{title:string;width:string;style:ReleaseStyle;apiReady:boolean;storageReady:boolean;product:ReleaseProduct;personalized:boolean;productValid:boolean}};
-const l=(ko:string,en:string,ja:string):Localized=>({ko,en,ja});
+const l=(ko:string,en:string,ja:string,zh?:string):Localized=>localizedCopy(ko,en,ja,zh);
 const MAX_SOURCE=20000;
 export function releaseFiles(s:Pick<Host,'machines'>):Record<string,string>{const prefix=RELEASE_ROOT+'/';return Object.fromEntries(Object.entries(s.machines.local.files).filter(([path])=>path.startsWith(prefix)).map(([path,value])=>[path.slice(prefix.length),value]));}
 /** Framed data and every UTF-16 code unit participate, including emoji surrogates. */

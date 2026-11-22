@@ -1,9 +1,10 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import type {CareerFeedback,CareerSourceTarget} from '@/lib/game/career-feedback';
 import type {Language} from '@/lib/game/i18n';
 
 export function CareerDiagnostic({model,language,onOpen,onChecks}:{model:CareerFeedback;language:Language;onOpen:(target:CareerSourceTarget|null)=>void;onChecks:()=>void}){
- const text=(ko:string,en:string,ja:string)=>({ko,en,ja})[language],failure=model.firstFailure;
+ const text=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language],failure=model.firstFailure;
  return <section className={'career-diagnostic '+model.status} data-testid="career-diagnostic" data-status={model.status} aria-label={text('현재 파일의 검사 상태','Check status of current files','現在のファイルの検査状態')}>
   <header role="status"><strong data-testid="career-check-count">{model.status==='checked'?`${model.passed} / ${model.total} ${model.formatBlocked?text('파일 형식 검사 통과 · 계산 미실행','file-format checks passed · calculation not run','ファイル形式検査通過 · 計算未実行'):text('검사 통과','checks passed','検査通過')}`:model.status==='draft'?text('저장하지 않은 코드 · 검사 필요','Unsaved code · check required','未保存コード · 検査が必要'):model.status==='stale'?text('파일 변경 · 다시 검사 필요','Files changed · check again','ファイル変更 · 再検査が必要'):text('현재 파일 · 검사 전','Current files · not checked','現在のファイル · 未検査')}</strong>
    {model.status==='checked'&&<button type="button" className="career-text-button" data-testid="career-diagnostic-checks" onClick={onChecks}>{text('모든 검사 기록','All test results','すべての検査記録')}</button>}

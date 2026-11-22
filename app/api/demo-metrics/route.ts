@@ -1,5 +1,5 @@
 import {metricsDb,allowMetricWrite,boundedMetricBody,metricResponse} from '@/lib/demo-store';
-import {validDemoPulse} from '@/lib/demo-metrics';
+import {validDemoLanguage,validDemoPulse} from '@/lib/demo-metrics';
 export const dynamic='force-dynamic';
 
 export async function POST(request:Request){
@@ -8,7 +8,7 @@ export async function POST(request:Request){
   const db=metricsDb(),now=Date.now();
   if(body&&typeof body==='object'&&'action' in body&&body.action==='visit'){
    const p=body as Record<string,unknown>;
-   if(Object.keys(p).some(k=>!['action','language'].includes(k))||!['ko','en','ja'].includes(String(p.language)))return metricResponse({error:'Invalid request'},400);
+   if(Object.keys(p).some(k=>!['action','language'].includes(k))||!validDemoLanguage(p.language))return metricResponse({error:'Invalid request'},400);
    if(!await allowMetricWrite(request,'visit'))return metricResponse({error:'Try later'},429);
    const session=crypto.randomUUID();
    await db.batch([

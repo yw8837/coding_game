@@ -7,5 +7,10 @@
   {"id":"CAREER_ACT_1","condition":"Career act 1 completed"},
   {"id":"CAREER_ACT_2","condition":"Career act 2 completed"},
   {"id":"CAREER_ACT_3","condition":"Career act 3 completed"},
-  {"id":"CAREER_ENDING","condition":"Career ending celebrated"}
+  {"id":"CAREER_ENDING","condition":"Career ending celebrated"},
+  {"id":"FIRST_COMMIT","condition":"First git commit recorded (repo commits > 1)"},
+  {"id":"PYTHON_AUTOMATOR","condition":"All five Python automation jobs completed"},
+  {"id":"QUERY_MASTER","condition":"All five SQL database jobs completed"},
+  {"id":"FULLSTACK_CREATOR","condition":"Release published, a finale export made, and all Python and SQL jobs completed"},
+  {"id":"LOCALHOST_HERO","condition":"Reach level 10 (4,300 XP)"}
 ]

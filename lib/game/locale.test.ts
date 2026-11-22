@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createLocaleStore,parseLanguagePreference,normalizeLanguage,resolveLanguage,type LanguagePlatformInfo,type LanguagePreference} from './locale.ts';
 
 test('manual preference wins, and legacy values stay manual',()=>{
- for(const language of ['ko','en','ja'] as const){assert.equal(parseLanguagePreference(language),language);assert.equal(resolveLanguage(language,{steamLanguage:'koreana',osLanguages:['ja-JP']}),language);}
+ for(const language of ['ko','en','ja','zh'] as const){assert.equal(parseLanguagePreference(language),language);assert.equal(resolveLanguage(language,{steamLanguage:'koreana',osLanguages:['ja-JP']}),language);}
  for(const corrupt of [null,undefined,'bad','"ko"',{},17])assert.equal(parseLanguagePreference(corrupt),'auto');
 });
 
@@ -56,16 +56,16 @@ test('legacy manual setting avoids Steam detection and automatic choice persists
  await store.setPreference('auto');assert.equal(stored,'auto');assert.equal(store.getLanguage(),'en');assert.equal(calls,1);assert.ok(changes.includes('auto:en'));
 });
 
-test('Korean regional context (Seoul timezone or .kr domain) automatically defaults to Korean even if English is preferred in browser',async()=>{
- assert.equal(resolveLanguage('auto',{browserLanguages:['en-US','ko-KR'],timeZone:'Asia/Seoul'}),'ko');
- assert.equal(resolveLanguage('auto',{browserLanguages:['en-US'],hostname:'code.yeolmaeapps.kr'}),'ko');
- assert.equal(resolveLanguage('auto',{browserLanguages:['en-US'],timeZone:'Asia/Seoul'}),'ko');
- const store=createLocaleStore({
-  readPreference:()=>null,
-  writePreference:()=>{},
-  browserLanguages:()=>['en-US'],
-  clientContext:()=>({timeZone:'Asia/Seoul',hostname:'code.yeolmaeapps.kr'}),
- });
- assert.equal(store.getLanguage(),'ko');
+test('supported device language precedes regional hints, including the official Korean domain',async()=>{
+ for(const language of ['en','ja','zh'] as const){
+  assert.equal(resolveLanguage('auto',{browserLanguages:[language],timeZone:'Asia/Seoul',hostname:'code.yeolmaeapps.kr'}),language);
+ }
+ assert.equal(resolveLanguage('auto',{browserLanguages:['fr-FR'],timeZone:'Asia/Seoul'}),'ko');
+ assert.equal(resolveLanguage('auto',{browserLanguages:['fr-FR'],hostname:'example.jp'}),'ja');
+ assert.equal(resolveLanguage('auto',{browserLanguages:['fr-FR'],timeZone:'Asia/Shanghai'}),'zh');
+ assert.equal(resolveLanguage('auto',{steamLanguage:'schinese',osLanguages:['ja-JP'],hostname:'code.yeolmaeapps.kr'}),'zh');
+ assert.equal(normalizeLanguage('zh-CN'),'zh');assert.equal(normalizeLanguage('zh_Hans'),'zh');
+ const store=createLocaleStore({readPreference:()=>null,writePreference:()=>{},browserLanguages:()=>['zh-CN'],clientContext:()=>({timeZone:'Asia/Seoul',hostname:'code.yeolmaeapps.kr'})});
+ await store.restore();assert.equal(store.getLanguage(),'zh');assert.equal(store.getPreference(),'auto');
 });
 

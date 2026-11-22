@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {countryLanguage,regionLocaleResponse,fetchRegionLanguage,traceLanguage} from './region-locale.ts';
 import {createLocaleStore,type LanguagePreference} from './locale.ts';
 
-test('only valid country metadata chooses Korean, Japanese or English',()=>{
- assert.equal(countryLanguage('KR'),'ko');assert.equal(countryLanguage('jp'),'ja');
- for(const country of ['US','CN','GB','FR','DE','TW','AQ'])assert.equal(countryLanguage(country),'en');
+test('only valid country metadata chooses Korean, Japanese, Simplified Chinese or English',()=>{
+ assert.equal(countryLanguage('KR'),'ko');assert.equal(countryLanguage('jp'),'ja');assert.equal(countryLanguage('CN'),'zh');
+ for(const country of ['US','GB','FR','DE','TW','AQ'])assert.equal(countryLanguage(country),'en');
  for(const country of [null,undefined,'','XX','ZZ','T1','EU','Korea',{},42])assert.equal(countryLanguage(country),null);
 });
 test('locale endpoint returns language only, no-store, and ignores forged country/IP headers',async()=>{
@@ -17,17 +17,17 @@ test('locale endpoint returns language only, no-store, and ignores forged countr
  assert.equal(regionLocaleResponse(new Request(req.url,{method:'POST'})).status,405);
  assert.equal(await regionLocaleResponse(new Request(req.url,{method:'HEAD'})).text(),'');
 });
-test('web country preference overrides browser fallback without storing detected language',async()=>{
+test('web country lookup supplies unsupported device fallback without storing detected language',async()=>{
  const writes:LanguagePreference[]=[];
- for(const [country,expected] of [['KR','ko'],['JP','ja'],['US','en']] as const){
-  const store=createLocaleStore({readPreference:()=>null,writePreference:p=>writes.push(p),browserLanguages:()=>['ja-JP'],isDesktop:()=>false,regionLanguage:async()=>countryLanguage(country)});
+ for(const [country,expected] of [['KR','ko'],['JP','ja'],['CN','zh'],['US','en']] as const){
+  const store=createLocaleStore({readPreference:()=>null,writePreference:p=>writes.push(p),browserLanguages:()=>['fr-FR'],isDesktop:()=>false,regionLanguage:async()=>countryLanguage(country)});
   await store.restore();assert.equal(store.getLanguage(),expected);assert.equal(store.getPreference(),'auto');
  }
  assert.deepEqual(writes,[]);
 });
 test('manual preference skips region lookup and later selection cancels pending web detection',async()=>{
  let calls=0,signal:AbortSignal|undefined,finish!:(r:Response)=>void,stored:unknown='ko';
- const store=createLocaleStore({readPreference:()=>stored,writePreference:p=>{stored=p;},browserLanguages:()=>['en-US'],isDesktop:()=>false,regionLanguage:s=>{calls++;signal=s;return fetchRegionLanguage(()=>new Promise(r=>{finish=r;}),s);}});
+ const store=createLocaleStore({readPreference:()=>stored,writePreference:p=>{stored=p;},browserLanguages:()=>['fr-FR'],isDesktop:()=>false,regionLanguage:s=>{calls++;signal=s;return fetchRegionLanguage(()=>new Promise(r=>{finish=r;}),s);}});
  await store.restore();assert.equal(calls,0);assert.equal(store.getLanguage(),'ko');
  const auto=store.setPreference('auto');assert.equal(calls,1);
  await store.setPreference('ja');await auto;assert.equal(signal?.aborted,true);assert.equal(stored,'ja');
@@ -35,7 +35,7 @@ test('manual preference skips region lookup and later selection cancels pending 
 });
 test('newer region detection wins over delayed old response',async()=>{
  const pending:Array<(v:'ko'|'ja')=>void>=[];
- const store=createLocaleStore({readPreference:()=>null,writePreference:()=>{},browserLanguages:()=>['en-US'],isDesktop:()=>false,regionLanguage:()=>new Promise(resolve=>pending.push(resolve))});
+ const store=createLocaleStore({readPreference:()=>null,writePreference:()=>{},browserLanguages:()=>['fr-FR'],isDesktop:()=>false,regionLanguage:()=>new Promise(resolve=>pending.push(resolve))});
  const old=store.restore(),recent=store.setPreference('auto');pending[1]('ja');await recent;pending[0]('ko');await old;assert.equal(store.getLanguage(),'ja');
 });
 test('unavailable or failed regional lookup preserves browser language',async()=>{

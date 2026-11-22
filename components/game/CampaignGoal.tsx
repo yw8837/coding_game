@@ -1,11 +1,12 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {Check,Flag} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
 import {careerRouteReady,careerRouteCount} from '@/lib/game/career-progress';
 import type {GameState} from '@/lib/game/engine';
 
 export function CampaignGoal({state}:{state:GameState}) {
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  const career=state.gameplay.career,opened=state.gameplay.openingCelebrated;
  const allJobs=careerRouteReady(career.completed);
  const published=!!career.release?.published;

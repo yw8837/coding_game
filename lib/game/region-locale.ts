@@ -6,7 +6,7 @@ export function countryLanguage(country:unknown):Language|null{
  if(typeof country!=='string')return null;
  const code=country.trim().toUpperCase();
  if(!COUNTRIES.has(code))return null;
- return code==='KR'?'ko':code==='JP'?'ja':'en';
+ return code==='KR'?'ko':code==='JP'?'ja':code==='CN'?'zh':'en';
 }
 
 /** Read only Cloudflare's trusted request metadata, never a client-supplied header. */
@@ -42,7 +42,7 @@ export async function fetchRegionLanguage(fetchLocale:FetchLocale,signal:AbortSi
     if(response.ok){
      const value:unknown=await response.json();
      const language=value&&typeof value==='object'&&!Array.isArray(value)?(value as {language?:unknown}).language:null;
-     if(language==='ko'||language==='en'||language==='ja')return language;
+     if(language==='ko'||language==='en'||language==='ja'||language==='zh')return language;
     }
    }catch{/* Some hosting proxies omit request.cf. Use the visitor's edge below. */}
    if(controller.signal.aborted)return null;

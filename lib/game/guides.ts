@@ -1,5 +1,6 @@
-import {DOCS} from './content';
-import type {Language} from './translations';
+import {zhGuides} from './zh-guides.ts';
+import {DOCS} from './content.ts';
+import type {Language} from './translations.ts';
 const guides:Record<string,{en:[string,string,string];ja:[string,string,string]}>= {
  terminal:{en:['Finding your way in the terminal','pwd, ls and cd show where you are and what is nearby.',`Commands run from your current folder.
 
@@ -186,4 +187,4 @@ APIアプリでGET http://mono-server:8000/api/menuとPOST /api/ordersを送り�
 
 ゲームはテンプレートの二つの設定を再現します。一般的なPython実行環境ではありません。注文はメモリーに保存され、再起動すると消えます。`]},
 };
-export function getGuides(language:Language){return language==='ko'?DOCS:DOCS.map(doc=>{const [title,summary,body]=guides[doc.id][language];return {...doc,title,summary,body};});}
+export function getGuides(language:Language){return language==='ko'?DOCS:DOCS.map(doc=>{const [title,summary,body]=language==='zh'?zhGuides[doc.id]:guides[doc.id][language];return {...doc,title,summary,body};});}

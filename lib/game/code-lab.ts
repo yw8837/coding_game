@@ -1,8 +1,9 @@
+import {localizedCopy} from './zh.ts';
 import {runCode,type CodeValue} from './code-lab-runtime.ts';
 
-export type LabLanguage='ko'|'en'|'ja';
+export type LabLanguage='ko'|'en'|'ja'|'zh';
 export type LabCopy=Record<LabLanguage,string>;
-const c=(ko:string,en:string,ja:string):LabCopy=>({ko,en,ja});
+const c=(ko:string,en:string,ja:string,zh?:string):LabCopy=>localizedCopy(ko,en,ja,zh);
 export const LAB_IDS=['receipt','discount','stock','fallback','sum','catalog','dedupe','report','endpoint','retry','atomic','cache'] as const;
 export type LabId=typeof LAB_IDS[number];
 export type LabCase={input:CodeValue;expected:CodeValue};

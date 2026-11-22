@@ -10,7 +10,7 @@ test('a player can type the whole cafe setup, one coached command at a time',()=
  let s=act(createGame(),{type:'accept'});const typed:string[]=[];
  for(let i=0;i<12;i++){
   const next=nextCoachCommand(s);if(!next)break;
-  for(const lang of ['ko','en','ja'] as const)assert.ok(next.lesson[lang].length>10);
+  for(const lang of ['ko','en','ja','zh'] as const)assert.ok(next.lesson[lang].length>10);
   typed.push(next.command);const result=runCommand(s,next.command);assert.equal(result.error,false,next.command+' → '+result.output);s=result.state;
  }
  assert.deepEqual(typed,['git clone https://cathub.dev/mono/menu-site.git','sudo apt update','sudo apt install nodejs npm','cd menu-site','npm install','npm run dev']);

@@ -1,9 +1,9 @@
-export type TerminalInput={command:string;redirect:null|{append:boolean;target:string}};
+export type TerminalInput={command:string;redirect:null|{append:boolean;target:string};stdin:null|string};
 
-/** Recognize only stdout file redirection. Quoted/escaped operators stay data.
+/** Recognize stdout file redirection and `sqlite3 db < file.sql`. Quoted/escaped operators stay data.
  * Reject the entire input before any simulated command can mutate state. */
 export function parseTerminalInput(input:string,tokenize:(input:string)=>string[]):TerminalInput{
- let quote='',escape=false,redirect=-1,width=0;
+ let quote='',escape=false,redirect=-1,width=0,stdin=-1;
  for(let i=0;i<input.length;i++){
   const c=input[i];
   if(escape){escape=false;continue;}
@@ -11,19 +11,26 @@ export function parseTerminalInput(input:string,tokenize:(input:string)=>string[
   if(quote){if(c===quote)quote='';else if(quote==='"'&&(c==='`'||c==='$'&&input[i+1]==='('))throw Error('shell: command substitution is not supported. Pass literal text in single quotes.');continue;}
   if(c==='"'||c==="'"){quote=c;continue;}
   if(c==='`'||c==='$'&&input[i+1]==='(')throw Error('shell: command substitution is not supported. Pass literal text in single quotes.');
-  if(c==='&'||c==='|'||c===';'||c==='<'||c==='\n'||c==='\r')throw Error('shell: command chains, pipes, background jobs and input redirection are not supported. Run each command separately.');
+  if(c==='&'||c==='|'||c===';'||c==='\n'||c==='\r')throw Error('shell: command chains, pipes and background jobs are not supported. Run each command separately.');
+  if(c==='<'){if(stdin>=0||redirect>=0)throw Error('shell: use one redirection per command.');stdin=i;continue;}
   if(c==='>'){
-   if(redirect>=0||/(?:^|\s)\d+$/.test(input.slice(0,i)))throw Error('shell: only echo/cat > file and >> file are supported.');
+   if(stdin>=0||redirect>=0||/(?:^|\s)\d+$/.test(input.slice(0,i)))throw Error('shell: only echo/cat > file and >> file are supported.');
    redirect=i;width=input[i+1]==='>'?2:1;i+=width-1;
   }
  }
  // Delegate quote/escape validation to the existing tokenizer.
  tokenize(input);
- if(redirect<0)return {command:input,redirect:null};
+ if(stdin>=0){
+  const command=input.slice(0,stdin).trim(),args=tokenize(command),sources=tokenize(input.slice(stdin+1));
+  if(args[0]!=='sqlite3')throw Error('shell: input redirection (<) is supported for sqlite3 <db> < file.sql.');
+  if(sources.length!==1||!sources[0])throw Error('shell: input redirection requires exactly one source file.');
+  return {command,redirect:null,stdin:sources[0]};
+ }
+ if(redirect<0)return {command:input,redirect:null,stdin:null};
  const command=input.slice(0,redirect).trim(),args=tokenize(command),targets=tokenize(input.slice(redirect+width));
  if(!['echo','cat'].includes(args[0]))throw Error('shell: stdout redirection is supported for echo and cat.');
  if(targets.length!==1||!targets[0])throw Error('shell: redirection requires exactly one destination file.');
- return {command,redirect:{append:width===2,target:targets[0]}};
+ return {command,redirect:{append:width===2,target:targets[0]},stdin:null};
 }
 
 export function terminalArgumentError(cmd:string,args:string[]):string|null{
@@ -57,7 +64,9 @@ export function terminalArgumentError(cmd:string,args:string[]):string|null{
  }
  if(cmd==='npm'&&args.length>(args[0]==='run'?2:1))return 'npm: supported commands: install, i, --version, -v, run dev, test, run build; no extra options.';
  if(cmd==='node')return args[0]==='--test'?count(2,'node --test <job>.test.cjs'):['--version','-v'].includes(args[0])?count(1,'node --version'):option([])||count(3,'node run.cjs <function.js> <input.json>');
- if(['code','python3','ssh','pkill'].includes(cmd))return count(1,`${cmd} <argument>`);
+ if(cmd==='python3')return args[0]==='-c'?count(2,'python3 -c "code"'):count(1,'python3 <file.py>');
+ if(cmd==='sqlite3')return count(2,'sqlite3 <db> ["SQL" | .tables | ".schema table" | ".read file"]');
+ if(['code','ssh','pkill'].includes(cmd))return count(1,`${cmd} <argument>`);
  if(cmd==='curl')return option([])||count(1,'curl <URL>');
  return null;
 }

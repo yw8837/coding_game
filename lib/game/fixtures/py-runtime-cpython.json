@@ -1,0 +1,614 @@
+{
+ "generatedWith": "Python 3.12.13",
+ "note": "stdout and final error line captured from real CPython; py-runtime.test.ts replays them through the sandbox",
+ "cases": [
+  {
+   "name": "arith",
+   "src": "print(7//2, -7//2, 7%3, -7%3, 7/2, 2**10, 2**-1, 10/4, 3*1.5, 1e16, 1e-5, 0.1+0.2, 1/3, 100.0, -0.0, 2**100)\nprint(divmod(17,5), divmod(-17,5), abs(-3), abs(-2.5), round(2.5), round(3.5), round(2.675,2), round(0.125,2), round(1234,-2), round(1250,-2))\nprint(int('42'), int(' -7 '), int(3.9), int(-3.9), float('3.5'), float('1e3'), int('1_000'), int('ff',16), int('0x1f',0))\nprint(True+True, True*3, 5 > 3 > 1, 1 < 2 < 2, 3 == 3.0, hash(1)==hash(1.0))\nprint(10 ** 20, 10.0 ** 20, 2 ** 0.5, 1e300 * 10, -1e300 * 10)\nprint(0.1*3, 1.1*1.1, 1e21, 123456789.123456789, 5e-324, 1.5e-7, 12345678901234567890.0)\n",
+   "stdout": "3 -4 1 2 3.5 1024 0.5 2.5 4.5 1e+16 1e-05 0.30000000000000004 0.3333333333333333 100.0 -0.0 1267650600228229401496703205376\n(3, 2) (-4, 3) 3 2.5 2 4 2.67 0.12 1200 1200\n42 -7 3 -3 3.5 1000.0 1000 255 31\n2 3 True False True True\n100000000000000000000 1e+20 1.4142135623730951 1e+301 -1e+301\n0.30000000000000004 1.2100000000000002 1e+21 123456789.12345679 5e-324 1.5e-07 1.2345678901234567e+19\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "strings",
+   "src": "s = \"  Hello, World!  \"\nprint(s.strip(), s.lower(), s.upper(), s.strip().split(\", \"), \"a,b,,c\".split(\",\"), \"  a  b c \".split(), \"a b c\".split(None, 1), \"a b c\".rsplit(None, 1))\nprint(\"-\".join([\"x\",\"y\",\"z\"]), \"abc\"[::-1], \"abcdef\"[1:4], \"abcdef\"[-2:], \"abcdef\"[::2], len(\"안녕하세요\"))\nprint(\"hello\".replace(\"l\",\"L\"), \"hello\".replace(\"l\",\"L\",1), \"hello\".find(\"l\"), \"hello\".rfind(\"l\"), \"hello\".find(\"z\"), \"hello\".count(\"l\"))\nprint(\"Hello\".startswith(\"He\"), \"Hello\".endswith((\"lo\",\"x\")), \"abc\".isalpha(), \"123\".isdigit(), \"a1\".isalnum(), \"  \".isspace(), \"ABC\".isupper(), \"abc\".islower())\nprint(\"hello world's\".title(), \"hELLO\".capitalize(), \"Hi\".swapcase(), \"7\".zfill(3), \"-7\".zfill(4), \"ab\".center(7,\"*\"), \"ab\".center(6), \"ab\".ljust(5,\".\"), \"ab\".rjust(5))\nprint(repr(\"it's\"), repr('say \"hi\"'), repr('both \\' \"'), repr(\"tab\\tnew\\n\"), str(None), repr(None))\nprint(\"a\\nb\\r\\nc\\n\".splitlines(), \"k=v=w\".partition(\"=\"), \"k=v=w\".rpartition(\"=\"), \"x\".join(\"abc\"), \"abc\" * 3, \"ab\" in \"cabd\")\nprint(\"%s is %d years and %.2f%%\" % (\"Ann\", 30, 99.5), \"%5s|%-5s|%05d|%x|%X|%o|%e\" % (\"a\",\"b\",42,255,255,8,12345.678), \"%(n)s=%(v)r\" % {\"n\":\"x\",\"v\":\"y\"})\nprint(\"{} + {} = {}\".format(1, 2, 3), \"{0}{1}{0}\".format(\"a\",\"b\"), \"{name}:{age:>4}\".format(name=\"Bo\", age=7), \"{:,.2f}\".format(1234567.891), \"{!r}\".format(\"q\"), \"{0[1]}\".format([5,6]))\n",
+   "stdout": "Hello, World!   hello, world!     HELLO, WORLD!   ['Hello', 'World!'] ['a', 'b', '', 'c'] ['a', 'b', 'c'] ['a', 'b c'] ['a b', 'c']\nx-y-z cba bcd ef ace 5\nheLLo heLlo 2 3 -1 2\nTrue True True True True True True True\nHello World'S Hello hI 007 -007 ***ab**   ab   ab...    ab\n\"it's\" 'say \"hi\"' 'both \\' \"' 'tab\\tnew\\n' None None\n['a', 'b', 'c'] ('k', '=', 'v=w') ('k=v', '=', 'w') axbxc abcabcabc True\nAnn is 30 years and 99.50%     a|b    |00042|ff|FF|10|1.234568e+04 x='y'\n1 + 2 = 3 aba Bo:   7 1,234,567.89 'q' 6\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "fstrings",
+   "src": "x = 1234567.891\nn = 42\nname = \"Ann\"\nd = {'k': 'v'}\nprint(f\"{x:,}\", f\"{x:,.2f}\", f\"{x:.3e}\", f\"{x:10.1f}|\", f\"{n:05d}\", f\"{n:>6}\", f\"{n:<6}|\", f\"{n:^7}|\", f\"{n:+d}\", f\"{n:x}\", f\"{n:#b}\", f\"{n:,}\")\nprint(f\"{name!r}\", f\"{name=}\", f\"{n = }\", f\"{n=:>5}\", f\"{d['k']}\", f\"{'nested'}\", f\"{3.0}\", f\"{0.5:.0%}\", f\"{0.1234:.1%}\", f\"{2.5:.0f}\", f\"{3.5:.0f}\", f\"{1e20:.2f}\")\nprint(f\"{{literal}}\", f\"{n*2+1}\", f\"{[i*i for i in range(4)]}\", f\"{len(name):03}\", f\"{name:*^9}\", f\"{name:.2}\", f\"{-3.14159:.2f}\", f\"{1/3:.10g}\", f\"{123.0:.3}\", f\"{12.0:.3}\", f\"{1e-7}\")\nw=10\nprint(f\"{n:{w}}|\", f\"{x:{w}.{2}f}|\", f\"{'a' if n > 3 else 'b'}\", f\"{n:_}\", f\"{1234567:_}\", f\"{255:_x}\", f\"{0.000123:g}\", f\"{123456789.0:g}\", f\"{1e100:g}\", f\"{100:e}\")\n",
+   "stdout": "1,234,567.891 1,234,567.89 1.235e+06  1234567.9| 00042     42 42    |   42   | +42 2a 0b101010 42\n'Ann' name='Ann' n = 42 n=   42 v nested 3.0 50% 12.3% 2 4 100000000000000000000.00\n{literal} 85 [0, 1, 4, 9] 003 ***Ann*** An -3.14 0.3333333333 1.23e+02 12.0 1e-07\n        42| 1234567.89| a 42 1_234_567 ff 0.000123 1.23457e+08 1e+100 1.000000e+02\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "lists",
+   "src": "a = [3, 1, 2]\na.append(5); a.insert(0, 9); a.extend([7, 7])\nprint(a, len(a), a.index(7), a.count(7), sorted(a), sorted(a, reverse=True), a[1:3], a[-1], a[::-1])\na.sort(); print(a); a.reverse(); print(a); print(a.pop(), a.pop(0), a)\na.remove(7); print(a, 3 in a, 10 not in a, min(a), max(a), sum(a))\nb = a.copy(); b[0] = 100; print(a, b, a + b, [0] * 3, [[0] * 2] * 2)\ndel b[0]; print(b); b[1:2] = [8, 8, 8]; print(b); b.clear(); print(b)\nm = [[1, 2], [3, 4]]; m[0][1] = 9; print(m, list(range(5)), list(range(10, 0, -3)), list(\"abc\"))\nprint([x * 2 for x in range(5) if x % 2 == 0], [(i, j) for i in range(2) for j in range(2)], [y for row in m for y in row])\nwords = [\"banana\", \"Apple\", \"cherry\"]\nprint(sorted(words), sorted(words, key=str.lower), sorted(words, key=len), max(words, key=len), min([5, 2, 8]), sorted([(1, 'b'), (1, 'a'), (0, 'z')]))\nx, y = 1, 2; x, y = y, x; print(x, y); first, *rest = [1, 2, 3]; print(first, rest); *init, last = \"abc\"; print(init, last)\n",
+   "stdout": "[9, 3, 1, 2, 5, 7, 7] 7 5 2 [1, 2, 3, 5, 7, 7, 9] [9, 7, 7, 5, 3, 2, 1] [3, 1] 7 [7, 7, 5, 2, 1, 3, 9]\n[1, 2, 3, 5, 7, 7, 9]\n[9, 7, 7, 5, 3, 2, 1]\n1 9 [7, 7, 5, 3, 2]\n[7, 5, 3, 2] True True 2 7 17\n[7, 5, 3, 2] [100, 5, 3, 2] [7, 5, 3, 2, 100, 5, 3, 2] [0, 0, 0] [[0, 0], [0, 0]]\n[5, 3, 2]\n[5, 8, 8, 8, 2]\n[]\n[[1, 9], [3, 4]] [0, 1, 2, 3, 4] [10, 7, 4, 1] ['a', 'b', 'c']\n[0, 4, 8] [(0, 0), (0, 1), (1, 0), (1, 1)] [1, 9, 3, 4]\n['Apple', 'banana', 'cherry'] ['Apple', 'banana', 'cherry'] ['Apple', 'banana', 'cherry'] banana 2 [(0, 'z'), (1, 'a'), (1, 'b')]\n2 1\n1 [2, 3]\n['a', 'b'] c\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "dicts",
+   "src": "d = {\"a\": 1, \"b\": 2}\nd[\"c\"] = 3; d[\"a\"] += 10\nprint(d, d.get(\"z\"), d.get(\"z\", 0), d.keys(), d.values(), d.items(), list(d), len(d), \"a\" in d)\nfor k, v in d.items():\n    print(k, v)\nprint(d.pop(\"b\"), d, d.setdefault(\"q\", []), d)\nd.update({\"x\": 1}, y=2); print(d)\ncounts = {}\nfor ch in \"mississippi\":\n    counts[ch] = counts.get(ch, 0) + 1\nprint(counts, sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))\nprint({k: v * 2 for k, v in counts.items() if v > 1}, dict(zip(\"ab\", [1, 2])), dict([(\"x\", 1)]), {1: 'a', 1.0: 'b', True: 'c'})\ns = {3, 1, 2}; s.add(4); s.discard(10); print(len(s), 3 in s, sorted(s), {1, 2} | {2, 3}, {1, 2} & {2, 3}, {1, 2} - {2}, set(), sorted({x % 3 for x in range(10)}))\nt = (1, 2, 3); print(t, t[0], t[-1:], len(t), (1,), (), t.count(2), t.index(3), tuple([1, 2]), t + (4,))\nnested = {\"menu\": [{\"name\": \"latte\", \"price\": 5000}]}; print(nested[\"menu\"][0][\"name\"])\n",
+   "stdout": "{'a': 11, 'b': 2, 'c': 3} None 0 dict_keys(['a', 'b', 'c']) dict_values([11, 2, 3]) dict_items([('a', 11), ('b', 2), ('c', 3)]) ['a', 'b', 'c'] 3 True\na 11\nb 2\nc 3\n2 {'a': 11, 'c': 3, 'q': []} [] {'a': 11, 'c': 3, 'q': []}\n{'a': 11, 'c': 3, 'q': [], 'x': 1, 'y': 2}\n{'m': 1, 'i': 4, 's': 4, 'p': 2} [('i', 4), ('s', 4), ('p', 2), ('m', 1)]\n{'i': 8, 's': 8, 'p': 4} {'a': 1, 'b': 2} {'x': 1} {1: 'c'}\n4 True [1, 2, 3, 4] {1, 2, 3} {2} {1} set() [0, 1, 2]\n(1, 2, 3) 1 (3,) 3 (1,) () 1 2 (1, 2) (1, 2, 3, 4)\nlatte\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "control",
+   "src": "for i in range(10):\n    if i == 2:\n        continue\n    if i == 6:\n        break\n    print(i, end=\" \")\nelse:\n    print(\"never\")\nprint()\nn = 0\nwhile n < 3:\n    n += 1\nelse:\n    print(\"while-else\", n)\nfor x in []:\n    pass\nelse:\n    print(\"for-else\")\ndef grade(score):\n    if score >= 90:\n        return \"A\"\n    elif score >= 80:\n        return \"B\"\n    else:\n        return \"C\"\nprint([grade(s) for s in (95, 85, 50)], \"yes\" if n else \"no\", not n, n and 5, 0 or \"z\", None or 0)\n",
+   "stdout": "0 1 3 4 5 \nwhile-else 3\nfor-else\n['A', 'B', 'C'] yes False 5 z 0\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "functions",
+   "src": "def greet(name, greeting=\"Hello\", *args, sep=\"!\", **kw):\n    return f\"{greeting}, {name}{sep}\" + str(args) + str(kw)\nprint(greet(\"Ann\"), greet(\"Bo\", \"Hi\"), greet(\"Cy\", \"Yo\", 1, 2, sep=\"?\", z=3))\ndef fact(n):\n    return 1 if n <= 1 else n * fact(n - 1)\nprint(fact(20), fact(30))\nadd = lambda a, b=10: a + b\nprint(add(1), add(1, 2), (lambda: 42)(), list(map(lambda v: v * v, [1, 2, 3])), list(filter(None, [0, 1, \"\", \"a\"])))\ndef outer():\n    total = 0\n    def inner(x):\n        return x + total\n    return inner(5)\nprint(outer())\ncount = 0\ndef bump():\n    global count\n    count += 1\nbump(); bump(); print(count)\ndef make():\n    n = 0\n    def inc():\n        nonlocal n\n        n += 1\n        return n\n    return inc\nf = make(); f(); print(f())\ndef show(*args, **kwargs):\n    print(args, kwargs)\nshow(*[1, 2], **{\"k\": 3})\nprint(fact.__name__, type(fact).__name__, callable(fact), callable(3))\n",
+   "stdout": "Hello, Ann!(){} Hi, Bo!(){} Yo, Cy?(1, 2){'z': 3}\n2432902008176640000 265252859812191058636308480000000\n11 3 42 [1, 4, 9] [1, 'a']\n5\n2\n2\n(1, 2) {'k': 3}\nfact function True False\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "builtins",
+   "src": "print(list(enumerate(\"ab\")), list(enumerate(\"ab\", 1)), list(zip([1, 2, 3], \"ab\")), list(reversed([1, 2, 3])), any([0, 1]), all([1, 0]), all([]))\nprint(type(1), type(1.0), type(\"s\"), type([]), type({}), type(None), type(True), isinstance(True, int), isinstance(1, (str, float)), type(1) == int)\nprint(chr(65), ord(\"A\"), ord(\"가\"), hex(255), oct(8), bin(5), bin(-5), str(1.0), str([1, 'a']), bool([]), bool(\"0\"), repr(1.5))\nprint(sum([0.1] * 10), sum([1, 2, 3], 10), sum([1, 0.1, 0.2]), sum([0.1, 0.2, 0.3]), max(3, 7, 5), min(\"bca\"), max([], default=None), pow(2, 10), pow(2, 10, 1000), pow(2.0, 3))\nprint(sorted(\"hello\"), len(range(0, 10, 3)), range(5)[2], range(1, 10)[::2], list(range(5))[1:3], 3 in range(5), 7 in range(0, 10, 2), format(1234.5, \",.1f\"), format(42, \"08b\"))\nit = iter([1, 2]); print(next(it), next(it), next(it, \"done\"))\nprint(divmod(7.5, 2), round(-2.5), round(-0.5), round(7.45, 1), int(True), float(True), 7 // 2.0, -7 % 2.5, 2 ** 3 ** 2, (-2) ** 2, -2 ** 2)\n",
+   "stdout": "[(0, 'a'), (1, 'b')] [(1, 'a'), (2, 'b')] [(1, 'a'), (2, 'b')] [3, 2, 1] True False True\n<class 'int'> <class 'float'> <class 'str'> <class 'list'> <class 'dict'> <class 'NoneType'> <class 'bool'> True False True\nA 65 44032 0xff 0o10 0b101 -0b101 1.0 [1, 'a'] False True 1.5\n1.0 16 1.3 0.6 7 a None 1024 24 8.0\n['e', 'h', 'l', 'l', 'o'] 4 2 range(1, 10, 2) [1, 2] True False 1,234.5 00101010\n1 2 done\n(3.0, 1.5) -2 0 7.5 1 1.0 3.0 0.5 512 4 -4\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "name-error-suggest",
+   "src": "pritn(\"x\")",
+   "stdout": "",
+   "error": "NameError: name 'pritn' is not defined. Did you mean: 'print'?",
+   "line": 1
+  },
+  {
+   "name": "name-error-plain",
+   "src": "print(undefined_thing)",
+   "stdout": "",
+   "error": "NameError: name 'undefined_thing' is not defined",
+   "line": 1
+  },
+  {
+   "name": "forgot-import",
+   "src": "print(math.pi)",
+   "stdout": "",
+   "error": "NameError: name 'math' is not defined. Did you forget to import 'math'?",
+   "line": 1
+  },
+  {
+   "name": "type-concat",
+   "src": "age = 5\nprint(\"age: \" + age)",
+   "stdout": "",
+   "error": "TypeError: can only concatenate str (not \"int\") to str",
+   "line": 2
+  },
+  {
+   "name": "type-compare",
+   "src": "x = \"3\"\nif x <= 0:\n    pass",
+   "stdout": "",
+   "error": "TypeError: '<=' not supported between instances of 'str' and 'int'",
+   "line": 2
+  },
+  {
+   "name": "type-unsupported",
+   "src": "print(1 - \"a\")",
+   "stdout": "",
+   "error": "TypeError: unsupported operand type(s) for -: 'int' and 'str'",
+   "line": 1
+  },
+  {
+   "name": "type-mul-seq",
+   "src": "print(\"a\" * 1.5)",
+   "stdout": "",
+   "error": "TypeError: can't multiply sequence by non-int of type 'float'",
+   "line": 1
+  },
+  {
+   "name": "not-iterable",
+   "src": "for x in 5:\n    pass",
+   "stdout": "",
+   "error": "TypeError: 'int' object is not iterable",
+   "line": 1
+  },
+  {
+   "name": "not-subscriptable",
+   "src": "x = None\nx[0]",
+   "stdout": "",
+   "error": "TypeError: 'NoneType' object is not subscriptable",
+   "line": 2
+  },
+  {
+   "name": "no-len",
+   "src": "len(5)",
+   "stdout": "",
+   "error": "TypeError: object of type 'int' has no len()",
+   "line": 1
+  },
+  {
+   "name": "value-int",
+   "src": "int(\"3.5\")",
+   "stdout": "",
+   "error": "ValueError: invalid literal for int() with base 10: '3.5'",
+   "line": 1
+  },
+  {
+   "name": "value-float",
+   "src": "float(\"abc\")",
+   "stdout": "",
+   "error": "ValueError: could not convert string to float: 'abc'",
+   "line": 1
+  },
+  {
+   "name": "key-error",
+   "src": "d = {\"a\": 1}\nprint(d[\"name\"])",
+   "stdout": "",
+   "error": "KeyError: 'name'",
+   "line": 2
+  },
+  {
+   "name": "index-error",
+   "src": "print([1, 2][5])",
+   "stdout": "",
+   "error": "IndexError: list index out of range",
+   "line": 1
+  },
+  {
+   "name": "str-index-error",
+   "src": "print(\"ab\"[5])",
+   "stdout": "",
+   "error": "IndexError: string index out of range",
+   "line": 1
+  },
+  {
+   "name": "zero-div",
+   "src": "print(1 / 0)",
+   "stdout": "",
+   "error": "ZeroDivisionError: division by zero",
+   "line": 1
+  },
+  {
+   "name": "zero-floordiv",
+   "src": "print(1 // 0)",
+   "stdout": "",
+   "error": "ZeroDivisionError: integer division or modulo by zero",
+   "line": 1
+  },
+  {
+   "name": "zero-mod",
+   "src": "print(1 % 0)",
+   "stdout": "",
+   "error": "ZeroDivisionError: integer modulo by zero",
+   "line": 1
+  },
+  {
+   "name": "attr-suggest",
+   "src": "a = []\na.apend(1)",
+   "stdout": "",
+   "error": "AttributeError: 'list' object has no attribute 'apend'. Did you mean: 'append'?",
+   "line": 2
+  },
+  {
+   "name": "attr-str",
+   "src": "\"x\".foo()",
+   "stdout": "",
+   "error": "AttributeError: 'str' object has no attribute 'foo'",
+   "line": 1
+  },
+  {
+   "name": "unbound-local",
+   "src": "count = 0\ndef f():\n    count += 1\nf()",
+   "stdout": "",
+   "error": "UnboundLocalError: cannot access local variable 'count' where it is not associated with a value",
+   "line": 3
+  },
+  {
+   "name": "missing-arg",
+   "src": "def f(a, b):\n    pass\nf(1)",
+   "stdout": "",
+   "error": "TypeError: f() missing 1 required positional argument: 'b'",
+   "line": 3
+  },
+  {
+   "name": "missing-2-args",
+   "src": "def f(a, b, c):\n    pass\nf()",
+   "stdout": "",
+   "error": "TypeError: f() missing 3 required positional arguments: 'a', 'b', and 'c'",
+   "line": 3
+  },
+  {
+   "name": "too-many-args",
+   "src": "def f(a):\n    pass\nf(1, 2)",
+   "stdout": "",
+   "error": "TypeError: f() takes 1 positional argument but 2 were given",
+   "line": 3
+  },
+  {
+   "name": "unexpected-kw",
+   "src": "def f(a):\n    pass\nf(a=1, b=2)",
+   "stdout": "",
+   "error": "TypeError: f() got an unexpected keyword argument 'b'",
+   "line": 3
+  },
+  {
+   "name": "unpack-too-many",
+   "src": "a, b = [1, 2, 3]",
+   "stdout": "",
+   "error": "ValueError: too many values to unpack (expected 2)",
+   "line": 1
+  },
+  {
+   "name": "unpack-not-enough",
+   "src": "a, b, c = [1, 2]",
+   "stdout": "",
+   "error": "ValueError: not enough values to unpack (expected 3, got 2)",
+   "line": 1
+  },
+  {
+   "name": "unpack-noniter",
+   "src": "a, b = 5",
+   "stdout": "",
+   "error": "TypeError: cannot unpack non-iterable int object",
+   "line": 1
+  },
+  {
+   "name": "not-callable",
+   "src": "x = 5\nx()",
+   "stdout": "",
+   "error": "TypeError: 'int' object is not callable",
+   "line": 2
+  },
+  {
+   "name": "file-not-found",
+   "src": "open(\"nope.txt\")",
+   "stdout": "",
+   "error": "FileNotFoundError: [Errno 2] No such file or directory: 'nope.txt'",
+   "line": 1
+  },
+  {
+   "name": "raise-custom",
+   "src": "raise ValueError(\"bad value\")",
+   "stdout": "",
+   "error": "ValueError: bad value",
+   "line": 1
+  },
+  {
+   "name": "assert",
+   "src": "assert 1 == 2, \"nope\"",
+   "stdout": "",
+   "error": "AssertionError: nope",
+   "line": 1
+  },
+  {
+   "name": "try-except",
+   "src": "try:\n    int(\"x\")\nexcept ValueError as e:\n    print(\"caught:\", e)\ntry:\n    {}[\"k\"]\nexcept (KeyError, IndexError) as e:\n    print(\"caught2:\", repr(e), e)\ntry:\n    1 / 0\nexcept Exception as e:\n    print(type(e).__name__, e)\nelse:\n    print(\"no\")\nfinally:\n    print(\"finally\")\ndef f():\n    try:\n        return \"try\"\n    finally:\n        print(\"cleanup\")\nprint(f())\ntry:\n    try:\n        raise KeyError(\"inner\")\n    except KeyError:\n        raise\nexcept LookupError as e:\n    print(\"outer\", e)",
+   "stdout": "caught: invalid literal for int() with base 10: 'x'\ncaught2: KeyError('k') 'k'\nZeroDivisionError division by zero\nfinally\ncleanup\ntry\nouter 'inner'\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "csv-dictreader",
+   "src": "import csv\nwith open('orders.csv', encoding='utf-8') as f:\n    reader = csv.DictReader(f)\n    print(reader.fieldnames)\n    for row in reader:\n        print(row, row['item'])\nwith open('orders.csv') as f:\n    r = csv.reader(f)\n    header = next(r)\n    print(header, list(r))\nwith open('orders.csv') as f:\n    print(f.readline(), end=\"\")\n    print(f.read())\nwith open('orders.csv') as f:\n    print(f.readlines())\nwith open('orders.csv') as f:\n    lines = [line.strip() for line in f]\nprint(lines)",
+   "files": {
+    "orders.csv": "item,price,qty\nCroissant,3500,3\n\"Milk bread, large\",5000,2\n"
+   },
+   "stdout": "['item', 'price', 'qty']\n{'item': 'Croissant', 'price': '3500', 'qty': '3'} Croissant\n{'item': 'Milk bread, large', 'price': '5000', 'qty': '2'} Milk bread, large\n['item', 'price', 'qty'] [['Croissant', '3500', '3'], ['Milk bread, large', '5000', '2']]\nitem,price,qty\nCroissant,3500,3\n\"Milk bread, large\",5000,2\n\n['item,price,qty\\n', 'Croissant,3500,3\\n', '\"Milk bread, large\",5000,2\\n']\n['item,price,qty', 'Croissant,3500,3', '\"Milk bread, large\",5000,2']\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "csv-closed-file",
+   "src": "import csv\nwith open('orders.csv') as f:\n    reader = csv.DictReader(f)\nfor row in reader:\n    print(row)",
+   "files": {
+    "orders.csv": "item,price,qty\nCroissant,3500,3\n\"Milk bread, large\",5000,2\n"
+   },
+   "stdout": "",
+   "error": "ValueError: I/O operation on closed file.",
+   "line": 4
+  },
+  {
+   "name": "json",
+   "src": "import json\ndata = {\"name\": \"카페\", \"items\": [1, 2.5, True, None], \"nested\": {\"a\": []}}\nprint(json.dumps(data))\nprint(json.dumps(data, ensure_ascii=False))\nprint(json.dumps(data, indent=2, ensure_ascii=False))\nprint(json.dumps([1, {\"b\": 2, \"a\": 1}], sort_keys=True))\nback = json.loads('{\"x\": [1, 2.0, \"s\", null, true], \"y\": {\"z\": -3e2}}')\nprint(back, type(back[\"x\"][1]).__name__)",
+   "stdout": "{\"name\": \"\\uce74\\ud398\", \"items\": [1, 2.5, true, null], \"nested\": {\"a\": []}}\n{\"name\": \"카페\", \"items\": [1, 2.5, true, null], \"nested\": {\"a\": []}}\n{\n  \"name\": \"카페\",\n  \"items\": [\n    1,\n    2.5,\n    true,\n    null\n  ],\n  \"nested\": {\n    \"a\": []\n  }\n}\n[1, {\"a\": 1, \"b\": 2}]\n{'x': [1, 2.0, 's', None, True], 'y': {'z': -300.0}} float\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "json-error",
+   "src": "import json\njson.loads(\"{bad}\")",
+   "stdout": "",
+   "error": "json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+   "line": 2
+  },
+  {
+   "name": "main-guard",
+   "src": "def main():\n    print(\"main ran\")\nif __name__ == \"__main__\":\n    main()",
+   "stdout": "main ran\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "input-eof",
+   "src": "name = input(\"Name: \")",
+   "stdout": "Name: ",
+   "error": "EOFError: EOF when reading a line",
+   "line": 1
+  },
+  {
+   "name": "misc-syntax-ok",
+   "src": "x: int = 5\ny = 0b1010 + 0o17 + 0xFF + 1_000\nprint(x, y)\nif (n := 10) > 5:\n    print(n)\nprint(*range(3), sep=\", \", end=\"!\\n\")\na = b = []\na.append(1)\nprint(b, a is b, [] is [], None is None, 1 if a else 2)\nprint(\"multi\" \"line\" 'concat')\nz = \"\"\"triple\nquoted\"\"\"\nprint(z, r\"raw\\n\", \"é\\x41\\t|\")\nclass_ = 3\nprint(class_)\nvalues = [1, 2, 3]\ndel values[0]\nprint(values)\nprint(round(1.23456, 3), 10 // 3 * 3 + 10 % 3, (1, 2) < (1, 3), [1, 2] == [1, 2], \"b\" > \"a\")",
+   "stdout": "5 1280\n10\n0, 1, 2!\n[1] True False True 1\nmultilineconcat\ntriple\nquoted raw\\n éA\t|\n3\n[2, 3]\n1.235 10 True True True\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "missing-colon",
+   "src": "x = 3\nif x > 2\n    print(x)",
+   "stdout": "",
+   "error": "SyntaxError: expected ':'",
+   "line": 2
+  },
+  {
+   "name": "missing-paren",
+   "src": "print(\"hi\"\nx = 1",
+   "stdout": "",
+   "error": "SyntaxError: '(' was never closed",
+   "line": 1
+  },
+  {
+   "name": "unterminated",
+   "src": "print(\"hi)",
+   "stdout": "",
+   "error": "SyntaxError: unterminated string literal (detected at line 1)",
+   "line": 1
+  },
+  {
+   "name": "unterminated-triple",
+   "src": "x = 1\ns = \"\"\"abc\ndef",
+   "stdout": "",
+   "error": "SyntaxError: unterminated triple-quoted string literal (detected at line 3)",
+   "line": 2
+  },
+  {
+   "name": "bad-indent",
+   "src": "def f():\nprint(1)",
+   "stdout": "",
+   "error": "IndentationError: expected an indented block after function definition on line 1",
+   "line": 2
+  },
+  {
+   "name": "unexpected-indent",
+   "src": "x = 1\n    y = 2",
+   "stdout": "",
+   "error": "IndentationError: unexpected indent",
+   "line": 2
+  },
+  {
+   "name": "unindent-mismatch",
+   "src": "if True:\n        x = 1\n    y = 2",
+   "stdout": "",
+   "error": "IndentationError: unindent does not match any outer indentation level",
+   "line": 3
+  },
+  {
+   "name": "assign-in-if",
+   "src": "x = 1\nif x = 1:\n    pass",
+   "stdout": "",
+   "error": "SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
+   "line": 2
+  },
+  {
+   "name": "print-stmt",
+   "src": "print \"hello\"",
+   "stdout": "",
+   "error": "SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?",
+   "line": 1
+  },
+  {
+   "name": "forgot-comma",
+   "src": "print(\"a\" \"b\" c)",
+   "stdout": "",
+   "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+   "line": 1
+  },
+  {
+   "name": "list-forgot-comma",
+   "src": "x = [1 2]",
+   "stdout": "",
+   "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+   "line": 1
+  },
+  {
+   "name": "cannot-assign-call",
+   "src": "f() = 3",
+   "stdout": "",
+   "error": "SyntaxError: cannot assign to function call here. Maybe you meant '==' instead of '='?",
+   "line": 1
+  },
+  {
+   "name": "cannot-assign-literal",
+   "src": "5 = x",
+   "stdout": "",
+   "error": "SyntaxError: cannot assign to literal here. Maybe you meant '==' instead of '='?",
+   "line": 1
+  },
+  {
+   "name": "unmatched-paren",
+   "src": "x = (1, 2))",
+   "stdout": "",
+   "error": "SyntaxError: unmatched ')'",
+   "line": 1
+  },
+  {
+   "name": "mismatched",
+   "src": "x = [1, 2)",
+   "stdout": "",
+   "error": "SyntaxError: closing parenthesis ')' does not match opening parenthesis '['",
+   "line": 1
+  },
+  {
+   "name": "return-outside",
+   "src": "return 5",
+   "stdout": "",
+   "error": "SyntaxError: 'return' outside function",
+   "line": 1
+  },
+  {
+   "name": "break-outside",
+   "src": "break",
+   "stdout": "",
+   "error": "SyntaxError: 'break' outside loop",
+   "line": 1
+  },
+  {
+   "name": "invalid-char",
+   "src": "x = 1 ＋ 2",
+   "stdout": "",
+   "error": "SyntaxError: invalid character '＋' (U+FF0B)",
+   "line": 1
+  },
+  {
+   "name": "smart-quote",
+   "src": "print(“hi”)",
+   "stdout": "",
+   "error": "SyntaxError: invalid character '“' (U+201C)",
+   "line": 1
+  },
+  {
+   "name": "leading-zero",
+   "src": "x = 007",
+   "stdout": "",
+   "error": "SyntaxError: leading zeros in decimal integer literals are not permitted; use an 0o prefix for octal integers",
+   "line": 1
+  },
+  {
+   "name": "invalid-decimal",
+   "src": "x = 3abc",
+   "stdout": "",
+   "error": "SyntaxError: invalid decimal literal",
+   "line": 1
+  },
+  {
+   "name": "kw-repeated",
+   "src": "f(a=1, a=2)",
+   "stdout": "",
+   "error": "SyntaxError: keyword argument repeated: a",
+   "line": 1
+  },
+  {
+   "name": "pos-after-kw",
+   "src": "f(a=1, 2)",
+   "stdout": "",
+   "error": "SyntaxError: positional argument follows keyword argument",
+   "line": 1
+  },
+  {
+   "name": "expected-indent-for",
+   "src": "for i in range(3):\nx = 1",
+   "stdout": "",
+   "error": "IndentationError: expected an indented block after 'for' statement on line 1",
+   "line": 2
+  },
+  {
+   "name": "else-after-nothing",
+   "src": "else:\n    pass",
+   "stdout": "",
+   "error": "SyntaxError: invalid syntax",
+   "line": 1
+  },
+  {
+   "name": "keyword-as-name",
+   "src": "class = 5",
+   "stdout": "",
+   "error": "SyntaxError: invalid syntax",
+   "line": 1
+  },
+  {
+   "name": "empty-fstring-expr",
+   "src": "x = f\"{}\"",
+   "stdout": "",
+   "error": "SyntaxError: f-string: valid expression required before '}'",
+   "line": 1
+  },
+  {
+   "name": "lambda-default-order",
+   "src": "def f(a=1, b):\n    pass",
+   "stdout": "",
+   "error": "SyntaxError: parameter without a default follows parameter with a default",
+   "line": 1
+  },
+  {
+   "name": "dict-missing-value",
+   "src": "d = {\"a\": }",
+   "stdout": "",
+   "error": "SyntaxError: expression expected after dictionary key and ':'",
+   "line": 1
+  },
+  {
+   "name": "trailing-op",
+   "src": "x = 1 +",
+   "stdout": "",
+   "error": "SyntaxError: invalid syntax",
+   "line": 1
+  },
+  {
+   "name": "elif-no-cond-colon",
+   "src": "if True:\n    pass\nelif\n    pass",
+   "stdout": "",
+   "error": "SyntaxError: invalid syntax",
+   "line": 3
+  },
+  {
+   "name": "try-alone",
+   "src": "try:\n    pass\nx = 1",
+   "stdout": "",
+   "error": "SyntaxError: expected 'except' or 'finally' block",
+   "line": 3
+  },
+  {
+   "name": "ok-after-errors",
+   "src": "x = [\n  1,\n  2,\n]\nprint(x)",
+   "stdout": "[1, 2]\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "runtime-line-in-function",
+   "src": "def late_fee(days):\n    if days <= 0:\n        return 0\n    return days * 100\n\nrows = [\"3\", \"0\"]\nfor d in rows:\n    print(late_fee(d))",
+   "stdout": "",
+   "error": "TypeError: '<=' not supported between instances of 'str' and 'int'",
+   "line": 2
+  },
+  {
+   "name": "runtime-deep-line",
+   "src": "data = {\"a\": 1}\n\ndef get(k):\n    return data[k]\n\ndef wrap(k):\n    return get(k)\n\nprint(wrap(\"a\"))\nprint(wrap(\"b\"))",
+   "stdout": "1\n",
+   "error": "KeyError: 'b'",
+   "line": 4
+  },
+  {
+   "name": "set-order",
+   "src": "print({10, 3}, {3, 1, 2}, set([8, 16, 0, 24]), {x * 7 for x in range(20)}, {-1, -2, 5}, {True, 2, 0}, set(range(30, 0, -3)), {100, 200, 300, 7, 15})\ns = set()\nfor v in [50, 9, 33, 17, 1, 64, 128, 5]:\n    s.add(v)\nprint(s, list(s), s.pop(), {1.0, 2, 3.0}, {1000000007, 5, 2**62})",
+   "stdout": "{10, 3} {1, 2, 3} {8, 16, 0, 24} {0, 133, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91, 98, 105, 112, 119, 126} {5, -1, -2} {0, True, 2} {3, 6, 9, 12, 15, 18, 21, 24, 27, 30} {100, 7, 200, 300, 15}\n{1, 33, 128, 5, 9, 17, 50} [64, 1, 33, 128, 5, 9, 17, 50] 64 {1.0, 2, 3.0} {4611686018427387904, 5, 1000000007}\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "set-churn",
+   "src": "s = set(range(20))\nfor v in range(0, 20, 3):\n    s.discard(v)\nprint(s)\ns.add(3); s.add(100); s.add(7)\nprint(s)\nfor v in [64, 128, 256, 512, 1024]:\n    s.add(v)\nprint(s)\nt = {5, 13, 21}\nt.remove(13); t.add(29); t.add(13)\nprint(t, t.pop(), t)\nu = {1, 2, 3}\nu.clear(); u.add(9); u.add(1)\nprint(u, {\"a\", 1} == {1, \"a\"}, sorted({\"b\", \"a\"}))",
+   "stdout": "{1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19}\n{1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 3, 19, 100}\n{1, 2, 4, 5, 1024, 7, 8, 512, 10, 11, 128, 13, 14, 256, 16, 17, 3, 19, 64, 100}\n{21, 5, 29} 13 {21, 5, 29}\n{9, 1} True ['a', 'b']\n",
+   "error": null,
+   "line": null
+  },
+  {
+   "name": "set-ops",
+   "src": "a = {10, 20, 30, 40, 50}\nb = {30, 40, 50, 60, 70, 80}\nprint(a, b, a | b, a & b, a - b, b - a, a ^ b, a.union([1, 99]), a.intersection(b), a.difference([10]), set(a), a.copy())\nc = set([100, 3, 64, 8])\nprint(c, set({7: 'x', 15: 'y', 23: 'z', 31: 1, 39: 2}), set(range(40, 0, -7)))\nc.update([200, 72], {9})\nprint(c, sorted(c), {n % 10 for n in range(100, 140, 3)}, {-5, -3, 1000})\nnums = [5, 3, 5, 1, 3, 9]\nprint(set(nums), len(set(nums)), {\"x\", \"y\"} == {\"y\", \"x\"})",
+   "stdout": "{50, 20, 40, 10, 30} {80, 50, 70, 40, 60, 30} {70, 40, 10, 80, 50, 20, 60, 30} {40, 50, 30} {10, 20} {80, 60, 70} {80, 20, 70, 10, 60} {1, 50, 99, 20, 40, 10, 30} {40, 50, 30} {50, 20, 40, 30} {50, 20, 40, 10, 30} {50, 20, 40, 10, 30}\n{64, 8, 3, 100} {23, 39, 7, 31, 15} {33, 5, 40, 12, 19, 26}\n{64, 3, 100, 8, 200, 72, 9} [3, 8, 9, 64, 72, 100, 200] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9} {1000, -5, -3}\n{1, 3, 5, 9} 4 True\n",
+   "error": null,
+   "line": null
+  }
+ ]
+}

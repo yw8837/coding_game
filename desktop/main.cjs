@@ -1,5 +1,5 @@
 'use strict';
-const {app, BrowserWindow, dialog, ipcMain, protocol, session} = require('electron');
+const {app, BrowserWindow, clipboard, dialog, ipcMain, protocol, session} = require('electron');
 const path = require('node:path');
 const fs = require('node:fs/promises');
 const {SaveStore, validateRaw} = require('./save-store.cjs');
@@ -10,6 +10,7 @@ const {createSteam, readConfig} = require('./steam.cjs');
 const {ENTRY, CSP, MIME, isAppURL, resolveAsset, isTrustedSender} = require('./security.cjs');
 const {selectProfile, prepareProfile} = require('./profile.cjs');
 const qaBuild = require('./qa-build.cjs');
+const {createTextClipboard} = require('./clipboard.cjs');
 
 app.setName('CODE-SHIFT');
 let profile;
@@ -119,10 +120,13 @@ async function boot() {
     steamAvailable: steam.available, ...(steam.language ? {steamLanguage: steam.language} : {}),
     osLanguages: app.getPreferredSystemLanguages().slice(0, 20)}));
   handle('desktop:language', language => {
-    if (!['ko', 'en', 'ja'].includes(language)) return {ok: false};
+    if (!['ko', 'en', 'ja', 'zh'].includes(language)) return {ok: false};
     uiLanguage = language;
     return {ok: true};
   });
+  const textClipboard = createTextClipboard(clipboard, () => !!window && !window.isDestroyed() && window.isFocused());
+  handle('desktop:clipboard-read', () => textClipboard.read());
+  handle('desktop:clipboard-write', text => textClipboard.write(text));
   handle('desktop:load', () => store.load());
   handle('desktop:backup', () => store.loadBackup());
   handle('desktop:save', raw => store.save(raw));

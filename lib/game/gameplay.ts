@@ -2,6 +2,9 @@ import type {GameState} from './engine.ts';
 import {createPractice,type PracticeProgress} from './practice.ts';
 import {createCareer,type CareerProgress} from './career.ts';
 import {createLab,type LabProgress} from './code-lab.ts';
+import {createOps,type OpsProgress} from './ops.ts';
+import {createFinale,type FinaleProgress} from './finale.ts';
+import {DEFAULT_LOADOUT,type Loadout} from './progression.ts';
 
 export const COSMETICS=[
  {id:'mint',name:'기본 블루',color:'#83b3ef',price:0,description:'차분한 파란빛의 기본 바탕화면',wallpaper:'/game-art/wallpaper-blue.png'},
@@ -28,8 +31,13 @@ export type Gameplay={
  equippedCosmetic:typeof COSMETICS[number]['id'];
  designChoice:DesignId|null;
  designEvidence:null|{hash:string;choice:DesignId;passed:boolean};
+ ops:OpsProgress;
+ finale:FinaleProgress;
+ loadout:Loadout;
+ /** One-time soft highlight on the first file the player must open (cafe job 1 only). */
+ fileHintSeen:boolean;
 };
-export function createGameplay():Gameplay{return {lab:createLab(),career:createCareer(),practice:createPractice(),inspected:[],servedCustomers:0,openingCelebrated:false,readMessages:[],exploration:{pwd:false,ls:false,readme:false},claimedBonuses:[],ownedCosmetics:['mint'],equippedCosmetic:'mint',designChoice:null,designEvidence:null};}
+export function createGameplay():Gameplay{return {lab:createLab(),career:createCareer(),practice:createPractice(),inspected:[],servedCustomers:0,openingCelebrated:false,readMessages:[],exploration:{pwd:false,ls:false,readme:false},claimedBonuses:[],ownedCosmetics:['mint'],equippedCosmetic:'mint',designChoice:null,designEvidence:null,ops:createOps(),finale:createFinale(),loadout:{...DEFAULT_LOADOUT},fileHintSeen:false};}
 export type GameMessage={id:string;sender:string;role:string;subject:string;body:string;initial:string;action:'repair'|'accept'|'missions'|'workbench'|'preview'|'achievements'};
 export function gameMessages(s:GameState):GameMessage[]{
  const all:{message:GameMessage;unlocked:boolean}[]=[

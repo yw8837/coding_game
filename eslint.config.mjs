@@ -15,6 +15,10 @@ const eslintConfig = defineConfig([
     // Generated renderer bundles and QA captures are not authored source.
     "desktop/renderer/**",
     "output/**",
+    // Checkout-local tools and dependency caches are not game source.
+    ".agents/**",
+    ".codex/**",
+    ".sites-runtime/**",
   ]),
   {
     files: ["**/*.cjs"],
