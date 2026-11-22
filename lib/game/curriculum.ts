@@ -1,3 +1,4 @@
+import {localizedCopy} from './zh.ts';
 import type {GameState} from './engine.ts';
 import {releaseUnlocked} from './release.ts';
 import {opsTrackUnlocked} from './ops.ts';
@@ -6,8 +7,8 @@ import {PYTHON_JOBS,SQL_JOBS} from './ops-content.ts';
 /** The five-stage roadmap shown to the player. Everything is derived from saved progress. */
 export type StageId='linux'|'web'|'python'|'sql'|'finale';
 export type StageStatus='locked'|'active'|'done';
-type Copy={ko:string;en:string;ja:string};
-const c=(ko:string,en:string,ja:string):Copy=>({ko,en,ja});
+type Copy={ko:string;en:string;ja:string;zh:string};
+const c=(ko:string,en:string,ja:string,zh?:string):Copy=>localizedCopy(ko,en,ja,zh);
 export type CurriculumStage={id:StageId;step:number;title:Copy;skills:Copy;unlock:Copy;done:number;total:number;status:StageStatus;app:'repair'|'career'|'python'|'sql'};
 
 export function curriculum(s:GameState):CurriculumStage[]{

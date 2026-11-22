@@ -1,8 +1,9 @@
+import {localizedCopy} from './zh.ts';
 /** Python automation and SQL database jobs (curriculum stages 3 and 4).
  * Every person, record and amount below belongs to the simulation. */
 import type {SqlDatabase} from './sql-engine.ts';
 
-export type OpsLanguage='ko'|'en'|'ja';
+export type OpsLanguage='ko'|'en'|'ja'|'zh';
 export type OpsCopy=Record<OpsLanguage,string>;
 export type OpsTrack='python'|'sql';
 export type OpsScene='receipt'|'shelf'|'contacts'|'chart'|'notices'|'menu'|'flyer'|'podium'|'queue'|'dashboard';
@@ -10,7 +11,7 @@ type OpsBase={id:string;track:OpsTrack;client:OpsCopy;title:OpsCopy;brief:OpsCop
 export type PythonJob=OpsBase&{track:'python';data:Record<string,string>[]};
 export type SqlJob=OpsBase&{track:'sql';db:string;data:SqlDatabase[];ordered:boolean};
 export type OpsJob=PythonJob|SqlJob;
-const c=(ko:string,en:string,ja:string):OpsCopy=>({ko,en,ja});
+const c=(ko:string,en:string,ja:string,zh?:string):OpsCopy=>localizedCopy(ko,en,ja,zh);
 export const OPS_ROOTS:Record<OpsTrack,string>={python:'/home/dev/automation',sql:'/home/dev/database'};
 export const DB_MARKER='#lh-db:';
 /** A simulated database file: readable text that points sqlite3 at authored tables. */

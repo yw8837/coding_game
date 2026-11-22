@@ -85,7 +85,7 @@ export function applyStudio(s:Host,a:StudioAction):void{
  }
  const p=c.studio;if(!p)return;
  if(a.type==='career-studio-upgrade'){
-  if(a.confirmLoss!==true||p.authoredFormat||c.release.authoredFormat||authoredProjectFormat(studioFiles(s))||!['website','webapp'].includes(a.format)||!['ko','en','ja'].includes(a.language))return;
+  if(a.confirmLoss!==true||p.authoredFormat||c.release.authoredFormat||authoredProjectFormat(studioFiles(s))||!['website','webapp'].includes(a.format)||!['ko','en','ja','zh'].includes(a.language))return;
   const original=studioFiles(s);if(!studioSourceMapValid(original,true)||!evaluateRelease(original,true).passed||p.nextId>=1_000_000_000)return;
   const hash=releaseHash(original),files=upgradeStudioFiles(original,a.format,a.language),snapshots=p.snapshots.at(-1)?.hash===hash?p.snapshots:[...p.snapshots,{id:p.nextId,hash,files:{...original}}].slice(-STUDIO_MAX_SNAPSHOTS),progress={...p,authoredFormat:a.format,proof:null,snapshots,nextId:p.nextId+(p.snapshots.at(-1)?.hash===hash?0:1)};
   if(!studioFitsSave(s,files,progress))return;replaceStudio(s,files);c.studio=progress;return;

@@ -36,6 +36,9 @@ export type CommandResult={state:GameState;output:string;error:boolean;openFile?
 
 function machine():Machine{return {cwd:HOME,tools:['git'],updated:false,files:{[HOME+'/welcome.txt']:'CODE:SHIFT 작업실에 오신 것을 환영합니다.\nhelp로 지원 명령을 확인하세요.\n'},dirs:['/','/home',HOME],dependencies:[],pythonDeps:[],processes:{frontend:false,backend:false},frontendRoot:null,backendRoot:null,backendSource:null,cloned:false};}
 export function createGame():GameState{return {gameplay:createGameplay(),version:1,mission:0,accepted:false,credits:120,xp:0,completed:[],badges:[],machine:'local',machines:{local:machine(),server:{...machine(),tools:[]}},serverReady:false,discovered:{search:false,repo:false,preview:false},repo:null,tests:null,testRequest:0,orders:[],localOrders:[],apiEvidence:{menu:false,order:false},notice:'',logs:['[system] 워크스테이션이 시작되었습니다.'],history:[]};}
+import {starterFiles} from './starter-files.ts';
+import type {Language} from './translations.ts';
+
 export function clone<T>(data:T):T{return JSON.parse(JSON.stringify(data));}
 export function sourceHash(files:Files):string {const str=Object.keys(files).sort().map(k=>k+'\0'+files[k]).join('\0');let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16);}
 export function resolvePath(cwd:string,path:string):string {let p=path||HOME;if(p==='~'||p.startsWith('~/'))p=HOME+p.slice(1);if(!p.startsWith('/'))p=cwd+'/'+p;const out:string[]=[];for(const part of p.split('/')){if(!part||part==='.')continue;if(part==='..')out.pop();else out.push(part);}return '/'+out.join('/');}
@@ -75,7 +78,7 @@ export function parseBackend(code:string):{route:string;save:boolean}{
  const p=code.match(/^\s*MENU_PATH\s*=\s*(["'])([^"'\n]+)\1\s*$/m),save=code.match(/^\s*SAVE_ORDERS\s*=\s*(True|False)\s*$/m);
  if(!p||!save)throw new Error('SyntaxError: MENU_PATH 문자열과 SAVE_ORDERS의 True/False 값을 확인하세요.');
  const normalize=(c:string)=>strip(c.replace(/^\s*MENU_PATH\s*=.*$/m,'MENU_PATH = ROUTE').replace(/^\s*SAVE_ORDERS\s*=.*$/m,'SAVE_ORDERS = SAVE'));
- if(normalize(code)!==normalize(INITIAL_FILES['server.py']))throw new Error('이 실습의 Python 실행기는 제공된 템플릿의 MENU_PATH, SAVE_ORDERS 설정만 지원합니다.');
+ if(!(['ko','en','ja','zh'] as const).some(language=>normalize(code)===normalize(starterFiles(language)['server.py'])))throw new Error('이 실습의 Python 실행기는 제공된 템플릿의 MENU_PATH, SAVE_ORDERS 설정만 지원합니다.');
  if(!p[2].startsWith('/'))throw new Error('ValueError: URL rule must start with a slash.');return {route:p[2],save:save[1]==='True'};
 }
 
@@ -139,7 +142,7 @@ export function act(state:GameState,action:Action,edition:GameEdition='full'):Ga
  if(action.type==='request-tests'){s.testRequest++;return s;}
  if(action.type==='test-result'){if(action.hash!==sourceHash(projectFiles(s)))return s;s.tests={hash:action.hash,mission:s.mission,checks:action.checks};if(action.designChoice&&action.designChoice===s.gameplay.designChoice)s.gameplay.designEvidence={hash:action.hash,choice:action.designChoice,passed:action.designPassed===true};s.notice=action.checks.every(c=>c.passed)?(action.designChoice===s.gameplay.designChoice&&action.designChoice?(action.designPassed?'화면과 색상 모두 통과! 보너스 창에서 보상을 받아 보세요.':'의뢰 검사는 통과했어요. 선택한 버튼 색은 아직 달라요.'):'손님 확인을 마쳤어요. 지우에게 알려 주세요.'):'아직 해결할 항목이 있어요. 검사 결과를 확인해 보세요.';return s;}
  if(action.type==='install-server'){if(s.mission<2){s.notice='세 번째 의뢰에서 서버가 지급됩니다.';return s;}s.serverReady=true;log(s,'[mono-server] Ubuntu 24.04 설치 완료 · 가상 서버');return s;}
- if(action.type==='next-mission'){if(!s.completed.includes(s.mission)||s.mission>=MISSIONS.length-1)return s;s.mission++;s.accepted=true;if(s.mission===1&&s.repo)s.machines.local.files[s.repo.root+'/app.js']='// 새 계산대의 오류를 찾아 주세요.\nfunction calculateTotal(price, quantity) {\n  return price + quantity;\n}\n';s.tests=null;s.apiEvidence={menu:false,order:false};if(s.repo)s.repo.pr=null;return s;}
+ if(action.type==='next-mission'){if(!s.completed.includes(s.mission)||s.mission>=MISSIONS.length-1)return s;s.mission++;s.accepted=true;if(s.mission===1&&s.repo)s.machines.local.files[s.repo.root+'/app.js']=(s.repo.commits[0]?.files['app.js']??INITIAL_FILES['app.js']).replace('price * quantity','price + quantity');s.tests=null;s.apiEvidence={menu:false,order:false};if(s.repo)s.repo.pr=null;return s;}
  const r=s.repo;if(!r)return s;
  if(action.type==='open-pr'){
   if(r.remote.id==='c0000'){s.notice='새 커밋을 먼저 CatHub에 push해 주세요.';return s;}
@@ -175,7 +178,7 @@ function recordTerminal(s:GameState,input:string,output:string,error:boolean,mac
  while(s.history.length&&JSON.stringify(s.history).length>budget)s.history.shift();
 }
 
-export function runCommand(state:GameState,input:string,edition:GameEdition='full'):CommandResult{
+export function runCommand(state:GameState,input:string,edition:GameEdition='full',language:Language='ko'):CommandResult{
  let s=clone(state);s.notice='';const origin=s.machine,cwd=s.machines[origin].cwd;let error=false;let output='';let openFile:string|undefined;
  const fail=(text:string)=>{error=true;output=text;};
  let args:string[],redirect:ReturnType<typeof parseTerminalInput>['redirect']=null,stdin:string|null=null;try{const parsed=parseTerminalInput(input,tokenize);args=tokenize(parsed.command);redirect=parsed.redirect;stdin=parsed.stdin;}catch(e){args=[];const message=(e as Error).message;fail(message.startsWith('shell:')?message:'shell: '+message);}
@@ -235,7 +238,7 @@ export function runCommand(state:GameState,input:string,edition:GameEdition='ful
   if(requireTool('npm')){if(a[0]==='--version'||a[0]==='-v')output='10.2.4 [simulated]';else{const pkg=manifest();if(pkg){
    if(a[0]==='install'||a[0]==='i'){if(a.length>1)fail('이 실습은 package.json의 의존성을 설치하는 npm install을 지원합니다.');else if(!pkg.devDependencies?.vite)fail('npm ERR! 이 프로젝트는 devDependencies.vite가 필요합니다.');else{if(!m.dependencies.includes(m.cwd))m.dependencies.push(m.cwd);output='added 11 packages, and audited 12 packages\nfound 0 vulnerabilities\n[게임] 이 프로젝트의 의존성이 준비됐습니다.';}}
    else {const script=a[0]==='test'?'test':a[0]==='run'?a[1]:null;if(!script){const hint=suggestionLine(input);fail((hint?hint+'\n':'')+'지원 명령: npm install / run dev / test / run build');}else if(!pkg.scripts?.[script])fail(`npm ERR! Missing script: "${script}"`);else if(!m.dependencies.includes(m.cwd))fail('sh: 1: vite: not found\n프로젝트에서 npm install을 먼저 실행하세요.');else if(script==='dev'){if(pkg.scripts.dev!=='vite')fail('이 실습에서는 dev 스크립트의 vite 실행을 지원합니다.');else if(m.processes.frontend)fail('Error: listen EADDRINUSE: port 5173 is already in use');else{m.processes.frontend=true;m.frontendRoot=m.cwd;output='VITE v5.0.0  ready in 128 ms\n\n  Local: http://localhost:5173/\n\n[게임] 서버는 백그라운드에서 실행됩니다. pkill node로 종료.';log(s,'[local:5173] Vite 개발 서버 시작');}}
-   else if(script==='test'){s.testRequest++;output='CODE:SHIFT CHECK\n현재 저장한 파일을 검사합니다. 검사 결과 패널을 확인하세요.';}
+   else if(script==='test'){s.testRequest++;output='CODE:SHIFT CHECK\n현재 저장한 파일을 검사합니다. 결과는 이 터미널 아래에 표시됩니다.';}
    else if(script==='build'){output='vite building for production...\n✓ 4 modules transformed.\ndist/index.html       1.64 kB\n✓ built in 184 ms [simulated]';}
    else fail('이 실습에서 지원하지 않는 npm 스크립트입니다.');}
   }}}
@@ -243,7 +246,7 @@ export function runCommand(state:GameState,input:string,edition:GameEdition='ful
  else if(cmd==='git'){
   if(requireTool('git')){if(a[0]==='--version')output='git version 2.43.0 [simulated]';else if(a[0]==='clone'){
    const url=a[1]?.replace(/\/$/,'');if(url!==REPO_URL&&url!==REPO_URL.replace(/\.git$/,''))fail(`fatal: repository '${a[1]??''}' not found\nCatHub 저장소의 복제 주소를 확인하세요.`);
-   else{const path=commandPath(m.cwd,a[2]||'menu-site');if(m.dirs.includes(path))fail(`fatal: destination path '${path}' already exists and is not an empty directory.`);else if(s.machine==='server'&&path!==PROJECT)fail('이 서버 실습은 ~/menu-site 경로를 사용합니다. cd ~ 후 복제해 주세요.');else if(s.machine==='local'&&s.repo)fail('작업 저장소가 이미 있습니다. 기존 프로젝트를 사용하세요.');else{const fs=s.repo?.remote.files??INITIAL_FILES;putFiles(m,path,fs);m.cloned=true;if(s.machine==='local'){const first=snapshot(INITIAL_FILES,'Initial cafe menu','c0000',0);s.repo={root:path,staged:{},commits:[first],remote:clone(first),merged:clone(first),deployed:clone(first),pr:null};}output=`Cloning into '${path.split('/').at(-1)}'...\nReceiving objects: 100% (8/8), done.\n이제 cd ${path.split('/').at(-1)} 로 폴더에 들어가세요.`;}}
+   else{const path=commandPath(m.cwd,a[2]||'menu-site');if(m.dirs.includes(path))fail(`fatal: destination path '${path}' already exists and is not an empty directory.`);else if(s.machine==='server'&&path!==PROJECT)fail('이 서버 실습은 ~/menu-site 경로를 사용합니다. cd ~ 후 복제해 주세요.');else if(s.machine==='local'&&s.repo)fail('작업 저장소가 이미 있습니다. 기존 프로젝트를 사용하세요.');else{const fs=s.repo?.remote.files??starterFiles(language);putFiles(m,path,fs);m.cloned=true;if(s.machine==='local'){const first=snapshot(fs,'Initial cafe menu','c0000',0);s.repo={root:path,staged:{},commits:[first],remote:clone(first),merged:clone(first),deployed:clone(first),pr:null};}output=`Cloning into '${path.split('/').at(-1)}'...\nReceiving objects: 100% (8/8), done.\n이제 cd ${path.split('/').at(-1)} 로 폴더에 들어가세요.`;}}
   }else if(!inProject()||!m.cloned)fail('fatal: not a git repository (or any of the parent directories): .git');
   else if(s.machine==='server'){if(a[0]==='pull'){if(s.repo){validateFiles(PROJECT,s.repo.remote.files);for(const p of Object.keys(m.files))if(p.startsWith(PROJECT+'/'))delete m.files[p];putFiles(m,PROJECT,s.repo.remote.files);output=`Updating to ${s.repo.remote.id}\nFast-forward\n실행 중인 Python 프로세스는 재시작해야 수정본을 읽습니다.`;}}else if(a[0]==='status')output='On branch main\n서버 사본은 git pull로 갱신합니다.';else fail('서버 사본에서는 git pull / status를 지원합니다. 수정·커밋은 내 PC에서 진행하세요.');}
   else if(s.repo){const r=s.repo,working=projectFiles(s),head=r.commits.at(-1)!;

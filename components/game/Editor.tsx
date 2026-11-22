@@ -28,7 +28,7 @@ function ProjectEditorView(props:GameProps){
  useEffect(()=>{if(props.editorTarget)setFile(props.editorTarget.file);},[props.editorTarget]);
  const selection=task.file===file?taskSelection(task,content):null;
  const locate=()=>{if(selection)smart.current?.select(...selection);};
- const restoreFile=()=>smart.current?.replace(file==='app.js'&&state.mission===1?INITIAL_FILES[file].replace('price * quantity','price + quantity'):INITIAL_FILES[file]??content);
+ const restoreFile=()=>{const original=state.repo?.commits[0]?.files[file]??INITIAL_FILES[file]??content;smart.current?.replace(file==='app.js'&&state.mission===1?original.replace('price * quantity','price + quantity'):original);};
  const hasProject=!!state.repo,selectedFileExists=Object.hasOwn(fs,file),firstFile=Object.keys(fs)[0]??'';
  const hintFile=!state.gameplay.fileHintSeen&&state.mission===0&&state.accepted&&!state.completed.includes(0)&&!dirty.includes('index.html')?'index.html':null;
  // eslint-disable-next-line react-hooks/set-state-in-effect -- An external project-file-list change selects an existing fallback if the displayed file was removed.

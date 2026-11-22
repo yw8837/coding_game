@@ -1,3 +1,4 @@
+import {localizedCopy} from './zh.ts';
 import {CAREER_JOBS,type CareerJob,type Localized} from './career-content.ts';
 import {evaluateCareer} from './career-evaluation.ts';
 import {allowedCareerFile,careerCodeSpec,CAREER_CODE_FILE,CAREER_CODE_MODE_FILE,type CareerCodeMode} from './career-code.ts';
@@ -11,7 +12,7 @@ export type CareerAction=StudioAction|ReleaseAction|{type:'career-accept'|'caree
 function isStudioAction(action:CareerAction):action is StudioAction{return action.type.startsWith('career-studio-');}
 function isReleaseAction(action:CareerAction):action is ReleaseAction{return action.type.startsWith('career-release-');}
 type Host={completed:number[];gameplay:{career:CareerProgress;openingCelebrated:boolean};machines:{local:{files:Record<string,string>;dirs:string[]}};credits:number;xp:number;notice:string};
-const l=(ko:string,en:string,ja:string):Localized=>({ko,en,ja});
+const l=(ko:string,en:string,ja:string,zh?:string):Localized=>localizedCopy(ko,en,ja,zh);
 export const CAREER_UPGRADES=[
  {id:'recovery-kit',price:250,name:l('복구 노트','Recovery notebook','復元ノート'),detail:l('의뢰마다 수정본 한 묶음을 보관하고 다시 불러옵니다.','Keep and restore a checkpoint for each job.','依頼ごとに修正版を保存し、復元できます。')},
  {id:'second-screen',price:600,name:l('보조 모니터','Second monitor','サブモニター'),detail:l('파일과 실행 결과를 나란히 비교합니다.','Compare the file and output side by side.','ファイルと実行結果を並べて比較できます。')},

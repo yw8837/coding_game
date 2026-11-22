@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useId,useRef,useState,type ReactNode} from 'react';
 import {Play,Check,RotateCcw,ReceiptText,DoorOpen,ListChecks,Clock,Monitor,Radio,Smartphone,Tablet,Sun,Moon,TriangleAlert} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
@@ -7,7 +8,7 @@ import {careerDayLabel,careerDisplayValue} from '@/lib/game/career-display';
 import type {CareerJob} from '@/lib/game/career-content';
 import type {CareerCheck} from '@/lib/game/career-evaluation';
 
-type Tr=(ko:string,en:string,ja:string)=>string;
+type Tr=(ko:string,en:string,ja:string,zh?:string)=>string;
 type Shell={verdict:'matched'|'mismatched'|null;runs:number};
 type StageProps={cases:CareerCheck[];index:number;onSelect:(index:number)=>void;tr:Tr;lang:ReturnType<typeof useLanguage>;shell:Shell};
 type Slot={id:string;start:number;end:number};
@@ -54,7 +55,7 @@ function MuseumStage({cases,index,onSelect,tr,shell,css}:StageProps&{css:string}
   <div className="museum-canvas" aria-hidden="true"><div className="museum-device" style={{width:view/12.4+'%'}}><span className="museum-device-bar"/><div className="museum-gallery" style={{width:total/view*100+'%',paddingInline:rule.pad/view*100+'%'}}><div className="museum-cards" style={{gridTemplateColumns:`repeat(${columns},minmax(0,1fr))`}}>{[0,1,2].map(i=><i key={i}/>)}</div></div>{spill>0&&<span className="museum-spill" style={{width:spill/view*100+'%'}}>+{round(spill)}px</span>}</div></div>
   <dl className="museum-measure"><div><dt>{tr('화면 너비','Screen width','画面幅')}</dt><dd>{view}px</dd></div><div><dt>{tr('갤러리 전체 너비','Gallery total width','ギャラリー全幅')}</dt><dd>{round(total)}px</dd></div><div><dt>{tr('내용 + 안쪽 여백','Content + padding','内容 + 内側余白')}</dt><dd>{round(content)} + {round(rule.pad)}×2</dd></div></dl>
   <div className="stage-code"><code>width: {rule.width}</code><code>max-width: {rule.max}</code><code>box-sizing: {rule.model}</code><small>{rule.model==='border-box'?tr('border-box는 안쪽 여백을 너비 안에 넣어요.','border-box keeps padding inside the width.','border-boxは内側余白を幅の中に入れます。'):tr('content-box는 안쪽 여백을 너비 바깥에 더해요.','content-box adds padding outside the width.','content-boxは内側余白を幅の外に足します。')}</small></div>
-  <Status ok={!spill&&total===expected}>{spill?tr(`화면보다 ${round(spill)}px 넓어서 옆으로 넘쳐요. 손님이 옆으로 밀어야 읽을 수 있어요.`,`It is ${round(spill)}px wider than the screen, so visitors have to scroll sideways.`,`画面より${round(spill)}px広く、横にはみ出します。横に動かさないと読めません。`):total===expected?tr('화면 안에 맞고 요청한 너비와 같아요.','It fits the screen and matches the requested width.','画面に収まり、依頼どおりの幅です。'):tr(`넘치지는 않지만 요청한 ${expected}px와 달라요.`,`It fits, but differs from the requested ${expected}px.`,`はみ出しませんが、依頼の${expected}pxと違います。`)}</Status>
+  <Status ok={!spill&&total===expected}>{spill?tr(`화면보다 ${round(spill)}px 넓어서 옆으로 넘쳐요. 손님이 옆으로 밀어야 읽을 수 있어요.`,`It is ${round(spill)}px wider than the screen, so visitors have to scroll sideways.`,`画面より${round(spill)}px広く、横にはみ出します。横に動かさないと読めません。`,`比屏幕宽${round(spill)}px，内容向侧面溢出，顾客需要横向滚动才能阅读。`):total===expected?tr('화면 안에 맞고 요청한 너비와 같아요.','It fits the screen and matches the requested width.','画面に収まり、依頼どおりの幅です。'):tr(`넘치지는 않지만 요청한 ${expected}px와 달라요.`,`It fits, but differs from the requested ${expected}px.`,`はみ出しませんが、依頼の${expected}pxと違います。`,`没有溢出，但与要求的${expected}px不同。`)}</Status>
  </StageShell>;
 }
 
@@ -76,7 +77,7 @@ function ClinicStage({cases,index,onSelect,tr,lang,shell,html,play}:StageProps&{
   blocked:tr('빈 이름이라 예약을 막았어요. 이름 없는 접수가 생기지 않아요.','Blank name stopped. No nameless booking gets through.','空の名前なので予約を止めました。名前のない受付は起きません。'),
   empty:tr('이름 없이도 예약이 넘어가요.','A booking without a name gets through.','名前がなくても予約が通ります。'),
   noop:tr('버튼을 눌러도 아무 일도 없어요. 제출용 버튼이 아니에요.','Nothing happens. The button does not submit.','押しても何も起きません。送信用のボタンではありません。'),
-  sent:tr(`${shown?.who}님 예약이 접수됐어요.`,`Booking received for ${shown?.who}.`,`${shown?.who}さんの予約を受け付けました。`),
+  sent:tr(`${shown?.who}님 예약이 접수됐어요.`,`Booking received for ${shown?.who}.`,`${shown?.who}さんの予約を受け付けました。`,`已收到${shown?.who}的预约。`),
  };
  const hints=[tr('이름 글자를 누르면 입력칸으로 가요','Clicking the label moves to the field','ラベルを押すと入力欄へ移ります'),tr('이름이 비어 있으면 예약을 막아요','Blank names are stopped','空の名前は止めます'),tr('버튼이 예약을 보내요','The button sends the booking','ボタンが予約を送ります')];
  return <StageShell className="clinic-stage" shell={shell}><div className="clinic-grid">
@@ -111,9 +112,9 @@ function WorkshopStage({index,onSelect,tr,shell,csv}:StageProps&{csv:string}){
   </div>
   <div className="slot-summary">
    <span className="slot-share">{tr('방 점유율','Room usage','部屋の使用率')}<span className="slot-meter"><b style={{width:Math.min(100,share)+'%'}}/></span><strong>{share}%</strong><small>{used}/{OPEN[1]-OPEN[0]}{min} · 09:00–13:00</small></span>
-   <span className="slot-pairs">{[0,1].map(k=>{const [x,y]=PAIRS[k],m=overlap(list[x],list[y]);return <button key={k} type="button" aria-pressed={index===k} className={m?'clash':'ok'} onClick={()=>onSelect(k)}>{list[x].id}↔{list[y].id} · {m?tr(`${m}분 겹침`,`${m} min overlap`,`${m}分重複`):tr('겹침 없음','No overlap','重複なし')}</button>;})}</span>
+   <span className="slot-pairs">{[0,1].map(k=>{const [x,y]=PAIRS[k],m=overlap(list[x],list[y]);return <button key={k} type="button" aria-pressed={index===k} className={m?'clash':'ok'} onClick={()=>onSelect(k)}>{list[x].id}↔{list[y].id} · {m?tr(`${m}분 겹침`,`${m} min overlap`,`${m}分重複`,`重叠${m}分钟`):tr('겹침 없음','No overlap','重複なし')}</button>;})}</span>
   </div>
-  <Status ok={!gap&&second.start>=first.end}>{gap?tr(`${first.id}와 ${second.id}가 ${gap}분 겹쳐요. 두 모임이 같은 방을 기다려요.`,`${first.id} and ${second.id} overlap by ${gap} min. Two groups wait for one room.`,`${first.id}と${second.id}が${gap}分重なります。2組が同じ部屋を待ちます。`):second.start<first.end?tr(`${second.id}가 ${first.id}보다 먼저 열려요. ${first.id} → ${second.id} 순서로 맞춰 주세요.`,`${second.id} opens before ${first.id}. Put them in ${first.id} → ${second.id} order.`,`${second.id}が${first.id}より先に始まります。${first.id} → ${second.id}の順にしてください。`):tr(`${first.id}가 ${hm(first.end)}에 끝나고 ${second.id}가 ${hm(second.start)}에 시작해요.`,`${first.id} ends at ${hm(first.end)} and ${second.id} starts at ${hm(second.start)}.`,`${first.id}が${hm(first.end)}に終わり、${second.id}が${hm(second.start)}に始まります。`)}</Status>
+  <Status ok={!gap&&second.start>=first.end}>{gap?tr(`${first.id}와 ${second.id}가 ${gap}분 겹쳐요. 두 모임이 같은 방을 기다려요.`,`${first.id} and ${second.id} overlap by ${gap} min. Two groups wait for one room.`,`${first.id}と${second.id}が${gap}分重なります。2組が同じ部屋を待ちます。`,`${first.id}与${second.id}重叠${gap}分钟，两个小组正在等待同一间教室。`):second.start<first.end?tr(`${second.id}가 ${first.id}보다 먼저 열려요. ${first.id} → ${second.id} 순서로 맞춰 주세요.`,`${second.id} opens before ${first.id}. Put them in ${first.id} → ${second.id} order.`,`${second.id}が${first.id}より先に始まります。${first.id} → ${second.id}の順にしてください。`,`${second.id}比${first.id}先开始，请调整为${first.id}→${second.id}的顺序。`):tr(`${first.id}가 ${hm(first.end)}에 끝나고 ${second.id}가 ${hm(second.start)}에 시작해요.`,`${first.id} ends at ${hm(first.end)} and ${second.id} starts at ${hm(second.start)}.`,`${first.id}が${hm(first.end)}に終わり、${second.id}が${hm(second.start)}に始まります。`,`${first.id}在${hm(first.end)}结束，${second.id}在${hm(second.start)}开始。`)}</Status>
  </StageShell>;
 }
 
@@ -148,13 +149,13 @@ function ZoneStage({cases,index,tr,lang,shell,json}:StageProps&{json:string}){
    <div className="zone-link"><span>{tr('시차','Offset','時差')}</span><b>{rule.offset>=0?'+':''}{rule.offset}{tr('시간','h','時間')}</b><small>{rule.carry?tr('날짜 넘김 켬','Date carry on','日付繰越あり'):tr('날짜 넘김 끔','Date carry off','日付繰越なし')}</small></div>
    <ZoneClock tr={tr} hour={actual.hour} ghost={missed?expected!.hour:null} title={tr('학생 화면','Student screen','生徒の画面')} city={tr('서울 · 도쿄','Seoul · Tokyo','ソウル · 東京')} dayText={dayName(actual.day)}/>
   </div>
-  <Status ok={!missed}>{!onCase?tr(`미리보기: UTC ${pad2(hour)}:00 → 학생 화면 ${shown}. 검사는 위에서 고른 상황으로 해요.`,`Preview: UTC ${pad2(hour)}:00 → student screen ${shown}. Checks use the situation chosen above.`,`プレビュー: UTC ${pad2(hour)}:00 → 生徒の画面 ${shown}。検査は上で選んだ場面で行います。`):missed?tr(`점선 바늘이 학생이 기다리는 시각(${wanted})이에요. 지금 화면에는 ${shown}로 보여요.`,`The dashed hand is when students expect it (${wanted}). The screen now shows ${shown}.`,`点線の針が生徒の待つ時刻(${wanted})です。今の画面は${shown}です。`):tr(`학생 화면에 ${shown}로 맞게 보여요.`,`Students see ${shown}, as expected.`,`生徒の画面に${shown}と正しく表示されます。`)}</Status>
+  <Status ok={!missed}>{!onCase?tr(`미리보기: UTC ${pad2(hour)}:00 → 학생 화면 ${shown}. 검사는 위에서 고른 상황으로 해요.`,`Preview: UTC ${pad2(hour)}:00 → student screen ${shown}. Checks use the situation chosen above.`,`プレビュー: UTC ${pad2(hour)}:00 → 生徒の画面 ${shown}。検査は上で選んだ場面で行います。`,`预览：UTC ${pad2(hour)}:00→学生画面${shown}。检查将使用上方选择的情境。`):missed?tr(`점선 바늘이 학생이 기다리는 시각(${wanted})이에요. 지금 화면에는 ${shown}로 보여요.`,`The dashed hand is when students expect it (${wanted}). The screen now shows ${shown}.`,`点線の針が生徒の待つ時刻(${wanted})です。今の画面は${shown}です。`,`虚线指针是学生预期的时间（${wanted}），当前画面显示${shown}。`):tr(`학생 화면에 ${shown}로 맞게 보여요.`,`Students see ${shown}, as expected.`,`生徒の画面に${shown}と正しく表示されます。`,`学生画面正确显示${shown}。`)}</Status>
   <div className="zone-scrub"><label htmlFor={slider}>{tr('강사 시계 돌려 보기','Turn the teacher’s clock','講師の時計を回す')}</label><input id={slider} type="range" min={0} max={23} step={1} value={hour} aria-valuetext={`UTC ${pad2(hour)}:00`} onChange={event=>setScrub({index,hour:Number(event.target.value)})}/><output htmlFor={slider}>UTC {pad2(hour)}:00</output>{!onCase&&<button type="button" className="outline-button" onClick={()=>setScrub(null)}>{tr('고른 상황으로 돌아가기','Back to the chosen situation','選んだ場面に戻る')}</button>}</div>
  </StageShell>;
 }
 
 export function CareerPlayground({job,files,completed=false,compact=false}:{job:CareerJob;files:Record<string,string>;completed?:boolean;compact?:boolean}){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  const scene=careerScenarios(job.id,files);
  const [selected,setSelected]=useState(()=>Math.max(0,scene?.cases.findIndex(check=>!check.passed)??0));
  const [run,setRun]=useState<{source:string;selected:number;actual:string;passed:boolean}|null>(null);

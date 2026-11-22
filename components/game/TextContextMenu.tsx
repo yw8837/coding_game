@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 
 import {useRef, useState, type ReactElement, type RefObject} from 'react';
 import {toast} from 'sonner';
@@ -13,7 +14,7 @@ export function TextContextMenu({children, field, replace, undo, redo, clear, ou
   replace: (text: string, start: number, end: number) => void;
   undo?: () => void; redo?: () => void; clear?: () => void; output?: boolean;
 }) {
-  const language = useLanguage(), tr = (ko: string, en: string, ja: string) => ({ko,en,ja})[language];
+  const language = useLanguage(), tr = (ko:string,en:string,ja:string,zh?:string) =>localizedCopy(ko,en,ja,zh)[language];
   const snapshot = useRef({value: '', start: 0, end: 0, selected: '', element: null as Field | null});
   const [selected, setSelected] = useState(false);
   const capture = () => {

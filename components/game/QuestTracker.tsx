@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {localizeUI,useLanguage} from '@/lib/game/i18n';
 import {careerRouteCount} from '@/lib/game/career-progress';
 import {careerCurrent,careerNext} from '@/lib/game/career';
@@ -18,20 +19,20 @@ import type {WorkGuide} from '@/lib/game/work-context';
 
 type QuestProps=GameProps&{visibleApps?:readonly string[];guide?:WorkGuide|null};
 function CurrentWork({title,detail,task,target}:{title:string;detail:string;task:Task;target:string}){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  return localizeUI(<div key={title} className="quest-current" data-testid="quest-current-work"><small>{tr('현재 작업','Current task','現在の作業')}</small><strong>{title}</strong><TaskTarget task={task} target={target}/><details className="quest-help"><summary>{tr('작업 설명 보기','View task instructions','作業の説明を見る')}</summary><p>{detail}</p></details></div>);
 }
 function ProgressTrail({progress}:{progress:QuestProgress}){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  return <div className="quest-evidence"><div className="progress-label"><span>{tr('확인된 진행','Verified progress','確認済みの進捗')}</span><b>{progress.completed} / {progress.total}</b></div><div className="desk-progress" role="progressbar" aria-label={tr('확인된 진행','Verified progress','確認済みの進捗')} aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.completed}><span style={{width:(progress.total?progress.completed/progress.total*100:0)+'%'}}/></div>{progress.evidence?<p className="quest-proof-status">{progress.evidence[lang]}</p>:progress.checks&&<p className="quest-proof-status">{tr('현재 파일 검사','Current file checks','現在のファイル検査')} · {progress.checks.passed} / {progress.checks.total}</p>}<details className="quest-trail"><summary>{tr('진행 기록 보기','View progress trail','進捗の記録を見る')}</summary><ol>{progress.steps.map(item=><li key={item.id} className={item.done?'done':item.id===progress.currentId?'active':''} aria-current={item.id===progress.currentId?'step':undefined}><span aria-hidden="true">{item.done?<Check size={13}/>:item.id===progress.currentId?'›':'·'}</span><span>{item.label[lang]}</span><small>{item.done?tr('완료','Done','完了'):item.id===progress.currentId?tr('현재','Current','現在'):tr('대기','Pending','待機')}</small></li>)}</ol></details></div>;
 }
 function TaskTarget({task,target=task.app}:{task:Task;target?:string}){
  const lang=useLanguage(),names:Record<string,[string,string,string]>={repair:['수리 작업','Repair workspace','修理作業'],career:['의뢰 센터','Contracts','依頼センター'],messages:['메시지','Messages','メッセージ'],browser:['브라우저','Browser','ブラウザー'],computer:['컴퓨터','Computer','コンピューター'],editor:['에디터','Editor','エディター'],terminal:['터미널','Terminal','ターミナル'],server:['서버','Server','サーバー'],api:['API','API','API'],achievements:['초대장','Invitation','招待状'],python:['Python 자동화','Python automation','Python自動化'],sql:['SQL 데이터베이스','SQL database','SQLデータベース'],challenges:['코딩 연습실','Coding lab','コーディング練習室']};
- return <p className="quest-target"><span>{(task.id==='demo-complete'?['데모 완료 기록','Demo summary','デモの記録']:names[target]??[target,target,target])[lang==='ko'?0:lang==='en'?1:2]}</span>{task.file&&<code>{task.file}</code>}</p>;
+ return <p className="quest-target"><span>{(task.id==='demo-complete'?localizedCopy('데모 완료 기록','Demo summary','デモの記録'):localizedCopy(...names[target]??[target,target,target]))[lang]}</span>{task.file&&<code>{task.file}</code>}</p>;
 }
 
 function ContextGuide({props,guide,compact=false}:{props:QuestProps;guide:WorkGuide;compact?:boolean}){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>localizedCopy(ko,en,ja)[lang];
  const campaign=currentTask(props.state,props.edition);
  const campaignTitle=campaign.localized?.title[lang]??campaign.title;
  const perform=()=>{
@@ -53,7 +54,7 @@ function ContextGuide({props,guide,compact=false}:{props:QuestProps;guide:WorkGu
  </section>;
 }
 export function QuestTracker(props:QuestProps&{onClose:()=>void}){
- const {state,onFollow}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const {state,onFollow}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  if(props.guide)return <aside id="mission-sidebar" className="mission-sidebar quest-tracker quest-compact" aria-label={tr('현재 작업','Current work','現在の作業')}><div className="mission-sidebar-heading"><span><Flag size={16}/>{tr('현재 작업','Current work','現在の作業')}</span><button className="panel-close" onClick={props.onClose} aria-label={tr('작업 상세 접기','Close work details','作業の詳細を閉じる')}><X size={18}/></button></div><ContextGuide props={props} guide={props.guide}/></aside>;
  let task=currentTask(state,props.edition);
  const guidedActive=!!props.guided&&state.accepted&&!state.completed.includes(state.mission)&&!state.gameplay.openingCelebrated;
@@ -68,9 +69,9 @@ export function QuestTracker(props:QuestProps&{onClose:()=>void}){
 }
 export function QuestRibbon(props:QuestProps){
  const {state,onFollow,guided,visibleApps=[],browserUrl}=props;
- let task=currentTask(state,props.edition);const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang],guidedActive=!!guided&&state.accepted&&!state.completed.includes(state.mission)&&!state.gameplay.openingCelebrated;
+ let task=currentTask(state,props.edition);const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang],guidedActive=!!guided&&state.accepted&&!state.completed.includes(state.mission)&&!state.gameplay.openingCelebrated;
  if(props.guide)return <ContextGuide props={props} guide={props.guide} compact/>;
- if(guidedActive)task={...task,title:COACH_COPY[coachStage(state)][lang==='ko'?0:lang==='en'?1:2],detail:'',command:undefined};
+ if(guidedActive)task={...task,title:localizedCopy(...COACH_COPY[coachStage(state)])[lang],detail:'',command:undefined};
  const title=task.localized?.title[lang]??task.title,detail=task.localized?.detail[lang]??task.detail;
  const {showAction,target}=questGuidance(task,guidedActive,visibleApps,browserUrl);
  if(!showAction)return <CurrentWork title={title} detail={detail} task={task} target={target}/>;

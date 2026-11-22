@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 
 import {useEffect,useRef,useState} from 'react';
 import {useLanguage} from '@/lib/game/i18n';
@@ -13,7 +14,7 @@ export type CareerCodeProps={jobId:string;files:Record<string,string>;readOnly:b
  * until the explicit Save button; accepted canonical files survive mode switches. */
 export function CareerCode({jobId,files,readOnly,onMode,onEdit,onTest,hasProof=false,onDirtyChange,initialDraft,onDraftChange}:CareerCodeProps){
  const language=useLanguage(),spec=careerCodeSpec(jobId),source=files[CAREER_CODE_FILE]??'',mode=careerCodeModeSafe(files);
- const text=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='en'?en:ja;
+ const text=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language];
  const [draft,setDraft]=useState(initialDraft??source),previousSource=useRef(source);
  const [input,setInput]=useState(()=>JSON.stringify(spec?.sample??{},null,2)),[help,setHelp]=useState(false);
  const [pending,setPending]=useState<string|null>(null),[notice,setNotice]=useState<'saved'|'rejected'|null>(null);

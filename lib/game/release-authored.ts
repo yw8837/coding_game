@@ -5,7 +5,7 @@ export const AUTHORED_RUNTIME_SHA256=authoredRuntime.sha256;
 import {parseReleaseProduct,RELEASE_PROJECT_START,type ReleaseProduct} from './release-product.ts';
 
 export type AuthoredFormat='website'|'webapp';
-export type AuthoredLanguage='ko'|'en'|'ja';
+export type AuthoredLanguage='ko'|'en'|'ja'|'zh';
 export type AuthoredAsset={name?:string;dataUrl:string;alt?:string};
 export const MAX_IMAGE_DATA_TOTAL=480000;
 export const MAX_ASSETS_SOURCE=500000;
@@ -22,7 +22,7 @@ export function authoredProjectFormat(files:Record<string,string>):AuthoredForma
  try{const data=JSON.parse(files['project.json']);return object(data)&&['website','webapp'].includes(String(data.format))?data.format as AuthoredFormat:null;}catch{return null;}
 }
 export function authoredStartFiles(format:AuthoredFormat,language:AuthoredLanguage='ko'):Record<string,string>{
- const words={ko:{title:'내 프로젝트',body:'여기에 나만의 소개를 써 주세요.'},en:{title:'My project',body:'Write your own introduction here.'},ja:{title:'私のプロジェクト',body:'ここに自分の紹介を書いてください。'}}[language];
+ const words={ko:{title:'내 프로젝트',body:'여기에 나만의 소개를 써 주세요.'},en:{title:'My project',body:'Write your own introduction here.'},ja:{title:'私のプロジェクト',body:'ここに自分の紹介を書いてください。'},zh:{title:'我的项目',body:'在这里写下你自己的介绍。'}}[language];
  return {'index.html':`<!doctype html>\n<html lang="${language}">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title>${words.title}</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <main class="portal">\n    <h1>${words.title}</h1>\n    <p>${words.body}</p>\n${format==='webapp'?'    <section data-app="items"></section>\n    <section data-app="inquiry"></section>\n':''}  </main>\n</body>\n</html>\n`,'style.css':'body { margin: 0; font-family: system-ui, sans-serif; background: #f5f3ed; color: #24332d; }\n.portal { width: 100%; max-width: 960px; margin: 0 auto; padding: 24px; box-sizing: border-box; }\nh1 { color: #356553; }\np { line-height: 1.7; }\n','server.json':JSON.stringify({route:format==='webapp'?'/api/places':'/places',saveRequests:format==='webapp'},null,2)+'\n','project.json':JSON.stringify({...RELEASE_PROJECT_START,version:1,format,language},null,2)+'\n'};
 }
 
@@ -208,9 +208,9 @@ export function validateAuthoredRelease(files:Record<string,string>,expectedForm
  let data:Record<string,unknown>={};try{const value=JSON.parse(files['project.json']);if(object(value))data=value;}catch{/* Report below. */}
  const {format:declaredFormat,version,language,...productData}=data;
  const parsed=parseReleaseProduct(JSON.stringify(productData));
- const projectValid=declaredFormat===format&&version===1&&['ko','en','ja'].includes(String(language))&&parsed.valid;
- const starterTitles=['내 프로젝트','My project','私のプロジェクト','Untitled'];
- const starterBodies=['여기에 나만의 소개를 써 주세요.','Write your own introduction here.','ここに自分の紹介を書いてください。'];
+ const projectValid=declaredFormat===format&&version===1&&['ko','en','ja','zh'].includes(String(language))&&parsed.valid;
+ const starterTitles=['내 프로젝트','My project','私のプロジェクト','我的项目','Untitled'];
+ const starterBodies=['여기에 나만의 소개를 써 주세요.','Write your own introduction here.','ここに自分の紹介を書いてください。','在这里写下你自己的介绍。'];
  const ownText=starterBodies.reduce((text,placeholder)=>text.replaceAll(placeholder,''),html.text.replace(html.title,''));
  const authored=html.valid&&!starterTitles.some(title=>title.toLowerCase()===html.title.toLowerCase())&&(ownText.trim().length>0||/<img\s/.test(html.bodyHtml)&&assets.valid||format==='webapp'&&parsed.authored);
  const widgetsReady=format==='website'||html.widgets.has('items')&&html.widgets.has('inquiry')&&parsed.authored;
@@ -219,7 +219,7 @@ export function validateAuthoredRelease(files:Record<string,string>,expectedForm
  return {valid:html.valid&&css.valid&&css.responsive&&assets.valid&&projectValid&&authored&&widgetsReady&&exportFits,authored,htmlValid:html.valid&&exportFits,cssValid:css.valid,responsive:css.responsive,assetsValid:assets.valid&&exportFits,projectValid,title:html.title,bodyHtml:html.bodyHtml,css:css.css,diagnostics,format,product:parsed.product,widgetsReady};
 }
 
-const APP_WORDS={ko:{search:'목록 검색',category:'분류',all:'모두',empty:'조건에 맞는 항목이 없어요.',inquiry:'문의',save:'문의 보관',saved:'이 브라우저에 보관했습니다.',memory:'브라우저 저장소를 사용할 수 없어 이 미리보기 동안만 보관됩니다.',corrupt:'저장된 문의 형식을 읽을 수 없습니다. 기존 자료를 덮어쓰지 않았습니다.',invalid:'공백이 아닌 1~1,000자의 문의를 써 주세요.',limit:'문의 보관함이 가득 찼습니다 (최대 50개).',message:'문의 내용'},en:{search:'Search items',category:'Category',all:'All',empty:'No items match.',inquiry:'Inquiry',save:'Keep inquiry',saved:'Kept in this browser.',memory:'Browser storage is unavailable. Kept only during this preview.',corrupt:'Stored inquiries could not be read. Existing data was not overwritten.',invalid:'Write a nonblank message of 1–1,000 characters.',limit:'The inquiry box is full (maximum 50).',message:'Your message'},ja:{search:'一覧を検索',category:'分類',all:'すべて',empty:'条件に合う項目がありません。',inquiry:'問い合わせ',save:'問い合わせを保存',saved:'このブラウザに保存しました。',memory:'保存領域を使えないため、このプレビュー中だけ保持します。',corrupt:'保存された問い合わせを読めません。既存のデータは上書きしていません。',invalid:'空白以外の1～1,000文字で書いてください。',limit:'問い合わせが上限に達しました（最大50件）。',message:'問い合わせ内容'}};
+const APP_WORDS={ko:{search:'목록 검색',category:'분류',all:'모두',empty:'조건에 맞는 항목이 없어요.',inquiry:'문의',save:'문의 보관',saved:'이 브라우저에 보관했습니다.',memory:'브라우저 저장소를 사용할 수 없어 이 미리보기 동안만 보관됩니다.',corrupt:'저장된 문의 형식을 읽을 수 없습니다. 기존 자료를 덮어쓰지 않았습니다.',invalid:'공백이 아닌 1~1,000자의 문의를 써 주세요.',limit:'문의 보관함이 가득 찼습니다 (최대 50개).',message:'문의 내용'},en:{search:'Search items',category:'Category',all:'All',empty:'No items match.',inquiry:'Inquiry',save:'Keep inquiry',saved:'Kept in this browser.',memory:'Browser storage is unavailable. Kept only during this preview.',corrupt:'Stored inquiries could not be read. Existing data was not overwritten.',invalid:'Write a nonblank message of 1–1,000 characters.',limit:'The inquiry box is full (maximum 50).',message:'Your message'},ja:{search:'一覧を検索',category:'分類',all:'すべて',empty:'条件に合う項目がありません。',inquiry:'問い合わせ',save:'問い合わせを保存',saved:'このブラウザに保存しました。',memory:'保存領域を使えないため、このプレビュー中だけ保持します。',corrupt:'保存された問い合わせを読めません。既存のデータは上書きしていません。',invalid:'空白以外の1～1,000文字で書いてください。',limit:'問い合わせが上限に達しました（最大50件）。',message:'問い合わせ内容'},zh:{search:'搜索条目',category:'分类',all:'全部',empty:'没有符合条件的条目。',inquiry:'留言',save:'保存留言',saved:'已保存在此浏览器中。',memory:'浏览器存储不可用，留言仅在本次预览中保留。',corrupt:'无法读取已保存的留言。原有数据已保留。',invalid:'请输入1至1000个字符的非空留言。',limit:'留言箱已满（最多50条）。',message:'留言内容'}};
 const scriptJson=(value:unknown)=>JSON.stringify(value).replaceAll('<','\\u003c').replaceAll('>','\\u003e').replaceAll('&','\\u0026').replaceAll('\u2028','\\u2028').replaceAll('\u2029','\\u2029');
 /** One compiler serves iframe previews and exports. Only the game-owned runtime can execute. */
 export function buildAuthoredHtml(files:Record<string,string>,language:AuthoredLanguage,appId='0000000000000000',extras?:{csp:string;head:string;tail:string},options?:{draft?:boolean;format?:AuthoredFormat}):string{

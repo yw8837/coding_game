@@ -1,4 +1,5 @@
 import {authoredProjectFormat,authoredStartFiles,validateAuthoredRelease,MAX_ASSETS_SOURCE,type AuthoredFormat,type AuthoredLanguage,type AuthoredEvaluation} from './release-authored.ts';
+import {localizedCopy} from './zh.ts';
 import {CAREER_JOBS,type CareerJob,type Localized} from './career-content.ts';
 import {careerRouteReady} from './career-progress.ts';
 import {careerFootprint} from './career-tags.ts';
@@ -29,7 +30,7 @@ export const createRelease=():ReleaseProgress=>({formatRevision:2,started:false,
 export type ReleaseAction={type:'career-release-start'|'career-release-test'|'career-release-build'|'career-release-publish';format?:AuthoredFormat;language?:AuthoredLanguage}|{type:'career-release-edit';file:string;content:string};
 type Host={notice?:string;completed:number[];gameplay:{openingCelebrated:boolean;career:{completed:string[];release:ReleaseProgress}};machines:{local:{files:Record<string,string>;dirs:string[]}}};
 export type ReleaseEvaluation={passed:boolean;checks:{id:string;title:Localized;expected:string;actual:string;passed:boolean}[];preview:{title:string;width:string;style:ReleaseStyle;apiReady:boolean;storageReady:boolean;product:ReleaseProduct;personalized:boolean;productValid:boolean;authored?:AuthoredEvaluation}};
-const l=(ko:string,en:string,ja:string):Localized=>({ko,en,ja});
+const l=(ko:string,en:string,ja:string,zh?:string):Localized=>localizedCopy(ko,en,ja,zh);
 const MAX_SOURCE=20000;
 export function releaseFiles(s:Pick<Host,'machines'>):Record<string,string>{const prefix=RELEASE_ROOT+'/';return Object.fromEntries(Object.entries(s.machines.local.files).filter(([path])=>path.startsWith(prefix)).map(([path,value])=>[path.slice(prefix.length),value]));}
 /** Framed data and every UTF-16 code unit participate, including emoji surrogates. */
@@ -88,7 +89,7 @@ export function applyRelease(s:Host,action:ReleaseAction):void{
   if(progress.started)return;progress.started=true;progress.formatRevision=2;
   for(const directory of ['/home/dev/studio',RELEASE_ROOT])if(!s.machines.local.dirs.includes(directory))s.machines.local.dirs.push(directory);
   if(action.format&&['website','webapp'].includes(action.format))progress.authoredFormat=action.format;
-  const startFiles=action.format&&['website','webapp'].includes(action.format)?authoredStartFiles(action.format,action.language&&['ko','en','ja'].includes(action.language)?action.language:'ko'):RELEASE_START_FILES;
+  const startFiles=action.format&&['website','webapp'].includes(action.format)?authoredStartFiles(action.format,action.language&&['ko','en','ja','zh'].includes(action.language)?action.language:'ko'):RELEASE_START_FILES;
   for(const [file,content] of Object.entries(startFiles))s.machines.local.files[RELEASE_ROOT+'/'+file]=content;return;
  }
  if(!progress.started)return;

@@ -1,3 +1,4 @@
+import {localizedCopy} from './zh.ts';
 import type {GameState} from './engine.ts';
 import {releasePublishedFresh} from './release.ts';
 
@@ -21,8 +22,8 @@ export function applyFinale(s:GameState,action:FinaleAction):GameState{
  return s;
 }
 
-type Copy={ko:string;en:string;ja:string};
-const c=(ko:string,en:string,ja:string):Copy=>({ko,en,ja});
+type Copy={ko:string;en:string;ja:string;zh:string};
+const c=(ko:string,en:string,ja:string,zh?:string):Copy=>localizedCopy(ko,en,ja,zh);
 export const FINALE_COPY:Record<FinaleBranch,{label:Copy;title:Copy;pitch:Copy;features:Copy[];epilogue:Copy[]}>={
  web:{
   label:c('갈래 A · 웹','Branch A · Web','ルートA · Web'),

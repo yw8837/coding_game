@@ -1,9 +1,10 @@
+import {localizedCopy} from './zh.ts';
 import type {GameState} from './engine.ts';
 
 /** Levels are derived from saved XP only; nothing here is stored separately. */
-export type ProgressLanguage='ko'|'en'|'ja';
+export type ProgressLanguage='ko'|'en'|'ja'|'zh';
 export type ProgressCopy=Record<ProgressLanguage,string>;
-const c=(ko:string,en:string,ja:string):ProgressCopy=>({ko,en,ja});
+const c=(ko:string,en:string,ja:string,zh?:string):ProgressCopy=>localizedCopy(ko,en,ja,zh);
 
 export const LEVELS=[
  {level:1,xp:0,title:c('견습 해결사','Apprentice Fixer','見習いフィクサー')},

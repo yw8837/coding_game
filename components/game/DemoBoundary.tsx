@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useLanguage} from '@/lib/game/i18n';
 import {isDemoComplete,DEMO_SAMPLE_JOB} from '@/lib/game/edition';
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from '@/components/ui/dialog';
@@ -6,7 +7,7 @@ import type {GameState} from '@/lib/game/engine';
 import type {GameProps} from './types';
 import {CafeScene} from './CafeScene';
 
-function useDemoCopy(){const lang=useLanguage();return {lang,tr:(ko:string,en:string,ja:string)=>({ko,en,ja})[lang]};}
+function useDemoCopy(){const lang=useLanguage();return {lang,tr:(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang]};}
 export function DemoGoal({state}:{state:GameState}){
  const {tr}=useDemoCopy();
  return <section className="campaign-goal demo-goal" data-no-translate><small>{tr('무료 웹 데모','FREE WEB DEMO','無料ウェブデモ')}</small><h3>{tr('카페 OPEN과 첫 새 고객 의뢰 해결','Open the café and solve a new client’s case','カフェ開店と最初の新しい顧客の依頼を解決')}</h3><p>{tr('메뉴판, 계산대, 주문함을 고친 뒤 새벽빵집의 가격 오류까지 직접 해결해요.','Repair the menu board, checkout and order box, then solve Dawn Bakery’s pricing error yourself.','メニュー、レジ、注文箱を直し、夜明けベーカリーの価格の間違いまで自分で解決。')}</p><strong>{Math.min(4,state.completed.filter(i=>[0,1,2].includes(i)).length+(state.gameplay.career.completed.includes(DEMO_SAMPLE_JOB)?1:0))} / 4 · {isDemoComplete(state)?tr('데모 완료','Demo complete','デモ完了'):tr('의뢰 진행 중','Cases in progress','依頼進行中')}</strong><p>{tr('다른 새 고객의 의뢰, 최종 배포, 코드 랩과 연습은 전체판에서 이어집니다.','Further client contracts, the final release, Code Lab and practice jobs continue in the full edition.','ほかの新規顧客の依頼、最終公開、コードラボ、練習は製品版に続きます。')}</p></section>;

@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {useLanguage,type Language} from '@/lib/game/i18n';
@@ -25,7 +26,7 @@ import {StudioScene} from './StoryArt';
 import {SmartCodeInput,type SmartCodeHandle} from './SmartCodeInput';
 import type {GameProps} from './types';
 
-type Text=(ko:string,en:string,ja:string)=>string;
+type Text=(ko:string,en:string,ja:string,zh?:string)=>string;
 type Localize=(value:Localized)=>string;
 type WorkTab='files'|'preview'|'checks';
 const DEMO_JOBS=CAREER_JOBS.filter(job=>job.id===DEMO_SAMPLE_JOB);
@@ -71,7 +72,7 @@ function CareerEditor({job,files,file,onFile,onEdit,onTest,readOnly,text,localiz
 export type CareerFileTarget={jobId:string;file:string;requestId?:number};
 export function CareerView(props:GameProps&{careerFileTarget?:CareerFileTarget|null;focusRequest?:number;toolsRequest?:number}){
  const {state,onAction}=props,language:Language=useLanguage();
- const text:Text=(ko,en,ja)=>language==='ko'?ko:language==='en'?en:ja;
+ const text:Text=(ko,en,ja,zh)=>localizedCopy(ko,en,ja,zh)[language];
  const localize:Localize=value=>value[language];
  const demo=props.edition==='demo',jobs=demo?DEMO_JOBS:CAREER_JOBS;
  const career=state.gameplay.career,current=demo?(career.accepted.includes(DEMO_SAMPLE_JOB)?jobs[0]:null):careerCurrent(state);

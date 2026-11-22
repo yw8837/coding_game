@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {FileContextMenu} from './FileContextMenu';
 import {useState} from 'react';
 import {Monitor,Folder,FolderOpen,FileText,FileCode,ChevronRight,Check,Download,Package,Play,Globe,TerminalSquare,HardDrive,ArrowLeft} from 'lucide-react';
@@ -13,7 +14,7 @@ import type {GameProps} from './types';
 
 export function ComputerView(props:GameProps){
  const {state,onOpen,onCommand,onNavigate}=props,language=useLanguage();
- const tr=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='en'?en:ja;
+ const tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language];
  const [tab,setTab]=useState<'pc'|'project'|'jobs'>('project'),[failure,setFailure]=useState('');
  const [browsedFolder,setBrowsedFolder]=useState<string|null>(null);
  const root=state.repo?.root??'/home/dev';
@@ -39,7 +40,7 @@ export function ComputerView(props:GameProps){
  };
  const perform=(step:SetupStep)=>{
   if(!allowed)return;
-  const result=runSetupStep(state,step,props.edition);
+  const result=runSetupStep(state,step,props.edition,language);
   for(const command of result.commands)onCommand(command);
   setFailure(result.error?result.output:'');
  };

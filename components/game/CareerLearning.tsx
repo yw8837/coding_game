@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 
 import {useEffect,useState} from 'react';
 import {useLanguage} from '@/lib/game/i18n';
@@ -8,7 +9,7 @@ import {applyLearningStep,learningInput,learningProgress,restoreLearningFile} fr
 import {changedSource} from '@/lib/game/learning-display';
 
 export function CareerLearning({job,files,onEdit,onTest,onCodeMode}:{job:CareerJob;files:Record<string,string>;onEdit:(file:string,content:string)=>void;onTest:()=>void;onCodeMode:()=>void}){
- const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='en'?en:ja;
+ const language=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language];
  const progress=learningProgress(job.id,files),evaluation=evaluateCareer(job.id,files);
  const [index,setIndex]=useState(()=>Math.max(0,progress.states.findIndex(state=>!state.done))),[input,setInput]=useState(''),[help,setHelp]=useState(false),[notice,setNotice]=useState<'wrong'|'correct'|'input'|'format'|'restored'|'rejected'|'same'|null>(null);
  const [pending,setPending]=useState<{file:string;content:string;code:string;correct:boolean;restored?:boolean}|null>(null),[saved,setSaved]=useState<{file:string;content:string;code:string}|null>(null);
@@ -25,7 +26,7 @@ export function CareerLearning({job,files,onEdit,onTest,onCodeMode}:{job:CareerJ
  const remaining=progress.states.findIndex(item=>!item.done);
  const allDone=progress.done===progress.steps.length;
  return <section className="career-learning" data-testid="career-learning" aria-label={tr('한 부분씩 고치기','Fix one part at a time','1つずつ直す')}>
-  <header><div><span>{tr(`${job.act}장 · ${job.act<3?'직접 값 쓰기':'한 줄 써 보기'}`,`Act ${job.act} · ${job.act<3?'Type a value':'Write one line'}`,`${job.act}章 · ${job.act<3?'値を自分で書く':'1行を書く'}`)}</span><h3>{tr('지금은 한 가지만 고쳐요.','One small change at a time.','今は1つだけ直しましょう。')}</h3></div><strong aria-label={tr('고친 부분','Parts fixed','直した部分')}>{progress.done} / {progress.steps.length}</strong></header>
+  <header><div><span>{tr(`${job.act}장 · ${job.act<3?'직접 값 쓰기':'한 줄 써 보기'}`,`Act ${job.act} · ${job.act<3?'Type a value':'Write one line'}`,`${job.act}章 · ${job.act<3?'値を自分で書く':'1行を書く'}`,`第${job.act}章 · ${job.act<3?'亲手输入数值':'试写一行代码'}`)}</span><h3>{tr('지금은 한 가지만 고쳐요.','One small change at a time.','今は1つだけ直しましょう。')}</h3></div><strong aria-label={tr('고친 부분','Parts fixed','直した部分')}>{progress.done} / {progress.steps.length}</strong></header>
   <nav className="career-learning-progress" aria-label={tr('수정할 부분','Parts to fix','修正する部分')}>{progress.steps.map((item,i)=><button type="button" key={item.id} aria-current={i===index?'step':undefined} data-testid={'career-learning-step-'+i} onClick={()=>move(i)} aria-label={`${i+1}. ${item.title[language]}`}>{progress.states[i].done?'✓':i+1}</button>)}</nav>
   <div className="career-learning-task"><p className="career-learning-file"><span>{step.file}</span><code>{step.id}</code></p><h4>{step.title[language]}</h4><p className="career-learning-current">{tr('현재 저장된 값','Currently saved value','現在保存されている値')}: <code data-testid="career-learning-current">{state.supported?display(state.current):tr('읽을 수 없음','Unreadable','読み取れません')}</code></p>
    {!state.supported?<div className="career-learning-recovery"><p>{tr('이 파일은 한 부분씩 고치기 어려운 모양이 됐어요. 처음 받은 파일로 되돌리거나 직접 편집할 수 있습니다.','This file has a shape that this small edit cannot handle. Restore the original client file or edit it directly.','このファイルは部分修正が難しい形です。受け取った状態に戻すか直接編集できます。')}</p><button type="button" data-testid="career-learning-restore" onClick={()=>restore(step.file)}>{tr('이 파일만 처음으로 되돌리기','Restore only this file','このファイルだけ最初に戻す')}</button><button type="button" onClick={onCodeMode}>{tr('코드 직접 편집','Edit code directly','コードを直接編集')}</button></div>:<>

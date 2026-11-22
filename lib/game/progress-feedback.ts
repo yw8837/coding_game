@@ -5,7 +5,7 @@ import {careerFiles,careerFresh} from './career.ts';
 import {evaluateCareer} from './career-evaluation.ts';
 
 export type ProgressMoment={tier:'check'|'delivery'|'milestone';label:Localized;title:Localized;detail:Localized;credits:number;xp:number};
-const checked=(count:number,title:Localized):ProgressMoment=>({tier:'check',label:L('문제 해결','ALL CHECKS PASS','問題解決'),title,detail:L(`${count}개 검사 통과 · 내 수정이 작동해요`,`${count} checks passed · your fix works`,`${count}件の検査に合格 · 修正が動いています`),credits:0,xp:0});
+const checked=(count:number,title:Localized):ProgressMoment=>({tier:'check',label:L('문제 해결','ALL CHECKS PASS','問題解決'),title,detail:L(`${count}개 검사 통과 · 내 수정이 작동해요`,`${count} checks passed · your fix works`,`${count}件の検査に合格 · 修正が動いています`,`${count}项检查通过 · 我的修改起作用了`),credits:0,xp:0});
 
 /** Feedback follows earned state transitions, never awards progress or runs on load. */
 export function progressMoment(before:GameState,after:GameState):ProgressMoment|null {

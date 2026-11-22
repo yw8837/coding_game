@@ -5,7 +5,7 @@ import {endingStoryScenes} from './ending-story.ts';
 test('ending scenes name the actual released service in all locales and keep the three ordered scenes',()=>{
  const scenes=endingStoryScenes('Small Night Cinema','events');
  assert.deepEqual(scenes.map(scene=>scene.id),['neighbors','celebration','home']);
- for(const scene of scenes)for(const language of ['ko','en','ja'] as const){
+ for(const scene of scenes)for(const language of ['ko','en','ja','zh'] as const){
   assert.ok(scene.body[language].includes('Small Night Cinema'));
   assert.ok(scene.heading[language].trim());
  }

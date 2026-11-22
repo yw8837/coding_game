@@ -1,11 +1,12 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useState} from 'react';
 import {useLanguage} from '@/lib/game/i18n';
 import type {AuthoredFormat} from '@/lib/game/release-authored';
 import type {GameProps} from './types';
 
 export function ProjectUpgrade({props,disabled}:{props:GameProps;disabled:boolean}){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>localizedCopy(ko,en,ja)[lang];
  const [open,setOpen]=useState(false),[format,setFormat]=useState<AuthoredFormat>('website');
  return <section className="authored-checks" data-testid="studio-upgrade">
   <h3>{tr('내 HTML·CSS와 사진으로 더 만들기','Create with your own HTML, CSS and photos','自分のHTML・CSS・写真でもっと作る')}</h3>

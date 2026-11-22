@@ -76,3 +76,6 @@
 
 @container(max-width:820px){.coach-layout:has(.coach-source-editor)>.coach-action{order:-1}}
 @media(max-width:760px){.coach-layout:has(.coach-source-editor)>.coach-action{order:-1}}
+
+.coach-check-feedback{margin-top:20px;border-top:1px solid #647b8d;padding-top:16px}.coach-check-feedback h3{font-size:14px;margin:0 0 12px}.coach-check-feedback ul{list-style:none;padding:0;margin:0;display:grid;gap:16px}.coach-check-feedback li{border-left:3px solid #d2a871;padding-left:12px;overflow-wrap:anywhere}.coach-check-feedback strong{font-size:13px;color:#f0d5ac}.coach-check-feedback p{margin:7px 0;font-size:12px}.coach-check-feedback button{display:inline-flex;align-items:center;gap:7px;max-width:100%;white-space:normal;text-align:left}
+.terminal-check-feedback{margin:18px 0;padding:14px;border:1px solid #8c7959;background:#192b37;border-radius:4px;overflow-wrap:anywhere}.terminal-check-feedback>strong{display:block;color:#e4d2aa}.terminal-check-feedback>div{margin-top:14px;border-top:1px solid #3b5362;padding-top:12px}.terminal-check-feedback b{color:#e4d2aa;font-weight:500}.terminal-check-feedback p{margin:6px 0;white-space:pre-wrap}.terminal-check-feedback button{margin-top:7px;min-height:36px;padding:5px 10px;border:1px solid #8faaba;border-radius:3px;color:#d5edf7;text-decoration:underline;text-underline-offset:3px}

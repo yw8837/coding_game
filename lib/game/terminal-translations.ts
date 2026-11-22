@@ -4,7 +4,60 @@ import type {Language} from './translations.ts';
 import {translateOpsLine} from './terminal-patterns.ts';
 
 // Exact authored lines only. Paths, commands, code and user messages are opaque.
+const zhLines:Record<string,string>={
+ "현재 저장한 파일을 검사합니다. 결과는 이 터미널 아래에 표시됩니다.":"正在检查当前保存的文件，结果将显示在此终端下方。",
+ "pwd를 뜻했나요? /는 절대경로를 시작합니다.": "你是否想输入pwd？/表示绝对路径的起点。",
+ "help로 지원 명령과 사용법을 확인하세요.": "输入help查看支持的命令与用法。",
+ "작업 저장소가 이미 있습니다. 기존 프로젝트를 사용하세요.": "工作仓库已存在，请使用现有项目。",
+ "지원 명령: git clone / status / diff / add / commit -m / push / pull / log": "支持的命令：git clone / status / diff / add / commit -m / push / pull / log",
+ "shell: 따옴표 또는 역슬래시가 닫히지 않았어요.": "shell：引号或反斜杠尚未闭合。",
+ "도구가 이 컴퓨터에 설치되어 있지 않습니다.": "此电脑尚未安装该工具。",
+ "LINUX  pwd · ls · cd <경로> · cat <파일> · mkdir <폴더> · cp · mv · touch · clear": "LINUX  pwd · ls · cd <路径> · cat <文件> · mkdir <文件夹> · cp · mv · touch · clear",
+ "GIT    git clone <주소> · status · diff · add <파일|.> · commit -m \"설명\" · push · pull · log": "GIT    git clone <地址> · status · diff · add <文件|.> · commit -m \"说明\" · push · pull · log",
+ "CHECK  curl <가상 주소> · ps · pkill node · pkill python3": "CHECK  curl <虚拟地址> · ps · pkill node · pkill python3",
+ "지원하는 학습용 명령만 실행합니다. 실제 PC에 설치하거나 외부 인터넷에 접속하지 않습니다.": "此处仅运行支持的学习命令，不会在真实电脑安装软件或访问外部互联网。",
+ "이 실습의 sudo는 apt 명령을 지원합니다.": "此模拟环境中的sudo支持apt命令。",
+ "패키지 목록을 갱신했습니다. [게임 내 시뮬레이션]": "软件包列表已更新。[游戏内模拟]",
+ "E: 패키지 이름을 입력하세요.": "E: 请输入软件包名称。",
+ "가상 컴퓨터의 설치 상태가 갱신되었습니다.": "虚拟电脑的工具安装状态已更新。",
+ "지원 명령: sudo apt update / install / list": "支持的命令：sudo apt update / install / list",
+ "이 실습에서는 node --version과 npm 스크립트를 사용하세요.": "请在此模拟环境使用node --version与npm脚本。",
+ "이 실습은 package.json의 의존성을 설치하는 npm install을 지원합니다.": "此模拟环境支持用npm install安装package.json中的依赖。",
+ "npm ERR! 이 프로젝트는 devDependencies.vite가 필요합니다.": "npm ERR! 此项目需要devDependencies.vite。",
+ "[게임] 이 프로젝트의 의존성이 준비됐습니다.": "[游戏] 此项目的依赖已准备完成。",
+ "지원 명령: npm install / run dev / test / run build": "支持的命令：npm install / run dev / test / run build",
+ "프로젝트에서 npm install을 먼저 실행하세요.": "请先在项目文件夹运行npm install。",
+ "이 실습에서는 dev 스크립트의 vite 실행을 지원합니다.": "此模拟环境支持dev脚本中的vite。",
+ "[게임] 서버는 백그라운드에서 실행됩니다. pkill node로 종료.": "[游戏] 服务器在后台运行，使用pkill node停止。",
+ "현재 저장한 파일을 검사합니다. 검사 결과 패널을 확인하세요.": "正在检查当前保存的文件，请查看测试结果面板。",
+ "이 실습에서 지원하지 않는 npm 스크립트입니다.": "此模拟环境不支持该npm脚本。",
+ "CatHub 저장소의 복제 주소를 확인하세요.": "请检查CatHub仓库的克隆地址。",
+ "이 서버 실습은 ~/menu-site 경로를 사용합니다. cd ~ 후 복제해 주세요.": "服务器练习使用~/menu-site路径，请先运行cd ~再克隆。",
+ "이 첫 버전은 하나의 작업 저장소를 지원합니다. 기존 프로젝트를 사용하세요.": "此版本支持一个工作仓库，请使用现有项目。",
+ "실행 중인 Python 프로세스는 재시작해야 수정본을 읽습니다.": "请重启运行中的Python进程，以加载修改后的文件。",
+ "서버 사본은 git pull로 갱신합니다.": "使用git pull更新服务器副本。",
+ "서버 사본에서는 git pull / status를 지원합니다. 수정·커밋은 내 PC에서 진행하세요.": "服务器副本支持git pull / status。请在你的电脑上编辑与提交。",
+ "사용법: git commit -m \"변경 설명\"": "用法：git commit -m \"修改说明\"",
+ "변경이 로컬 기록에 저장되었습니다. CatHub에는 push 후 반영됩니다.": "修改已保存到本地记录，运行push后才会更新到CatHub。",
+ "CatHub의 원격 저장소가 갱신되었습니다.": "CatHub远程仓库已更新。",
+ "이 입문 버전은 main 브랜치에서 clone, status, diff, add, commit, push, pull, log를 지원합니다.": "此入门版本支持在main分支上使用clone、status、diff、add、commit、push、pull、log。",
+ "서버 앱에서 Ubuntu를 먼저 준비하세요.": "请先在服务器应用中准备Ubuntu。",
+ "ssh: Could not resolve hostname. 지원 주소: dev@mono-server": "ssh: Could not resolve hostname. 支持的地址：dev@mono-server",
+ "Connected to mono-server. exit로 내 PC에 돌아갑니다.": "已连接mono-server，输入exit返回你的电脑。",
+ "작업실을 종료하려면 창을 닫으세요. 진행 상황은 자동 저장됩니다.": "关闭窗口即可离开工作区，进度会自动保存。",
+ "지원 명령: pip install -r requirements.txt": "支持的命令：pip install -r requirements.txt",
+ "이 실습에서는 python3 server.py를 지원합니다.": "此模拟环境支持python3 server.py。",
+ "Port 8000 is in use. pkill python3로 종료하세요.": "端口8000正在使用中，请用pkill python3停止进程。",
+ "[게임] 백그라운드 실행. pkill python3로 종료.": "[游戏] 后台运行中，使用pkill python3停止。",
+ "SyntaxError: MENU_PATH 문자열과 SAVE_ORDERS의 True/False 값을 확인하세요.": "SyntaxError: 请检查MENU_PATH字符串与SAVE_ORDERS的True/False值。",
+ "이 실습의 Python 실행기는 제공된 템플릿의 MENU_PATH, SAVE_ORDERS 설정만 지원합니다.": "此模拟环境的Python运行器仅支持所提供模板中的MENU_PATH与SAVE_ORDERS设置。",
+ "지원 명령: pkill node / pkill python3": "支持的命令：pkill node / pkill python3",
+ "사용법: curl http://mono-server:8000/api/menu": "用法：curl http://mono-server:8000/api/menu",
+ "(변경 없음)": "（无修改）",
+ "이 첫 버전에서 지원하는 명령은 help로 확인하세요.": "输入help查看此版本支持的命令。"
+};
 const lines:Record<string,readonly [string,string]>={
+ '현재 저장한 파일을 검사합니다. 결과는 이 터미널 아래에 표시됩니다.':['Checking the currently saved files. Results appear below in this terminal.','現在保存されているファイルを検査します。結果はこのターミナルの下に表示されます。'],
  'pwd를 뜻했나요? /는 절대경로를 시작합니다.':['Did you mean pwd? / starts an absolute path.','pwdの意味ですか？ / は絶対パスの先頭です。'],
  'help로 지원 명령과 사용법을 확인하세요.':['Use help to see supported commands and usage.','helpで対応コマンドと使い方を確認してください。'],
  '작업 저장소가 이미 있습니다. 기존 프로젝트를 사용하세요.':['A working repository already exists. Use the existing project.','作業リポジトリはすでにあります。既存のプロジェクトを使用してください。'],
@@ -63,7 +116,7 @@ const lines:Record<string,readonly [string,string]>={
 export function translateTerminalOutput(command:string,output:string,language:Language):string{
  if(output===DEMO_LOCKED_MESSAGE)return demoLockedMessage(language);
  if(language==='ko'||!output)return output;
- const translate=(line:string)=>lines[line]?.[language==='en'?0:1]??translateOpsLine(line,language)??line;
+ const translate=(line:string)=>language==='zh'?(Object.hasOwn(zhLines,line)?zhLines[line]:translateOpsLine(line,'zh')??line):lines[line]?.[language==='en'?0:1]??translateOpsLine(line,language)??line;
  let args:string[];
  try{args=tokenize(command);}catch{return translate(output);}
  const [cmd,sub]=args;
@@ -78,7 +131,7 @@ export function translateTerminalOutput(command:string,output:string,language:La
   }
   if(sub==='clone'){
    const match=/^(Cloning into '([\s\S]*)'\.\.\.\nReceiving objects: 100% \(8\/8\), done\.\n)이제 cd \2 로 폴더에 들어가세요\.$/.exec(output);
-   if(match)return match[1]+(language==='en'?`Now enter the folder with cd ${match[2]}.`:`cd ${match[2]}でフォルダーに移動してください。`);
+   if(match)return match[1]+(language==='zh'?`请用cd ${match[2]}进入文件夹。`:language==='en'?`Now enter the folder with cd ${match[2]}.`:`cd ${match[2]}でフォルダーに移動してください。`);
    // Clone errors can echo arbitrary destination names. Only its known final
    // guidance can be translated without touching that destination text.
    const end=output.lastIndexOf('\n');return end<0?translate(output):output.slice(0,end+1)+translate(output.slice(end+1));
@@ -86,7 +139,7 @@ export function translateTerminalOutput(command:string,output:string,language:La
   if(sub==='status'&&output!=='On branch main\n서버 사본은 git pull로 갱신합니다.')return output;
  }
  if(cmd==='cp'||cmd==='mv'){
-  if(output===`사용법: ${cmd} <원본 파일> <대상 파일>`)return language==='en'?`Usage: ${cmd} <source file> <destination file>`:`使用方法: ${cmd} <元のファイル> <コピー先のファイル>`;
+  if(output===`사용법: ${cmd} <원본 파일> <대상 파일>`)return language==='zh'?`用法：${cmd} <源文件> <目标文件>`:language==='en'?`Usage: ${cmd} <source file> <destination file>`:`使用方法: ${cmd} <元のファイル> <コピー先のファイル>`;
   return output;
  }
  // Only help and tool/server commands produce known authored multiline logs.

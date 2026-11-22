@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useState} from 'react';
 import {AlertCircle,ArrowRight,CheckCircle2,FlaskConical,Play,RotateCcw} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
@@ -7,7 +8,7 @@ import type {GameProps} from './types';
 
 /** Drafts/proofs/rewards live in game state; hiding or closing a window cannot clear them. */
 export function PracticeJobs({state,onAction}:Pick<GameProps,'state'|'onAction'>){
- const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='en'?en:ja;
+ const language=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language];
  const [selected,setSelected]=useState<PracticeId>('total');
  const practice=state.gameplay.practice??createPractice();
  const job=PRACTICE_JOBS.find(item=>item.id===selected)!;
@@ -16,7 +17,7 @@ export function PracticeJobs({state,onAction}:Pick<GameProps,'state'|'onAction'>
  const completed=practice.completed.includes(job.id);
  const currentProof=proof?.answer===answer?proof:undefined;
  const firstFailure=currentProof?.cases.find(result=>!result.passed);
- const value=(item:PracticeValue)=>typeof item==='boolean'?(item?tr('예','Yes','はい'):tr('아니요','No','いいえ')):item==='undefined'?tr('계산 불가','Undefined','計算できません'):typeof item==='number'?item.toLocaleString(language==='ko'?'ko-KR':language==='ja'?'ja-JP':'en-US'):item;
+ const value=(item:PracticeValue)=>typeof item==='boolean'?(item?tr('예','Yes','はい'):tr('아니요','No','いいえ')):item==='undefined'?tr('계산 불가','Undefined','計算できません'):typeof item==='number'?item.toLocaleString(language==='ko'?'ko-KR':language==='ja'?'ja-JP':language==='zh'?'zh-CN':'en-US'):item;
  const inputText=(input:Record<string,PracticeValue>)=>Object.entries(input).map(([key,item])=>`${key} = ${value(item)}`).join(' · ');
  const draft=(next:string)=>onAction({type:'practice-draft',id:job.id,answer:next});
  const nextJob=PRACTICE_JOBS.find(item=>!practice.completed.includes(item.id)&&item.id!==job.id);

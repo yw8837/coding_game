@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {localizeUI,useLanguage} from '@/lib/game/i18n';
 import {useEffect,useRef,useState} from 'react';
 import {Check,Coffee,PartyPopper,Trophy,Download} from 'lucide-react';
@@ -10,7 +11,7 @@ import {desktopBridge} from '@/lib/game/platform';
 import type {GameProps} from './types';
 
 export function OpeningEnding({state,onAction,onOpen,onNavigate,onFollow,edition}:GameProps){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  const opened=state.gameplay.openingCelebrated;
  const [burst,setBurst]=useState(false),[exported,setExported]=useState('');
  const root=useRef<HTMLDivElement>(null);

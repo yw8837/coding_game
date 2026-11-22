@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useEffect,useRef,useState} from 'react';
 import {useLanguage} from '@/lib/game/i18n';
 import {MAX_ASSETS,MAX_IMAGE_DATA_TOTAL,validateAuthoredAssets} from '@/lib/game/release-authored';
@@ -26,7 +27,7 @@ async function importPhoto(file:File):Promise<string>{
 }
 
 export function ProjectImageLibrary({source,disabled,onChange,onInsert}:{source?:string;disabled:boolean;onChange:(source:string)=>boolean;onInsert:(id:string,alt:string)=>void}){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>localizedCopy(ko,en,ja)[lang];
  const input=useRef<HTMLInputElement>(null),busyRef=useRef(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const {assets,valid}=validateAuthoredAssets(source);
  const current=useRef({source,disabled});

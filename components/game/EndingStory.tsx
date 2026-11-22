@@ -1,5 +1,6 @@
 'use client';
 import Image from 'next/image';
+import {localizedCopy} from '@/lib/game/zh';
 import {useCallback,useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {ArrowLeft,ArrowRight,Pause,Play,SkipForward} from 'lucide-react';
 import {Dialog,DialogContent,DialogDescription,DialogTitle} from '@/components/ui/dialog';
@@ -17,7 +18,7 @@ function subscribeMotion(change:()=>void){
 export type EndingStoryProps={serviceTitle?:string;serviceKind?:string;servicePurpose?:string;serviceImage?:string;version?:string;onCredits:()=>void;onClose:()=>void};
 /** A presentation only. Ending progress is recorded by the parent, never by slide controls. */
 export function EndingStory({serviceTitle,serviceKind,servicePurpose,serviceImage,version='1.0.0',onCredits,onClose}:EndingStoryProps){
- const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[language];
+ const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>localizedCopy(ko,en,ja)[language];
  const title=serviceTitle?.trim()||tr('나의 첫 작품','My first project','自分の最初の作品');
  const scenes=endingStoryScenes(title,serviceKind),[index,setIndex]=useState(0),[paused,setPaused]=useState(false);
  const reduce=useSyncExternalStore(subscribeMotion,reducedMotion,()=>true),ended=useRef(false),callbacks=useRef({onCredits,onClose});

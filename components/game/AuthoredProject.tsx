@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useMemo,useRef,useState} from 'react';
 import {useLanguage} from '@/lib/game/i18n';
 import {desktopBridge} from '@/lib/game/platform';
@@ -16,7 +17,7 @@ type Props={props:GameProps;mode:'release'|'studio';onBack:()=>void;onLetter?:()
 const escapeAttribute=(value:string)=>value.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 
 export function AuthoredProject({props,mode,onBack,onLetter,onStudio}:Props){
- const {state,onAction}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const {state,onAction}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>localizedCopy(ko,en,ja)[lang];
  const studio=mode==='studio',release=state.gameplay.career.release,work=state.gameplay.career.studio;
  const files=useMemo(()=>studio&&work?studioFiles(state):releaseFiles(state),[studio,work,state]);
  const hash=useMemo(()=>releaseHash(files),[files]);

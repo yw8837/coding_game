@@ -1,3 +1,4 @@
+import {localizedCopy} from './zh.ts';
 import {dirtyFiles,projectFiles,sourceHash,type GameState} from './engine.ts';
 import {lessonFacts} from './lesson.ts';
 import {setupReadiness} from './setup.ts';
@@ -8,7 +9,7 @@ import {releaseFiles,releaseHash,releaseFresh,releaseBuildFresh,releasePublished
 import type {Localized} from './career-content.ts';
 import {DEMO_SAMPLE_JOB,isDemoCafeComplete,isDemoComplete} from './edition.ts';
 
-const L=(ko:string,en:string,ja:string):Localized=>({ko,en,ja});
+const L=(ko:string,en:string,ja:string,zh?:string):Localized=>localizedCopy(ko,en,ja,zh);
 export type QuestMilestone={id:string;label:Localized;done:boolean};
 export type QuestProgress={kind:'cafe'|'career'|'release';steps:QuestMilestone[];currentId:string|null;completed:number;total:number;checks:null|{passed:number;total:number};evidence:Localized|null};
 function model(kind:QuestProgress['kind'],steps:QuestMilestone[],checks:QuestProgress['checks']=null,evidence:Localized|null=null):QuestProgress{

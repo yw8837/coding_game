@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useEffect,useRef,useState,type KeyboardEvent} from 'react';
 import {ArrowRight,Play,RotateCcw,Settings2} from 'lucide-react';
 import {type Language} from '@/lib/game/i18n';
@@ -10,7 +11,7 @@ export function TitleScreen({hasSave,language,onStart,onSettings,onNew,loading=f
  const animate=ready;
  const start=useRef<HTMLButtonElement>(null),resume=useRef<HTMLButtonElement>(null),room=useRef<HTMLDivElement>(null);
  const frame=useRef(0);
- const tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[language];
+ const tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language];
  // eslint-disable-next-line react-hooks/set-state-in-effect -- Gate controls until hydration and save loading finish.
  useEffect(()=>{setReady(true);return()=>cancelAnimationFrame(frame.current);},[]);
  useEffect(()=>{

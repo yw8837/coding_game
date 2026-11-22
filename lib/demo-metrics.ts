@@ -1,10 +1,15 @@
 /** Public wire format: no code, commands, save files, URL queries or identity. */
 export const DEMO_STAGES=['title','desktop','opening','complete',...['0','1','2'].flatMap(chapter=>['prepare','inspect','sign','size','rule','serve','route','keep','connect','menu','order','trial','deliver','complete'].map(step=>`cafe-${chapter}-${step}`))];
-export type DemoPulse={session:string;language:'ko'|'en'|'ja';stage:string;seconds:number;mode:'new'|'continue'|null};
+const demoLanguages = ['ko', 'en', 'ja', 'zh'] as const;
+type DemoLanguage = (typeof demoLanguages)[number];
+export const validDemoLanguage = (value: unknown): value is DemoLanguage =>
+ typeof value === 'string' && demoLanguages.some(language => language === value);
+
+export type DemoPulse={session:string;language:DemoLanguage;stage:string;seconds:number;mode:'new'|'continue'|null};
 export function validDemoPulse(value:unknown):value is DemoPulse {
  if(!value||typeof value!=='object')return false;
  const p=value as Record<string,unknown>;
- return Object.keys(p).every(k=>['session','language','stage','seconds','mode'].includes(k))&&typeof p.session==='string'&&/^[a-f\d-]{36}$/.test(p.session)&&['ko','en','ja'].includes(String(p.language))&&DEMO_STAGES.includes(String(p.stage))&&Number.isInteger(p.seconds)&&Number(p.seconds)>=0&&Number(p.seconds)<=30&&(p.mode===null||p.mode==='new'||p.mode==='continue');
+ return Object.keys(p).every(k=>['session','language','stage','seconds','mode'].includes(k))&&typeof p.session==='string'&&/^[a-f\d-]{36}$/.test(p.session)&&validDemoLanguage(p.language)&&DEMO_STAGES.includes(String(p.stage))&&Number.isInteger(p.seconds)&&Number(p.seconds)>=0&&Number(p.seconds)<=30&&(p.mode===null||p.mode==='new'||p.mode==='continue');
 }
 export function stageLabel(stage:string):string {
  const fixed:Record<string,string>={title:'타이틀',desktop:'바탕화면 · 첫 메시지',opening:'OPEN 행사',complete:'데모 완료'};

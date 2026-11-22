@@ -1,3 +1,4 @@
+import {localizedCopy} from './zh.ts';
 import {dirtyFiles,projectFiles,sourceHash,type GameState} from './engine.ts';
 import {lessonFacts} from './lesson.ts';
 import {PROJECT,REPO_URL,MISSIONS} from './content.ts';
@@ -27,7 +28,7 @@ function upload(s:GameState,phase:number):Task|null{
 }
 export function currentTask(s:GameState,edition:import('./edition.ts').GameEdition='full'):Task{
  if(edition==='demo'&&isDemoCafeComplete(s)){
-  const l=(ko:string,en:string,ja:string)=>({ko,en,ja}),c=s.gameplay.career,file=careerCodeModeSafe(careerFiles(s,DEMO_SAMPLE_JOB))==='javascript'?'solution.js':'pricing.json';
+  const l=localizedCopy,c=s.gameplay.career,file=careerCodeModeSafe(careerFiles(s,DEMO_SAMPLE_JOB))==='javascript'?'solution.js':'pricing.json';
   const sample=(id:string,phase:number,title:Localized,detail:Localized,app:Task['app']='career'):Task=>({id,phase,title:title.ko,detail:detail.ko,app,...(phase>=2&&phase<4?{file}:{}),localized:{title,detail}});
   if(isDemoComplete(s))return sample('demo-complete',5,l('카페와 첫 고객 의뢰 완료!','Café and first client case complete!','カフェと最初の顧客の依頼をクリア！'),l('새벽빵집에도 고친 파일과 답장을 전달했어요. 작업을 돌아보거나 설정에서 저장 파일을 백업하세요.','Your repaired files and reply reached Dawn Bakery too. Revisit your work or back up your save in Settings.','夜明けベーカリーにも修正したファイルと返事を届けました。仕事を振り返ったり設定でセーブを保存できます。'),'achievements');
   if(!c.accepted.includes(DEMO_SAMPLE_JOB))return sample('demo-sample-accept',0,l('첫 새 고객: 새벽빵집의 부탁','First new client: Dawn Bakery','最初の新しい顧客：夜明けベーカリー'),l('카페를 연 소문이 퍼졌어요. 여섯 개 상자 가격이 틀린 새벽빵집의 파일을 받아 독립 의뢰에 도전하세요.','Word of the café’s opening has spread. Take Dawn Bakery’s files and solve its incorrect six-roll box pricing.','カフェ開店のうわさが広まりました。夜明けベーカリーのファイルを受け取り、6個箱の価格の間違いを解決しましょう。'));
@@ -38,7 +39,7 @@ export function currentTask(s:GameState,edition:import('./edition.ts').GameEditi
  if(s.gameplay.openingCelebrated){
   const c=s.gameplay.career,job=careerCurrent(s),next=careerNext(s);
   const career=(id:string,phase:number,title:Localized,detail:Localized):Task=>({id,phase,title:title.ko,detail:detail.ko,app:'career',localized:{title,detail}});
-  const l=(ko:string,en:string,ja:string)=>({ko,en,ja});
+  const l=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh);
   if(careerRouteReady(c.completed)&&(!job||c.completed.includes(job.id))){
    const release=c.release;
    if(!release.started)return career('release-start',0,l('최종 프로젝트 시작하기','Start your final project','最後の作品を始める'),l('각 구역에서 의뢰 4개를 마쳤어요. 내 프로젝트를 완성하고 1.0을 배포하세요. 남은 의뢰는 원할 때 이어 할 수 있어요.','Four jobs in each district are done. Build your own project and release version 1.0. The remaining jobs are optional.','各エリアで4件を終えました。自分の作品を完成させ、1.0を公開しましょう。残りの依頼は任意です。'));

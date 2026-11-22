@@ -10,10 +10,10 @@ test('authored final letters name actual title, format and purpose in every endi
  for(const format of ['website','webapp'] as const)for(const ending of ['community','studio','balanced'] as ReleaseEnding[]){
   const footprint:ReleaseFootprint={...careerFootprint([],()=>({})),clients:[],title:'My travel sketches',product:null,authored:{format,description:'A place to share the drawings I made on a trip.'}};
   const letter=releaseLetter(ending,footprint);
-  for(const locale of ['ko','en','ja'] as const){
+  for(const locale of ['ko','en','ja','zh'] as const){
    const text=letter.paragraphs.map(paragraph=>paragraph[locale]).join('\n');
    assert.ok(text.includes(footprint.title));assert.ok(text.includes(footprint.authored!.description));
-   assert.ok(text.includes(({website:{ko:'웹사이트',en:'website',ja:'ウェブサイト'},webapp:{ko:'웹앱',en:'web app',ja:'ウェブアプリ'}})[format][locale]));
+   assert.ok(text.includes(({website:{ko:'웹사이트',en:'website',ja:'ウェブサイト',zh:'网站'},webapp:{ko:'웹앱',en:'web app',ja:'ウェブアプリ',zh:'网页应用'}})[format][locale]));
    if(format==='website')assert.doesNotMatch(text,/문의|inquiry|問い合わせ|도움판|help board/);
    assert.ok(letter.director.some(paragraph=>paragraph[locale].includes(footprint.title)));
   }

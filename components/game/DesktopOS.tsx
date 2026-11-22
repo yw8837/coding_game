@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useCallback,useEffect,useRef,useState,type ReactNode,type KeyboardEvent as ReactKeyboardEvent} from 'react';
 import {editionAllowsApp,editionAllowsPath} from '@/lib/game/edition';
 import {Monitor,Code2,TerminalSquare,MessageCircle,FolderOpen,FileText,Settings2,Trophy,Palette,Server,Send,LayoutGrid,Search,Power,Volume2,VolumeX,Wifi,Check,Flag,Puzzle,Expand,ChevronLeft,ChevronRight,CalendarDays,Columns2,Sparkles,FileCode2,Database} from 'lucide-react';
@@ -52,7 +53,7 @@ export function useDesktopManager(){
 type Manager=ReturnType<typeof useDesktopManager>;
 export function Wallpaper(){return <div className="pc-wallpaper" aria-hidden="true"><div className="wallpaper-fold fold-one"/><div className="wallpaper-fold fold-two"/><div className="wallpaper-fold fold-three"/><div className="wallpaper-fold fold-four"/><div className="wallpaper-light"/></div>;}
 export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSound,mix,onMix,onTile,saveStatus,sidebarOpen,onSidebar,advanced,onWindowClose}:{manager:Manager;props:GameProps;renderApp:(id:AppId)=>ReactNode;onSettings:()=>void;onTitle:()=>void;sound:boolean;onSound:()=>void;mix:FeedbackPreferences;onMix:(next:FeedbackPreferences)=>void;onTile:()=>void;saveStatus:'saved'|'saving'|'failed';sidebarOpen:boolean;onSidebar:()=>void;advanced:boolean;onWindowClose:()=>void}){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>lang==='ko'?ko:lang==='en'?en:ja;
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  const [panel,setPanel]=useState<'start'|'calendar'|'sound'|'language'|null>(null),[query,setQuery]=useState(''),[now,setNow]=useState<Date|null>(null),[month,setMonth]=useState<Date|null>(null);
  const start=panel==='start',calendar=panel==='calendar',soundOpen=panel==='sound',languageOpen=panel==='language',locale=DESKTOP_LOCALES[lang];
  const stage=useRef<HTMLDivElement>(null),startRef=useRef<HTMLButtonElement>(null),searchRef=useRef<HTMLButtonElement>(null),clockRef=useRef<HTMLButtonElement>(null),search=useRef<HTMLInputElement>(null),startPanel=useRef<HTMLElement>(null),calendarPanel=useRef<HTMLElement>(null),calendarToday=useRef<HTMLButtonElement>(null),returnFocus=useRef<HTMLButtonElement|null>(null),soundRef=useRef<HTMLButtonElement>(null),languageRef=useRef<HTMLButtonElement>(null),soundPanel=useRef<HTMLElement>(null),languagePanel=useRef<HTMLElement>(null);
@@ -105,7 +106,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
   buttons[next]?.focus({preventScroll:true});
   buttons[next]?.scrollIntoView({block:'nearest',inline:'nearest'});
  };
- const label=(a:typeof DESKTOP_APPS[number])=>a[lang];
+ const label=(a:typeof DESKTOP_APPS[number])=>localizedCopy(a.ko,a.en,a.ja)[lang];
  const activeApps=manager.windows.filter(w=>!w.closed);
  const visibleApps=visibleQuestApps(manager.windows,manager.bounds,manager.compact);
  const guide=buildWorkGuide(props.state,visibleWorkContext(props.workSelections?.[manager.app]??props.workContext??null,manager.app,props.editorTarget?.file));
@@ -150,7 +151,7 @@ export function DesktopOS({manager,props,renderApp,onSettings,onTitle,sound,onSo
 }
 
 export function Notepad(){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>lang==='ko'?ko:lang==='en'?en:ja;
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  const [note,setNote]=useState(''),[failed,setFailed]=useState(false);
  // eslint-disable-next-line react-hooks/set-state-in-effect -- Client mount hydrates the note from external localStorage after SSR and records storage-access failure.
  useEffect(()=>{try{setNote((localStorage.getItem('codeshift-notepad')??'').slice(0,12000));}catch{setFailed(true);}},[]);

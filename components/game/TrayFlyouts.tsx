@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {forwardRef} from 'react';
 import {Volume2,VolumeX,Music,Settings2,Check,Languages} from 'lucide-react';
 import {useLanguage,useLanguagePreference,setLanguagePreference,type LanguagePreference} from '@/lib/game/i18n';
@@ -7,7 +8,7 @@ import {effectsVolume,withEffectsVolume,type FeedbackPreferences} from '@/lib/ga
 type SoundProps={value:FeedbackPreferences;onChange:(next:FeedbackPreferences)=>void;enabled:boolean;onToggle:()=>void;onMore:()=>void};
 /** 작업 표시줄 스피커에서 여는 빠른 음량 조절. 세부 조작음/보상음 비율은 설정에서 바꾼다. */
 export const SoundFlyout=forwardRef<HTMLElement,SoundProps>(function SoundFlyout({value,onChange,enabled,onToggle,onMore},ref){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>lang==='ko'?ko:lang==='en'?en:ja;
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  const sliders=[
   {key:'master',label:tr('전체 음량','Master volume','全体音量'),level:value.master,set:(v:number)=>onChange({...value,master:v})},
   {key:'sfx',label:tr('효과음','Sound effects','効果音'),level:effectsVolume(value),set:(v:number)=>onChange(withEffectsVolume(value,v))},
@@ -21,10 +22,10 @@ export const SoundFlyout=forwardRef<HTMLElement,SoundProps>(function SoundFlyout
  </section>;
 });
 
-const LANGUAGES:readonly {id:LanguagePreference;label:string;short:string}[]=[{id:'ko',label:'한국어',short:'KO'},{id:'en',label:'English',short:'EN'},{id:'ja',label:'日本語',short:'JA'}];
+const LANGUAGES:readonly {id:LanguagePreference;label:string;short:string}[]=[{id:'ko',label:'한국어',short:'KO'},{id:'en',label:'English',short:'EN'},{id:'ja',label:'日本語',short:'JA'},{id:'zh',label:'简体中文',short:'ZH'}];
 /** 언어만 바로 바꾼다. 진행 상황과 코드는 그대로 유지된다. */
 export const LanguageFlyout=forwardRef<HTMLElement,{onPicked:()=>void}>(function LanguageFlyout({onPicked},ref){
- const lang=useLanguage(),preference=useLanguagePreference(),tr=(ko:string,en:string,ja:string)=>lang==='ko'?ko:lang==='en'?en:ja;
+ const lang=useLanguage(),preference=useLanguagePreference(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  const pick=(id:LanguagePreference)=>{setLanguagePreference(id);onPicked();};
  return <section ref={ref} id="workspace-language" className="pc-flyout pc-language-flyout" data-testid="tray-language-panel" role="dialog" aria-labelledby="workspace-language-title" data-no-translate>
   <header><h2 id="workspace-language-title"><Languages size={15}/>{tr('언어','Language','言語')}</h2></header>

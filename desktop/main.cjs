@@ -148,7 +148,7 @@ async function boot() {
     return {ok: true};
   });
   handle('desktop:language', language => {
-    if (!['ko', 'en', 'ja'].includes(language)) return {ok: false};
+    if (!['ko', 'en', 'ja', 'zh'].includes(language)) return {ok: false};
     uiLanguage = language;
     return {ok: true};
   });

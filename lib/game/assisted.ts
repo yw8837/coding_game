@@ -3,16 +3,18 @@ import {REPO_URL,PROJECT,MISSIONS} from './content.ts';
 import type {GameEdition} from './edition.ts';
 
 export type AssistAction = 'prepare'|'title-cafe'|'title-bakery'|'width-fit'|'width-wide'|'width-small'|'multiply'|'add'|'subtract'|'route-menu'|'route-home'|'keep-orders'|'discard-orders'|'trial'|'publish';
-function command(s:GameState,line:string,edition:GameEdition):GameState {
- const result=runCommand(s,line,edition);
+import type {Language} from './translations.ts';
+
+function command(s:GameState,line:string,edition:GameEdition,language:Language='ko'):GameState {
+ const result=runCommand(s,line,edition,language);
  if(result.error)throw new Error(result.output);
  return result.state;
 }
-export function prepareWorkspace(state:GameState,edition:GameEdition='full'):GameState {
+export function prepareWorkspace(state:GameState,edition:GameEdition='full',language:Language='ko'):GameState {
  let s=act(state,{type:'accept'},edition);
  if(s.machine==='server')s=command(s,'exit',edition);
  s=act(s,{type:'discover',what:'repo'},edition);
- if(!s.repo){s=command(s,'cd ~',edition);s=command(s,'git clone '+REPO_URL,edition);}
+ if(!s.repo){s=command(s,'cd ~',edition);s=command(s,'git clone '+REPO_URL,edition,language);}
  if(!s.machines.local.updated)s=command(s,'sudo apt update',edition);
  if(!s.machines.local.tools.includes('npm'))s=command(s,'sudo apt install nodejs npm',edition);
  s=command(s,'cd "'+s.repo!.root+'"',edition);
@@ -33,23 +35,23 @@ function sendWork(state:GameState,edition:GameEdition):GameState {
  if(dirtyFiles(s).length)s=command(s,'git commit -m "Complete chapter '+(s.mission+1)+'"',edition);
  return command(s,'git push',edition);
 }
-export function prepareTrial(state:GameState,edition:GameEdition='full'):GameState {
- let s=prepareWorkspace(state,edition);
+export function prepareTrial(state:GameState,edition:GameEdition='full',language:Language='ko'):GameState {
+ let s=prepareWorkspace(state,edition,language);
  if(s.mission!==2)return s;
  s=sendWork(s,edition);s=act(s,{type:'install-server'},edition);
  s=command(s,'ssh dev@mono-server',edition);
  if(!s.machines.server.updated)s=command(s,'sudo apt update',edition);
  s=command(s,'sudo apt install git python3 python3-pip',edition);
- if(!s.machines.server.cloned){s=command(s,'cd ~',edition);s=command(s,'git clone '+REPO_URL,edition);}
+ if(!s.machines.server.cloned){s=command(s,'cd ~',edition);s=command(s,'git clone '+REPO_URL,edition,language);}
  s=command(s,'cd '+PROJECT,edition);s=command(s,'git pull',edition);
  if(!s.machines.server.pythonDeps.includes(PROJECT))s=command(s,'pip install -r requirements.txt',edition);
  if(s.machines.server.processes.backend)s=command(s,'pkill python3',edition);
  s=command(s,'python3 server.py',edition);
  return command(s,'exit',edition);
 }
-export function assist(state:GameState,action:AssistAction,edition:GameEdition='full'):GameState {
- if(action==='prepare')return prepareWorkspace(state,edition);
- if(action==='trial')return prepareTrial(state,edition);
+export function assist(state:GameState,action:AssistAction,edition:GameEdition='full',language:Language='ko'):GameState {
+ if(action==='prepare')return prepareWorkspace(state,edition,language);
+ if(action==='trial')return prepareTrial(state,edition,language);
  if(!state.repo)return {...state,notice:'먼저 의뢰를 시작해 주세요.'};
  if(action==='publish'){
   const hash=sourceHash(projectFiles(state)),checks=state.tests;

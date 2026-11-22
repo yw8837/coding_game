@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {FileContextMenu} from './FileContextMenu';
 
 import {useEffect,useRef,useState} from 'react';
@@ -14,7 +15,7 @@ import type {GameProps} from './types';
 /** Absolute editor targets use the canonical local virtual filesystem, including deletions. */
 export function VirtualFileEditor(props:GameProps){
  const {state,onAction,onCommand,onOpen,editorTarget}=props;
- const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[language];
+ const language=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language];
  const [path,setPath]=useState(editorTarget?.file??''),[notice,setNotice]=useState<string|null>(null);
  const smart=useRef<SmartCodeHandle>(null),numbers=useRef<HTMLDivElement>(null);
  // eslint-disable-next-line react-hooks/set-state-in-effect -- An external absolute file-open path/token selects its virtual file and clears the old notice; sibling selection stays local.
@@ -26,7 +27,7 @@ export function VirtualFileEditor(props:GameProps){
  const labJob=LAB_JOBS.find(job=>path===labSourcePath(job.id));
  const suite=labJob?labTestPath(labJob.id):null;
  const canTest=exists&&!readOnly&&!!suite&&Object.hasOwn(files,suite),limit=LAB_JOBS.some(job=>path===labInputPath(job.id))?4000:name.endsWith('.js')?12000:60000;
- const edit=(value:string)=>{if(!exists||readOnly)return;if(value.length>limit){setNotice(tr(`이 파일은 ${limit.toLocaleString()}자까지 저장할 수 있습니다.`,`This file can contain at most ${limit.toLocaleString()} characters.`,`このファイルは${limit.toLocaleString()}文字まで保存できます。`));return;}onAction({type:'genericfile-edit',path,content:value});setNotice(null);};
+ const edit=(value:string)=>{if(!exists||readOnly)return;if(value.length>limit){setNotice(tr(`이 파일은 ${limit.toLocaleString()}자까지 저장할 수 있습니다.`,`This file can contain at most ${limit.toLocaleString()} characters.`,`このファイルは${limit.toLocaleString()}文字まで保存できます。`,`此文件最多可保存${limit.toLocaleString()}个字符。`));return;}onAction({type:'genericfile-edit',path,content:value});setNotice(null);};
  const test=()=>{if(canTest&&suite){onCommand('node --test '+suite);onOpen('terminal');}else setNotice(tr('이 파일의 검사는 터미널에서 해당 명령을 직접 입력해 주세요.','Type the appropriate test command in the terminal for this file.','このファイルの検査コマンドはターミナルに直接入力してください。'));};
  return <div className="virtual-file-editor" data-testid="virtual-file-editor" data-no-translate>
   <header className="virtual-editor-header"><div><FileCode2 size={19}/><strong>{name||tr('파일','File','ファイル')}</strong><span>{exists?(readOnly?tr('읽기 전용','Read only','読み取り専用'):tr('자동 저장','Autosaved','自動保存')):tr('파일 없음','File missing','ファイルなし')}</span></div><button type="button" data-testid="virtual-file-terminal" onClick={()=>onOpen('terminal')}><Terminal size={15}/>{tr('터미널로 돌아가기','Back to terminal','ターミナルへ戻る')}</button></header>

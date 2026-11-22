@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useEffect,useId,useRef,useState,type KeyboardEvent} from 'react';
 import {AppWindow,BookOpen,Check,ChevronDown,Download,FastForward,Globe,Package,RotateCcw,Search,Sparkles} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
@@ -18,7 +19,7 @@ function download(part:BlobPart,type:string,name:string):SaveResult{
 }
 
 export function FinaleBranch({props}:{props:GameProps}){
- const {state,onAction}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang];
+ const {state,onAction}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  const branch=state.gameplay.finale?.branch??null,done=state.gameplay.finale?.exports??[];
  const uid=useId(),cards=useRef<Partial<Record<Branch,HTMLDivElement|null>>>({}),epilogueRef=useRef<HTMLElement>(null),busyRef=useRef(false);
  // A branch already chosen in an earlier session is shown in full; a new choice plays its epilogue.

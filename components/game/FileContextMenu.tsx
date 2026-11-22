@@ -1,9 +1,9 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 
 import {useState, type ReactElement} from 'react';
 import {toast} from 'sonner';
 import {useLanguage} from '@/lib/game/i18n';
-import {opsPathReadOnly} from '@/lib/game/ops';
 import {RELEASE_ROOT} from '@/lib/game/release';
 import {translateTerminalOutput} from '@/lib/game/terminal-translations';
 import {runCommand} from '@/lib/game/engine';
@@ -17,7 +17,7 @@ type Operation = 'rename' | 'copy' | 'delete' | 'file' | 'folder';
 export function FileContextMenu({children, path, folder = false, props, open}: {
   children: ReactElement; path: string; folder?: boolean; props: GameProps; open?: () => void;
 }) {
-  const language = useLanguage(), tr = (ko: string,en: string,ja: string) => ({ko,en,ja})[language];
+  const language = useLanguage(), tr = (ko:string,en:string,ja:string,zh?:string) =>localizedCopy(ko,en,ja,zh)[language];
   const [operation,setOperation] = useState<Operation | null>(null), [name,setName] = useState(''), [error,setError] = useState('');
   const parent = folder ? path : path.slice(0,path.lastIndexOf('/')) || '/';
   const labels = {
@@ -26,7 +26,7 @@ export function FileContextMenu({children, path, folder = false, props, open}: {
   };
   const begin = (action: Operation) => {setOperation(action);setName(action==='rename' ? path.split('/').at(-1) ?? '' : '');setError('');};
   const local = props.state.machine === 'local';
-  const locked = opsPathReadOnly(path) || props.state.gameplay.career.completed.some(id => path==='/home/dev/jobs/'+id || path.startsWith('/home/dev/jobs/'+id+'/')) || (!!props.state.gameplay.career.release.published && (path===RELEASE_ROOT || path.startsWith(RELEASE_ROOT+'/')));
+  const locked = props.state.gameplay.career.completed.some(id => path==='/home/dev/jobs/'+id || path.startsWith('/home/dev/jobs/'+id+'/')) || (!!props.state.gameplay.career.release.published && (path===RELEASE_ROOT || path.startsWith(RELEASE_ROOT+'/')));
   const terminal = () => {
     if (!local) return;
     props.onCommand('cd '+shellPath(parent));props.onOpen('terminal');

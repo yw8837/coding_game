@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useEffect,useRef,useState,type ReactNode,type PointerEvent} from 'react';
 import {Minus,Maximize2,Minimize2,X,PanelLeft,PanelRight} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
@@ -15,7 +16,7 @@ const RESIZE_HANDLES:{dir:ResizeDir;className:string}[]=[
  {dir:'se',className:'pc-resize-corner handle-se'},
 ];
 export function DesktopWindow({window:w,bounds,active,compact,title,icon,children,onFocus,onChange,onClose}:Props){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>lang==='ko'?ko:lang==='en'?en:ja;
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang];
  const drag=useRef<{startX:number;startY:number;original:WindowState;kind:'move'|'resize';dir?:ResizeDir;wasArranged:boolean;ratio:number;restored:boolean;}|null>(null);
  const root=useRef<HTMLElement>(null),lastFocused=useRef<HTMLElement|null>(null);
  const [snap,setSnap]=useState<WindowState['mode']|null>(null),snapRef=useRef<WindowState['mode']|null>(null);

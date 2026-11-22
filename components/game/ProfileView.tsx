@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useId} from 'react';
 import {ArrowRight,Bug,Check,Coins,Crown,Database,FileCode2,Gift,GitCommitHorizontal,Globe,Keyboard,Layers,Lock,Map as MapIcon,Music,Palette,Rocket,Route,Server,Sparkles,Store,TerminalSquare,Trophy,type LucideIcon} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
@@ -14,14 +15,14 @@ const n=(v:number)=>v.toLocaleString('en-US');
 
 /** 내 성장 / Growth / 成長 — level, roadmap, unlock road, loadout and achievements, all derived from the save. */
 export function ProfileView(props:GameProps){
- const {state,onAction,onOpen}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang],uid=useId();
+ const {state,onAction,onOpen}=props,lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang],uid=useId();
  const info=levelInfo(state.xp),max=info.next===null,pct=Math.round(info.progress*100),nextTitle=LEVELS[info.level]?.title[lang];
  const stages=curriculum(state),stagesDone=stages.filter(s=>s.status==='done').length,currentStage=stages.find(s=>s.status==='active')?.id;
  const loadout=effectiveLoadout(state),earned=new Set(earnedAchievements(state)),earnedCount=ACHIEVEMENTS.filter(a=>earned.has(a.id)).length;
  const status={locked:tr('잠김','Locked','ロック中'),active:tr('진행 중','In progress','進行中'),done:tr('완료','Complete','完了')};
  const xpText=max
-  ?tr(`최고 레벨 달성 · 누적 ${n(state.xp)} XP`,`Max level reached · ${n(state.xp)} XP total`,`最高レベル到達 · 累計 ${n(state.xp)} XP`)
-  :`${n(state.xp)} / ${n(info.next??0)} XP · `+tr(`다음 레벨까지 ${n(info.remaining)}`,`${n(info.remaining)} to next level`,`次のレベルまで ${n(info.remaining)}`);
+  ?tr(`최고 레벨 달성 · 누적 ${n(state.xp)} XP`,`Max level reached · ${n(state.xp)} XP total`,`最高レベル到達 · 累計 ${n(state.xp)} XP`,`已达最高等级 · 累计${n(state.xp)} XP`)
+  :`${n(state.xp)} / ${n(info.next??0)} XP · `+tr(`다음 레벨까지 ${n(info.remaining)}`,`${n(info.remaining)} to next level`,`次のレベルまで ${n(info.remaining)}`,`距离下一级还需${n(info.remaining)}`);
  return <div className="prog-profile" data-testid="profile-view" data-no-translate>
   <section className={'prog-hero'+(max?' is-max':'')} aria-labelledby={uid+'-hero'}>
    <div className="prog-hero-badge" aria-hidden="true"><small>LEVEL</small><strong>{info.level}</strong></div>
@@ -42,7 +43,7 @@ export function ProfileView(props:GameProps){
     return <li key={stage.id} className="prog-stage" data-status={stage.status} data-stage={stage.id} aria-current={stage.id===currentStage?'step':undefined}>
      <div className="prog-stage-node" aria-hidden="true"><svg viewBox="0 0 48 48"><circle className="prog-ring-track" cx="24" cy="24" r="20"/>{ratio>0&&<circle className="prog-ring-fill" cx="24" cy="24" r="20" style={{strokeDasharray:RING,strokeDashoffset:RING*(1-ratio)}}/>}</svg><span>{stage.status==='done'?<Check size={20}/>:locked?<Lock size={16}/>:stage.step}</span></div>
      <div className="prog-stage-body">
-      <div className="prog-stage-top"><small>{tr(`${stage.step}단계`,`STEP ${stage.step}`,`STEP ${stage.step}`)}</small><span className="prog-pill" data-status={stage.status}>{status[stage.status]}</span></div>
+      <div className="prog-stage-top"><small>{tr(`${stage.step}단계`,`STEP ${stage.step}`,`STEP ${stage.step}`,`第${stage.step}阶段`)}</small><span className="prog-pill" data-status={stage.status}>{status[stage.status]}</span></div>
       <h3>{stage.title[lang]}</h3>
       <p className="prog-stage-skills">{stage.skills[lang]}</p>
       <div className="prog-stage-progress"><span className="prog-mini-bar" aria-hidden="true"><span style={{width:Math.round(ratio*100)+'%'}}/></span><b>{stage.done} / {stage.total}<span className="sr-only">{tr(' 완료',' done',' 完了')}</span></b></div>
@@ -61,7 +62,7 @@ export function ProfileView(props:GameProps){
      <header><span className="prog-level-num">Lv.{row.level}</span><strong>{row.title[lang]}</strong>{reached?<Check size={15} aria-hidden="true"/>:<Lock size={14} aria-hidden="true"/>}{reached&&<span className="sr-only">{tr('달성','Reached','到達')}</span>}</header>
      <small className="prog-level-xp">{n(row.xp)} XP</small>
      {items.length>0&&<ul>{items.map(item=>{const Icon=SLOT_ICONS[item.slot];return <li key={item.slot+item.id}><Icon size={13} aria-hidden="true"/><span><small>{SLOT_NAMES[item.slot][lang]}</small>{item.name[lang]}</span></li>;})}</ul>}
-     {!reached&&<p className="prog-level-lock"><Lock size={11} aria-hidden="true"/>{tr(`Lv.${row.level}에 해금`,`Unlocks at Lv.${row.level}`,`Lv.${row.level}で解放`)}</p>}
+     {!reached&&<p className="prog-level-lock"><Lock size={11} aria-hidden="true"/>{tr(`Lv.${row.level}에 해금`,`Unlocks at Lv.${row.level}`,`Lv.${row.level}で解放`,`等级${row.level}解锁`)}</p>}
     </li>;
    })}</ol>
   </section>
@@ -77,7 +78,7 @@ export function ProfileView(props:GameProps){
      return <button key={item.id} type="button" className="prog-item" data-slot={slot} data-item={item.id} aria-pressed={equipped} disabled={!unlocked} onClick={()=>{if(!equipped)onAction({type:'equip-loadout',slot,id:item.id});}}>
       <span className="prog-item-swatch" aria-hidden="true"><Icon size={17}/></span>
       <span className="prog-item-copy"><strong>{item.name[lang]}</strong><small>{item.detail[lang]}</small></span>
-      <span className="prog-item-state">{equipped?<><Check size={13} aria-hidden="true"/>{tr('장착 중','Equipped','装備中')}</>:unlocked?tr('장착','Equip','装備'):<><Lock size={12} aria-hidden="true"/>{tr(`Lv.${item.level}에 해금`,`Lv.${item.level} unlock`,`Lv.${item.level}で解放`)}</>}</span>
+      <span className="prog-item-state">{equipped?<><Check size={13} aria-hidden="true"/>{tr('장착 중','Equipped','装備中')}</>:unlocked?tr('장착','Equip','装備'):<><Lock size={12} aria-hidden="true"/>{tr(`Lv.${item.level}에 해금`,`Lv.${item.level} unlock`,`Lv.${item.level}で解放`,`等级${item.level}解锁`)}</>}</span>
      </button>;
     })}</div>
    </fieldset>;})}</div>

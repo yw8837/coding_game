@@ -1,6 +1,7 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {TextContextMenu} from './TextContextMenu';
-import {localizeUI,useLanguage} from '@/lib/game/i18n';
+import {localizeUI,useLanguage,t} from '@/lib/game/i18n';
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {ChevronRight,TerminalSquare,CornerDownLeft} from 'lucide-react';
 import {terminalCompletionsAtCursor,visibleTerminalHistory,type TerminalCompletion} from '@/lib/game/terminal-input';
@@ -11,8 +12,10 @@ import type {GameProps} from './types';
 import {playFeedbackMotion,playGameFeedback} from './useGameFeedback';
 /** Restart a one-shot CSS animation class; CSS disables the motion under reduced-motion settings. */
 function flash(element:Element|undefined,className:string){if(!element)return;element.classList.remove(className);void (element as HTMLElement).offsetWidth;element.classList.add(className);element.addEventListener('animationend',()=>element.classList.remove(className),{once:true});}
-export function TerminalView({state,onCommand,queued,onQueued,compact=false,expected}:GameProps&{queued:string;onQueued:()=>void;compact?:boolean;expected?:string}){
- const language=useLanguage(),tr=(ko:string,en:string,ja:string)=>language==='ko'?ko:language==='en'?en:ja;
+import {currentMissionChecks,failedMissionChecks} from '@/lib/game/check-feedback';
+
+export function TerminalView({state,onCommand,openFile,testing,queued,onQueued,compact=false,expected}:GameProps&{queued:string;onQueued:()=>void;compact?:boolean;expected?:string}){
+ const language=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[language];
  const [input,setInput]=useState(''),[index,setIndex]=useState(-1),[suggestions,setSuggestions]=useState<TerminalCompletion[]>([]),[selected,setSelected]=useState(-1);
  const draft=useRef(''),scroll=useRef<HTMLDivElement>(null),field=useRef<HTMLInputElement>(null),m=state.machines[state.machine],visible=visibleTerminalHistory(state.history);
  const completion=useRef<TerminalCompletion|null>(null),pendingCaret=useRef<number|null>(null),submitted=useRef(false),xpAtSubmit=useRef(state.xp),body=useRef<HTMLDivElement>(null);
@@ -22,12 +25,14 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false,expe
  const change=useCallback((value:string)=>{setInput(value);setIndex(-1);draft.current=value;setSuggestions([]);setSelected(-1);completion.current=null;pendingCaret.current=null;},[setInput,setIndex,setSuggestions,setSelected]);
  useLayoutEffect(()=>{if(pendingCaret.current!==null){field.current?.setSelectionRange(pendingCaret.current,pendingCaret.current);pendingCaret.current=null;}},[input,suggestions]);
  const latestCommand=state.history.at(-1)?.command;
+ const testResults=!testing&&/^npm\s+(?:run\s+)?test\s*$/.test(latestCommand?.trim()??'')?currentMissionChecks(state):null;
+ const failedChecks=testResults?failedMissionChecks(state):[];
  // 따라 칠 명령이 있으면 맞게 친 앞부분을 밝히고, 처음 틀린 글자부터 표시한다.
  let matched=0;if(expected)while(matched<input.length&&matched<expected.length&&input[matched]===expected[matched])matched++;
  const typo=!!expected&&input.length>matched,ready=!!expected&&input===expected;
  // eslint-disable-next-line react-hooks/set-state-in-effect -- A parent command-queue event hydrates the editable input, consumes the queue and focuses the terminal without executing it.
  useLayoutEffect(()=>{if(queued){change(queued);onQueued();field.current?.focus();}},[queued,onQueued,change]);
- useEffect(()=>{if(scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;},[state.history.length,latestCommand]);
+ useEffect(()=>{if(scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;},[state.history.length,latestCommand,state.tests,testing]);
  // 여기서 직접 실행한 명령의 결과만 살짝 떠오르게 한다. 오류는 작게 흔들어 눈에 띄게.
  // 성공한 명령은 초록 네온으로 짧게 빛나고, 보상까지 받은 명령은 터미널 전체가 한 번 맥박친다.
  useEffect(()=>{if(!submitted.current)return;submitted.current=false;const entries=scroll.current?.getElementsByClassName('terminal-entry'),entry=entries?.[entries.length-1],failed=!!state.history.at(-1)?.error;playFeedbackMotion(entry,failed?'error':'entry');if(failed)return;flash(entry,'terminal-entry-success');if(state.xp>xpAtSubmit.current)flash(body.current??undefined,'terminal-success-pulse');},[state.history,state.xp]);
@@ -44,7 +49,7 @@ export function TerminalView({state,onCommand,queued,onQueued,compact=false,expe
   setSuggestions(options);setSelected(next);applyCompletion(options[next]);return true;
  };
  return localizeUI(<TextContextMenu key={state.machine} field={field} output clear={()=>onCommand('clear')} replace={(text,start,end)=>{change(text);requestAnimationFrame(()=>{field.current?.focus();field.current?.setSelectionRange(start,end);});}}><div ref={body} className={'terminal-body '+(compact?'compact':'')}>
-  <div className="terminal-output" ref={scroll} aria-live="polite" aria-label="터미널 출력"><div className="terminal-welcome"><TerminalSquare size={18}/><span>SHIFT SHELL<br/><span data-no-translate>{tr('Linux 개발 터미널','Linux development terminal','Linux開発ターミナル')}</span><br/><span data-no-translate>{tr('help · 명령과 옵션 / Tab · 경로 완성','help · commands and options / Tab · path completion','help · コマンドとオプション / Tab · パス補完')}</span></span></div>{visible.map((h,i)=><div className="terminal-entry" key={i}><div className="terminal-prompt"><span>dev@{h.machine==='local'?'workstation':'mono-server'}</span><span className="path">{h.cwd.replace('/home/dev','~')}</span><span>$</span><strong data-no-translate>{h.command}</strong></div>{h.output&&<pre className={h.error?'terminal-error':''}>{translateTerminalOutput(h.command,h.output,language)}</pre>}</div>)}</div>
+  <div className="terminal-output" ref={scroll} aria-live="polite" aria-label="터미널 출력"><div className="terminal-welcome"><TerminalSquare size={18}/><span>SHIFT SHELL<br/><span data-no-translate>{tr('Linux 개발 터미널','Linux development terminal','Linux開発ターミナル')}</span><br/><span data-no-translate>{tr('help · 명령과 옵션 / Tab · 경로 완성','help · commands and options / Tab · path completion','help · コマンドとオプション / Tab · パス補完')}</span></span></div>{visible.map((h,i)=><div className="terminal-entry" key={i}><div className="terminal-prompt"><span>dev@{h.machine==='local'?'workstation':'mono-server'}</span><span className="path">{h.cwd.replace('/home/dev','~')}</span><span>$</span><strong data-no-translate>{h.command}</strong></div>{h.output&&<pre className={h.error?'terminal-error':''}>{translateTerminalOutput(h.command,h.output,language)}</pre>}</div>)}{testResults&&<section className="terminal-check-feedback" data-testid="terminal-check-feedback" role="status" data-no-translate><strong>{failedChecks.length?tr('수정할 항목 있음','Some checks need repair','修正が必要な項目があります','仍有需要修正的项目'):tr('모든 항목 통과','All checks passed','すべての項目に合格','全部检查通过')}</strong>{failedChecks.map(c=><div key={c.index}><b>{t(c.name)}</b>{c.detail&&<p>{t(c.detail)}</p>}<button type="button" onClick={()=>openFile(c.file)} data-testid={'terminal-repair-check-'+c.index}>{c.file} · {tr('고칠 파일 열기','Open file to repair','修正するファイルを開く','打开需要修正的文件')}</button></div>)}</section>}</div>
   {!!suggestions.length&&<div className="terminal-completions" aria-label="명령어 자동완성 후보">{suggestions.map((c,i)=><button type="button" className={i===selected?'selected':''} key={c.value} onClick={()=>{close();applyCompletion(c);field.current?.focus();}}>{c.value}</button>)}</div>}
   {fix&&!input&&!expected&&<button type="button" className="terminal-fix" data-testid="terminal-fix" data-no-translate onClick={applyFix}><span>{tr('혹시 이거였나요?','Did you mean','もしかして')}</span><code>{fix}</code><kbd>Tab</kbd></button>}
   {expected&&<div className={'terminal-ghost'+(typo?' has-typo':'')+(ready?' is-ready':'')} data-testid="terminal-ghost" aria-hidden="true" data-no-translate><span className="ghost-done">{expected.slice(0,matched)}</span>{typo&&<span className="ghost-typo">{input.slice(matched)}</span>}<span className="ghost-rest">{typo?'':expected.slice(matched)}</span><small>{ready?'Enter ↵':typo?'Backspace ⌫':'Tab ⇥'}</small></div>}

@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 
 import {useId,useMemo,useState,type CSSProperties,type JSX} from 'react';
 import {Bell,Check,ChevronRight,Coins,FileCode2,FileText,FolderDown,Heart,Lightbulb,Lock,Mail,Play,RotateCcw,Sparkles,SquareTerminal,Target,Trophy,Truck,Wrench} from 'lucide-react';
@@ -12,7 +13,7 @@ import type {GameProps} from './types';
 
 /** Curriculum stages 3–4. The terminal does the work; this app shows the job,
  * the next commands and the client's world reacting to the player's real output. */
-type Tr=(ko:string,en:string,ja:string)=>string;
+type Tr=(ko:string,en:string,ja:string,zh?:string)=>string;
 type Outcome={ok:boolean;lines:string[];columns:string[];rows:string[][];error:string|null};
 type Mode='idle'|'live'|'goal';
 type SceneProps={job:OpsJob;out:Outcome;goal:Outcome;start:Outcome;mode:Mode;done:boolean;tr:Tr;lang:Language};
@@ -76,7 +77,7 @@ function ShelfScene({job,out,goal,mode,done,tr}:SceneProps){
  return <div className="ops-shelf">
   <div className="ops-shelf-head"><span>{tr('도매상 주문서','Wholesale order','卸への注文書')}</span><strong>{count??'?'}</strong><small>{tr('종류','kinds','種類')}</small></div>
   <ul className="ops-shelf-rack">{stock.map((row,index)=>{const left=num(row.stock),order=orders.get(row.name);return <li key={row.name} className={'ops-flower'+(left<5?' is-low':'')+(order!==undefined?' is-ordered'+order:'')} style={{'--ops-hue':hue(row.name),'--i':index} as Vars}>
-   <span className="ops-bloom" aria-hidden="true"/><b>{row.name}</b><small>{tr(`${left}송이`,`${left} left`,`${left}本`)}</small><span className="ops-meter" aria-hidden="true"><i style={{width:`${left/max*100}%`}}/></span>{order!==undefined&&<em>ORDER</em>}
+   <span className="ops-bloom" aria-hidden="true"/><b>{row.name}</b><small>{tr(`${left}송이`,`${left} left`,`${left}本`,`剩余${left}枝`)}</small><span className="ops-meter" aria-hidden="true"><i style={{width:`${left/max*100}%`}}/></span>{order!==undefined&&<em>ORDER</em>}
   </li>;})}</ul>
   {done&&mode!=='goal'&&<div className="ops-truck"><Truck size={20} aria-hidden="true"/>{tr('도매상 트럭 도착! 선반이 다시 꽉 찼어요.','The wholesale truck is here! The shelves are full again.','卸のトラックが到着！棚がまたいっぱいです。')}</div>}
  </div>;
@@ -152,7 +153,7 @@ function QueueScene({job,out,goal,start,mode,done,tr,lang}:SceneProps){
  const from=mode==='live'?start.rows.length:out.rows.length,to=out.rows.length;
  return <div className={'ops-queue'+(done&&mode!=='goal'?' is-calm':'')}>
   <div className="ops-queue-board"><small>{tr('대기실 호출 화면','Waiting-room screen','待合室の呼び出し画面')}</small>
-   <p className="ops-queue-count"><span>{tr('대기','Waiting','待ち')}</span><strong key={`${from}:${to}`} className={'ops-count'+(from!==to?' is-counting':'')} style={{'--ops-from':from,'--ops-to':to} as Vars} aria-hidden="true"/><span>{tr('명','people','人')}</span><span className="ops-sr">{tr(`대기 ${to}명`,`${to} waiting`,`${to}人待ち`)}</span></p>
+   <p className="ops-queue-count"><span>{tr('대기','Waiting','待ち')}</span><strong key={`${from}:${to}`} className={'ops-count'+(from!==to?' is-counting':'')} style={{'--ops-from':from,'--ops-to':to} as Vars} aria-hidden="true"/><span>{tr('명','people','人')}</span><span className="ops-sr">{tr(`대기 ${to}명`,`${to} waiting`,`${to}人待ち`,`${to}人等待`)}</span></p>
    {from!==to&&<small className="ops-queue-drop">{from} → {to}</small>}
   </div>
   {out.rows.length?<ol className="ops-called" key={out.lines.join('\n')}>{out.rows.slice(0,6).map((row,index)=>{const patient=patients.get(row[nameAt]??''),urgent=priorityAt>=0?row[priorityAt]==='3':patient?.priority==='3',seen=patient?.status==='done';return <li key={index} style={{'--i':index} as Vars} className={'ops-patient'+mark(out.lines[index],index)+(urgent?' is-urgent':'')+(seen?' is-seen':'')}><span className="ops-ticket">{index+1}</span><b>{row[nameAt]}</b>{deptAt>=0&&<small>{row[deptAt]}</small>}{urgent&&<em>{tr('응급','Urgent','救急')}</em>}{seen&&<em className="is-warn">{tr('이미 진료 끝','Already seen','診察済み')}</em>}{arrivedAt>=0&&<time>{row[arrivedAt]}</time>}</li>;})}</ol>:<Empty out={out} tr={tr}/>}
@@ -234,7 +235,7 @@ function World({job,accepted,completed,passed,stale,missing,current,goal,start,n
 }
 
 export function OpsLabView({props,track}:{props:GameProps;track:'python'|'sql'}):JSX.Element{
- const lang=useLanguage(),tr:Tr=(ko,en,ja)=>({ko,en,ja})[lang];
+ const lang=useLanguage(),tr:Tr=(ko,en,ja,zh)=>localizedCopy(ko,en,ja,zh)[lang];
  const {state,onAction,queueCommand,openFile}=props,titleId=useId();
  const jobs=opsJobs(track),ops=state.gameplay.ops??createOps(),m=state.machines.local;
  const unlocked=opsTrackUnlocked(state,track),doneCount=opsDone(state,track);
@@ -258,12 +259,12 @@ export function OpsLabView({props,track}:{props:GameProps;track:'python'|'sql'})
   {label:tr('작업 폴더로 이동','Go to the job folder','作業フォルダーへ移動'),commands:[cdCommand],done:here},
   job.track==='python'?{label:tr('데이터 먼저 살펴보기','Look at the data first','まずデータを見る'),commands:[`cat ${dataName}`],done:ran(command=>/^(cat|head|tail|less|more)\s/.test(command)&&command.includes(dataName))}
    :{label:tr('표 구조와 데이터 살펴보기','Look at the table and its data','表の構造とデータを見る'),commands:[`sqlite3 ${job.db} ".schema"`,`sqlite3 ${job.db} "SELECT * FROM ${table};"`],done:ran(command=>command.startsWith('sqlite3 ')&&command.includes(job.db)&&!command.includes('<'))},
-  {label:tr(`에디터로 ${job.main} 열어 고치기`,`Open ${job.main} in the editor and fix it`,`エディターで${job.main}を開いて直す`),commands:[`code ${job.main}`],done:ran(command=>/^code\s/.test(command)&&command.includes(job.main))},
+  {label:tr(`에디터로 ${job.main} 열어 고치기`,`Open ${job.main} in the editor and fix it`,`エディターで${job.main}を開いて直す`,`在编辑器中打开${job.main}并修改`),commands:[`code ${job.main}`],done:ran(command=>/^code\s/.test(command)&&command.includes(job.main))},
   {label:tr('실행해서 결과 확인 · 납품','Run it to check and deliver','実行して確認 · 納品'),commands:[runCommand],done:hasRun&&run.passed&&!stale},
  ];
  const toolSteps:Step[]=[
   {label:tr('패키지 목록 갱신','Refresh the package list','パッケージ一覧を更新'),commands:['sudo apt update'],done:m.updated||hasTool},
-  {label:tr(`${tool} 설치`,`Install ${tool}`,`${tool}をインストール`),commands:[`sudo apt install ${tool}`],done:hasTool},
+  {label:tr(`${tool} 설치`,`Install ${tool}`,`${tool}をインストール`,`安装${tool}`),commands:[`sudo apt install ${tool}`],done:hasTool},
  ];
  const files=[job.main,...opsDataFiles(job)].map(name=>({name,path:folder+'/'+name,exists:m.files[folder+'/'+name]!==undefined,data:name!==job.main}));
  const level=hints[job.id]??0,nextJob=jobs.slice(jobs.indexOf(job)+1).find(item=>!ops.completed.includes(item.id));
@@ -273,7 +274,7 @@ export function OpsLabView({props,track}:{props:GameProps;track:'python'|'sql'})
  const avatar=(name:string)=><span className="ops-avatar" style={{'--ops-hue':hue(name)} as Vars} aria-hidden="true">{Array.from(name.trim())[0]??'?'}</span>;
  const stepList=(items:Step[])=>{const next=items.findIndex(item=>!item.done);return <ol className="ops-steps">{items.map((item,index)=><li key={index} className={item.done?'is-done':index===next?'is-next':''}>
   <span className="ops-step-no" aria-hidden="true">{item.done?<Check size={14}/>:index+1}</span>
-  <div><p>{item.label}{item.done&&<span className="ops-sr"> · {tr('완료','done','完了')}</span>}</p><div className="ops-cmds">{item.commands.map(command=><button type="button" key={command} className="ops-cmd" onClick={()=>queueCommand(command)} aria-label={tr(`터미널에 넣기: ${command}`,`Put in the terminal: ${command}`,`ターミナルに入れる: ${command}`)}><span aria-hidden="true">$</span><code>{command}</code><SquareTerminal size={14} aria-hidden="true"/></button>)}</div></div>
+  <div><p>{item.label}{item.done&&<span className="ops-sr"> · {tr('완료','done','完了')}</span>}</p><div className="ops-cmds">{item.commands.map(command=><button type="button" key={command} className="ops-cmd" onClick={()=>queueCommand(command)} aria-label={tr(`터미널에 넣기: ${command}`,`Put in the terminal: ${command}`,`ターミナルに入れる: ${command}`,`填入终端：${command}`)}><span aria-hidden="true">$</span><code>{command}</code><SquareTerminal size={14} aria-hidden="true"/></button>)}</div></div>
  </li>)}</ol>;};
 
  const header=<header className="ops-header">
@@ -287,7 +288,7 @@ export function OpsLabView({props,track}:{props:GameProps;track:'python'|'sql'})
   <section className="ops-locked"><Lock size={34} aria-hidden="true"/>
    <h2>{track==='python'?tr('Python 자동화 의뢰는 아직 잠겨 있어요','Python automation jobs are still locked','Python自動化の依頼はまだロック中です'):tr('SQL 데이터베이스 의뢰는 아직 잠겨 있어요','SQL database jobs are still locked','SQLデータベースの依頼はまだロック中です')}</h2>
    {!state.gameplay.openingCelebrated?<><p>{tr('먼저 모노 카페의 OPEN 간판을 켜면 동네 가게들이 자동화 의뢰를 보내기 시작해요.','Turn on Mono Cafe’s OPEN sign first. Then neighborhood shops start sending automation jobs.','まずモノカフェのOPEN看板をつけると、まちのお店が自動化の依頼を送ってきます。')}</p><button type="button" className="primary-button" onClick={props.onFollow}>{tr('모노 카페 이야기 이어 하기','Continue the Mono Cafe story','モノカフェの物語を続ける')}</button></>
-   :<><p>{tr(`Python 자동화 의뢰를 ${SQL_UNLOCK_PYTHON}개 끝내면 데이터베이스 일이 들어와요. (지금 ${pythonDone}/${SQL_UNLOCK_PYTHON})`,`Finish ${SQL_UNLOCK_PYTHON} Python automation jobs and database work starts coming in. (Now ${pythonDone}/${SQL_UNLOCK_PYTHON})`,`Python自動化の依頼を${SQL_UNLOCK_PYTHON}件終えるとデータベースの仕事が来ます。（現在 ${pythonDone}/${SQL_UNLOCK_PYTHON}）`)}</p><div className="ops-locked-meter" aria-hidden="true"><i style={{width:`${Math.min(1,pythonDone/SQL_UNLOCK_PYTHON)*100}%`}}/></div><button type="button" className="primary-button" onClick={()=>props.onOpen('python')}>{tr('STAGE 3 · Python 자동화 열기','Open STAGE 3 · Python automation','STAGE 3 · Python自動化を開く')}</button></>}
+   :<><p>{tr(`Python 자동화 의뢰를 ${SQL_UNLOCK_PYTHON}개 끝내면 데이터베이스 일이 들어와요. (지금 ${pythonDone}/${SQL_UNLOCK_PYTHON})`,`Finish ${SQL_UNLOCK_PYTHON} Python automation jobs and database work starts coming in. (Now ${pythonDone}/${SQL_UNLOCK_PYTHON})`,`Python自動化の依頼を${SQL_UNLOCK_PYTHON}件終えるとデータベースの仕事が来ます。（現在 ${pythonDone}/${SQL_UNLOCK_PYTHON}）`,`完成${SQL_UNLOCK_PYTHON}项Python自动化委托，即可接到数据库委托。（当前${pythonDone}/${SQL_UNLOCK_PYTHON}）`)}</p><div className="ops-locked-meter" aria-hidden="true"><i style={{width:`${Math.min(1,pythonDone/SQL_UNLOCK_PYTHON)*100}%`}}/></div><button type="button" className="primary-button" onClick={()=>props.onOpen('python')}>{tr('STAGE 3 · Python 자동화 열기','Open STAGE 3 · Python automation','STAGE 3 · Python自動化を開く')}</button></>}
   </section>
  </div>;
 
@@ -319,10 +320,10 @@ export function OpsLabView({props,track}:{props:GameProps;track:'python'|'sql'})
 
     <div className="ops-work">
      {!accepted?<section className="ops-accept">
-      {jobOpen?<><p>{tr(`수락하면 내 PC의 ${home(folder)} 폴더에 작업 파일이 생겨요. 그다음부터는 터미널에서 일해요.`,`Accept to get the work files in ${home(folder)} on your PC. From there, you work in the terminal.`,`受けるとPCの${home(folder)}フォルダーに作業ファイルが届きます。そこからはターミナルで作業します。`)}</p><button type="button" className="primary-button ops-accept-button" data-testid="ops-accept" onClick={()=>{props.onWorkContext?.({kind:'ops',id:job.id});onAction({type:'ops-accept',id:job.id});}}><FolderDown size={18} aria-hidden="true"/>{tr('의뢰 수락 · 작업 폴더 받기','Accept job · get the work folder','依頼を受ける · 作業フォルダーを受け取る')}</button></>
+      {jobOpen?<><p>{tr(`수락하면 내 PC의 ${home(folder)} 폴더에 작업 파일이 생겨요. 그다음부터는 터미널에서 일해요.`,`Accept to get the work files in ${home(folder)} on your PC. From there, you work in the terminal.`,`受けるとPCの${home(folder)}フォルダーに作業ファイルが届きます。そこからはターミナルで作業します。`,`接受后，工作文件会放入你的电脑${home(folder)}文件夹，之后请在终端操作。`)}</p><button type="button" className="primary-button ops-accept-button" data-testid="ops-accept" onClick={()=>{props.onWorkContext?.({kind:'ops',id:job.id});onAction({type:'ops-accept',id:job.id});}}><FolderDown size={18} aria-hidden="true"/>{tr('의뢰 수락 · 작업 폴더 받기','Accept job · get the work folder','依頼を受ける · 作業フォルダーを受け取る')}</button></>
        :<p className="ops-muted"><Lock size={15} aria-hidden="true"/>{tr('바로 앞 의뢰를 끝내면 열려요.','Finish the previous job to unlock this one.','直前の依頼を終えると開きます。')}</p>}
      </section>:<>
-      {!hasTool&&<section className="ops-panel ops-tools" aria-label={tr('도구 확인','Tool check','ツール確認')}><h3><Wrench size={16} aria-hidden="true"/>{tr(`도구 확인 · ${tool}이(가) 아직 없어요`,`Tool check · ${tool} is not installed yet`,`ツール確認 · ${tool}がまだありません`)}</h3><p className="ops-muted">{tr('가상 PC에만 설치돼요. 실제 컴퓨터에는 아무것도 설치되지 않아요.','It installs on the virtual PC only. Nothing is installed on your real computer.','仮想PCにだけインストールされます。実際のPCには何も入りません。')}</p>{stepList(toolSteps)}</section>}
+      {!hasTool&&<section className="ops-panel ops-tools" aria-label={tr('도구 확인','Tool check','ツール確認')}><h3><Wrench size={16} aria-hidden="true"/>{tr(`도구 확인 · ${tool}이(가) 아직 없어요`,`Tool check · ${tool} is not installed yet`,`ツール確認 · ${tool}がまだありません`,`工具检查 · 尚未安装${tool}`)}</h3><p className="ops-muted">{tr('가상 PC에만 설치돼요. 실제 컴퓨터에는 아무것도 설치되지 않아요.','It installs on the virtual PC only. Nothing is installed on your real computer.','仮想PCにだけインストールされます。実際のPCには何も入りません。')}</p>{stepList(toolSteps)}</section>}
       <section className="ops-panel">
        <h3><SquareTerminal size={16} aria-hidden="true"/>{tr('터미널 작업 순서','Terminal steps','ターミナルの作業手順')}{hasTool&&<span className="ops-tool-ok"><Check size={12} aria-hidden="true"/>{tool}</span>}</h3>
        <p className="ops-muted">{tr('버튼은 명령을 터미널 입력칸에 넣기만 해요. Enter는 직접 누르세요.','Buttons only put the command in the terminal input. Press Enter yourself.','ボタンはコマンドをターミナルの入力欄に入れるだけです。Enterは自分で押します。')}</p>
@@ -344,7 +345,7 @@ export function OpsLabView({props,track}:{props:GameProps;track:'python'|'sql'})
       <section className="ops-panel ops-hints">
        <h3><Lightbulb size={16} aria-hidden="true"/>{tr('힌트','Hints','ヒント')}<small>{tr('힌트를 봐도 보상은 줄지 않아요.','Hints never reduce your reward.','ヒントを見ても報酬は減りません。')}</small></h3>
        <div aria-live="polite">{job.hints.slice(0,level).map((hint,index)=><p key={index} className="ops-hint"><b>{index+1}</b><span>{hint[lang]}</span></p>)}</div>
-       {level<job.hints.length&&<button type="button" className="ops-hint-button" onClick={()=>setHints(previous=>({...previous,[job.id]:level+1}))}>{tr(`힌트 ${level+1} 보기`,`Show hint ${level+1}`,`ヒント${level+1}を見る`)}</button>}
+       {level<job.hints.length&&<button type="button" className="ops-hint-button" onClick={()=>setHints(previous=>({...previous,[job.id]:level+1}))}>{tr(`힌트 ${level+1} 보기`,`Show hint ${level+1}`,`ヒント${level+1}を見る`,`查看提示${level+1}`)}</button>}
       </section>
      </>}
     </div>

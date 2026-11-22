@@ -6,7 +6,7 @@ export type GameEdition='full'|'demo';
 export const DEMO_SAMPLE_JOB='bakery-price';
 export const DEMO_SAMPLE_ROOT='/home/dev/jobs/'+DEMO_SAMPLE_JOB;
 export const DEMO_LOCKED_MESSAGE='Web demo: Café chapters 1–3, OPEN and the first Dawn Bakery contract are available. Other client contracts, the final release, Code Lab and practice jobs belong to the full edition.';
-export function demoLockedMessage(language:'ko'|'en'|'ja'):string{return language==='ko'?'웹 데모에서는 카페 1~3장, OPEN 행사와 새벽빵집 첫 의뢰를 플레이할 수 있어요. 다른 동네 의뢰, 최종 프로젝트, 코드 실험실과 연습 의뢰는 본편 콘텐츠입니다.':language==='ja'?'Webデモではカフェの第1〜3章、開店イベントと夜明けベーカリーの最初の依頼を遊べます。ほかのまちの依頼、最後のプロジェクト、コード実験室と練習の依頼は本編の内容です。':DEMO_LOCKED_MESSAGE;}
+export function demoLockedMessage(language:'ko'|'en'|'ja'|'zh'):string{return language==='zh'?'网页版试玩包含咖啡馆第1～3章、开业活动和黎明面包店的首个委托。其他街区委托、最终项目、代码实验室和练习委托属于完整版内容。':language==='ko'?'웹 데모에서는 카페 1~3장, OPEN 행사와 새벽빵집 첫 의뢰를 플레이할 수 있어요. 다른 동네 의뢰, 최종 프로젝트, 코드 실험실과 연습 의뢰는 본편 콘텐츠입니다.':language==='ja'?'Webデモではカフェの第1〜3章、開店イベントと夜明けベーカリーの最初の依頼を遊べます。ほかのまちの依頼、最後のプロジェクト、コード実験室と練習の依頼は本編の内容です。':DEMO_LOCKED_MESSAGE;}
 const PRIVATE_ROOTS=['/home/dev/jobs','/home/dev/studio','/home/dev/code-lab','/home/dev/automation','/home/dev/database'];
 export function editionPath(cwd:string,path:string):string{
  let value=path||'/home/dev';

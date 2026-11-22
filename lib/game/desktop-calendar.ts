@@ -1,7 +1,7 @@
 import {resolvePath,tokenize,type GameState} from './engine.ts';
 import {parseTerminalInput} from './terminal-shell.ts';
 
-export const DESKTOP_LOCALES={ko:'ko-KR',en:'en-US',ja:'ja-JP'} as const;
+export const DESKTOP_LOCALES={ko:'ko-KR',en:'en-US',ja:'ja-JP',zh:'zh-CN'} as const;
 export type CalendarDay={date:Date;inMonth:boolean;today:boolean};
 
 export function calendarMonth(date:Date,offset=0):Date{

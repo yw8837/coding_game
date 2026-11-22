@@ -4,7 +4,7 @@ export type DesktopBridge={
  getFullscreen?:()=>Promise<boolean>;
  setFullscreen?:(enabled:boolean)=>Promise<{ok:boolean}>;
  onFullscreenChange?:(callback:(enabled:boolean)=>void)=>()=>void;
- setLanguage:(language:'ko'|'en'|'ja')=>Promise<{ok:boolean}>;
+ setLanguage:(language:'ko'|'en'|'ja'|'zh')=>Promise<{ok:boolean}>;
  loadSave:()=>Promise<{raw:string|null;recovered:boolean;error?:string}>;
  loadBackup:()=>Promise<{raw:string|null;recovered:boolean;error?:string}>;
  saveGame:(raw:string)=>Promise<{ok:boolean;error?:string}>;

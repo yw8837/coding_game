@@ -13,6 +13,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  web-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25.9.0
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Package the demo Worker and browser assets
+        run: |
+          test -s dist/server/index.js
+          tar -cf web-demo.tar .openai/hosting.json dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Web-demo-candidate
+          path: web-demo.tar
+          retention-days: 7
   verify:
     runs-on: windows-2025
     timeout-minutes: 60

@@ -4,6 +4,7 @@ import {translate,type Language} from './translations';
 import {createLocaleStore,LANGUAGE_PREFERENCE_KEY,type LanguagePlatformInfo,type LanguagePreference} from './locale.ts';
 import {fetchRegionLanguage} from './region-locale.ts';
 export type {Language};
+export {localizedCopy} from './zh.ts';
 export type {LanguagePreference};
 const listeners=new Set<()=>void>();
 const locale=createLocaleStore({

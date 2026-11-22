@@ -1,11 +1,12 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useCallback,useEffect,useState} from 'react';
 import {useLanguage} from '@/lib/game/i18n';
 import {evaluateRelease} from '@/lib/game/release';
 import {releaseLearningEdit} from '@/lib/game/release-learning-edit';
 import {changedSource} from '@/lib/game/learning-display';
 export function ReleaseLearning({files,onEdit,requireProject=false}:{files:Record<string,string>;onEdit:(file:string,content:string)=>void;requireProject?:boolean}){
- const lang=useLanguage(),tr=useCallback((ko:string,en:string,ja:string)=>({ko,en,ja})[lang],[lang]);
+ const lang=useLanguage(),tr=useCallback((ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang],[lang]);
  const evaluation=evaluateRelease(files,requireProject),index=evaluation.checks.findIndex(c=>!c.passed);
  const [value,setValue]=useState(''),[help,setHelp]=useState(false),[error,setError]=useState('');
  const [pending,setPending]=useState<{file:string;content:string;code:string;index:number}|null>(null),[saved,setSaved]=useState<{file:string;content:string;code:string}|null>(null);

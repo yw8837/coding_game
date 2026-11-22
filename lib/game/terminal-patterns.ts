@@ -1,3 +1,4 @@
+import {translateOpsChinese} from './zh-terminal.ts';
 import {OPS_JOBS} from './ops-content.ts';
 
 type Pair=readonly [string,string];
@@ -40,7 +41,8 @@ const RULES:Rule[]=[
  [/^혹시 이거였나요\? → (.+) {2}\(Tab 키로 채우기\)$/,m=>[`Did you mean → ${m[1]}  (press Tab to fill it in)`,`もしかして → ${m[1]}  （Tabキーで入力）`]],
 ];
 /** Returns the translated line, or null when the line is not an authored pattern. */
-export function translateOpsLine(line:string,language:'en'|'ja'):string|null{
+export function translateOpsLine(line:string,language:'en'|'ja'|'zh'):string|null{
+ if(language==='zh')return translateOpsChinese(line);
  const fixed=OPS_LINES[line];if(fixed)return fixed[language==='en'?0:1];
  for(const [pattern,build] of RULES){const m=pattern.exec(line);if(m)return build(m)[language==='en'?0:1];}
  return null;

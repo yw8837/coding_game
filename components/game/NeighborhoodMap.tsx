@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useState} from 'react';
 import Image from 'next/image';
 import {Check,Lock,ArrowRight,MapPin,Trophy} from 'lucide-react';
@@ -14,14 +15,14 @@ const PLACES=[[8,53],[36,61],[16,57],[25,59],[45,68],[58,74],
  [68,32],[13,24],[31,19],[36,29],[46,20],[57,28],
  [62,9],[77,16],[93,22],[82,36],[91,42],[88,56]];
 
-type Text=(ko:string,en:string,ja:string)=>string;
+type Text=(ko:string,en:string,ja:string,zh?:string)=>string;
 type Badge={key:string;tone:string;label:string;hint?:string};
 function MapTag({badge}:{badge:Badge}){
  return <span className={'map-tag '+badge.tone} title={badge.hint}>{badge.tone==='js solved'&&<Check size={11} aria-hidden="true"/>}{badge.label}{badge.hint&&<span className="sr-only"> · {badge.hint}</span>}</span>;
 }
 
 export function NeighborhoodMap({state,onSelect,onRelease}:{state:GameState;onSelect:(id:string)=>void;onRelease:()=>void}){
- const lang:Language=useLanguage(),tr:Text=(ko,en,ja)=>({ko,en,ja})[lang];
+ const lang:Language=useLanguage(),tr:Text=(ko,en,ja,zh)=>localizedCopy(ko,en,ja,zh)[lang];
  const suggested=careerNext(state)??CAREER_JOBS[0];
  const [act,setAct]=useState(suggested.act),[selected,setSelected]=useState(suggested.id);
  const career=state.gameplay.career,job=CAREER_JOBS.find(item=>item.id===selected)??suggested;

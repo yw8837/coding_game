@@ -36,6 +36,24 @@ const messages = {
     missingBundle: '오프라인 게임 파일이 없어요. 실행 전에 데스크톱 게임을 빌드해 주세요.',
     startupFailed: '데스크톱 게임을 준비하지 못했어요. 패키지 파일과 접근 권한을 확인해 주세요.',
   },
+  zh: {
+    appExportTitle: '导出我的网页应用', appExportButton: '保存HTML应用',
+    appExportInvalid: '应用文件格式无效，或超过512 KiB。',
+    appExportFailed: '无法保存应用。请选择HTML文件，并检查文件夹权限与可用空间。',
+    archiveExportTitle: '导出项目文件', archiveExportButton: '保存ZIP',
+    archiveExportInvalid: '项目压缩包格式无效，或超过2 MiB。',
+    archiveExportFailed: '无法保存压缩包。请选择ZIP文件，并检查文件夹权限与可用空间。',
+    timeout: '尚未收到游戏最终保存的确认。',
+    saveFailed: '无法保存最新进度。',
+    unsaved: '上次成功保存的进度仍可使用。现在关闭可能丢失最近修改。',
+    keepPlaying: '继续游玩', discard: '不保存并关闭',
+    exportTitle: '导出本地主机英雄进度备份', exportButton: '保存备份',
+    exportInvalid: '备份中不含有效的游戏进度。',
+    exportFailed: '无法写入备份，请检查可用空间与文件夹权限。',
+    startupTitle: '无法启动本地主机英雄',
+    missingBundle: '缺少离线游戏文件，请先构建桌面客户端再启动。',
+    startupFailed: '桌面程序无法初始化，请检查打包文件与权限。',
+  },
   ja: {
     appExportTitle: '自分のウェブアプリを書き出す', appExportButton: 'HTMLアプリを保存',
     appExportInvalid: 'アプリの形式が無効か、512 KiBを超えています。',
@@ -56,7 +74,7 @@ const messages = {
   },
 };
 function nativeLanguage(steamLanguage, osLanguages = []) {
-  const steam = {koreana: 'ko', english: 'en', japanese: 'ja'}[steamLanguage];
+  const steam = {koreana: 'ko', english: 'en', japanese: 'ja', schinese: 'zh'}[steamLanguage];
   if (steam) return steam;
   for (const language of osLanguages) {
     const code = String(language).toLowerCase().split(/[-_]/)[0];

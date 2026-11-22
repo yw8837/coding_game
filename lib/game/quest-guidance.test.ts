@@ -58,7 +58,7 @@ test('real commands and next-chapter actions remain actionable when their apps a
  assert.equal(guidance({...base,app:'terminal',command:'npm test'},openWindow([],'terminal',bounds)).showAction,true);
  assert.equal(guidance({...base,app:'terminal',command:'npm test'},openWindow([],'repair',bounds),true).showAction,false,'guided follow opens repair instead of inserting the terminal command');
  assert.equal(guidance({...base,next:true},openWindow([],'messages',bounds)).showAction,true);
- assert.equal(guidance({...base,app:'career',localized:{title:{ko:'',en:'',ja:''},detail:{ko:'',en:'',ja:''}}},openWindow([],'career',bounds)).showAction,false);
+ assert.equal(guidance({...base,app:'career',localized:{title:{ko:'',en:'',ja:'',zh:''},detail:{ko:'',en:'',ja:'',zh:''}}},openWindow([],'career',bounds)).showAction,false);
  assert.equal(guidance({...base,app:'career'},openWindow([],'career',bounds),true).target,'career');
 });
 

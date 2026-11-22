@@ -1,4 +1,5 @@
 'use client';
+import {localizedCopy} from '@/lib/game/zh';
 import {useEffect,useId,useRef,type CSSProperties} from 'react';
 import {ArrowRight,Keyboard,Music,Palette,Sparkles,TerminalSquare,Trophy,type LucideIcon} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
@@ -11,7 +12,7 @@ const SPARKS=Array.from({length:22},(_,i)=>({angle:i*(360/22)+(i%2?6:-4),dist:13
 
 /** Full-screen celebration for one level gained. Render with key={level.level} to replay for chained level-ups. */
 export function LevelUpOverlay({level,onClose,onEquip}:{level:LevelUp;onClose:()=>void;onEquip?:()=>void}){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang],uid=useId();
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang],uid=useId();
  const dialog=useRef<HTMLDivElement>(null),confirm=useRef<HTMLButtonElement>(null),close=useRef(onClose);
  useEffect(()=>{close.current=onClose;});
  useEffect(()=>{
@@ -53,7 +54,7 @@ export function LevelUpOverlay({level,onClose,onEquip}:{level:LevelUp;onClose:()
 
 /** Steam/Xbox-style toast. Calls onDone after ~4.2s; render with key={achievement.id} for queued toasts. */
 export function AchievementToast({achievement,onDone}:{achievement:Achievement;onDone:()=>void}){
- const lang=useLanguage(),tr=(ko:string,en:string,ja:string)=>({ko,en,ja})[lang],done=useRef(onDone);
+ const lang=useLanguage(),tr=(ko:string,en:string,ja:string,zh?:string)=>localizedCopy(ko,en,ja,zh)[lang],done=useRef(onDone);
  useEffect(()=>{done.current=onDone;});
  useEffect(()=>{const timer=window.setTimeout(()=>done.current(),4200);return()=>window.clearTimeout(timer);},[achievement.id]);
  return <div className="prog-ach-toast" role="status" data-testid="achievement-toast" data-no-translate>
