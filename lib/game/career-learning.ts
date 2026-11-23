@@ -114,7 +114,14 @@ export function learningStepState(step:CareerLearningStep,files:Record<string,st
 export function learningProgress(id:string,files:Record<string,string>){const steps=careerLearningSteps(id);const states=steps.map(step=>learningStepState(step,files));return {steps,states,done:states.filter(state=>state.done).length,blockedFiles:[...new Set(steps.filter((_,index)=>!states[index].supported).map(step=>step.file))]};}
 // Translate the two guided exercises into their settings without executing player code.
 function guidedExpression(step:CareerLearningStep,raw:string):Value {
- const flat=raw.replace(/^\(([^()]*)\)$/,'$1').trim();
+ // Unwrap balanced groups around a single operand or the entire exercise.
+ let flat=raw.trim();
+ let previous:string;
+ do {
+  previous=flat;
+  flat=flat.replace(/\(\s*(quantity|unit|daysOld|[678])\s*\)/g,' $1 ').trim();
+  flat=flat.replace(/^\(\s*([^()]*)\s*\)$/,'$1').trim();
+ } while(flat!==previous);
  if(step.id==='inclusive'){
   if(/^(?:daysOld\s*<=\s*7|7\s*>=\s*daysOld|daysOld\s*<\s*8|8\s*>\s*daysOld)$/.test(flat))return true;
   if(/^(?:daysOld\s*<\s*7|7\s*>\s*daysOld|daysOld\s*<=\s*6|6\s*>=\s*daysOld)$/.test(flat))return false;

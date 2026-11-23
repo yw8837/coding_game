@@ -64,6 +64,9 @@ test('equivalent boundary comparisons and commuted totals update the same client
   ['archive-backup','inclusive','(7 >= daysOld)',true],['archive-backup','inclusive','daysOld<8',true],
   ['archive-backup','inclusive','7>daysOld',false],['festival-report','operation','unit*quantity',true],
   ['festival-report','operation','unit + quantity',false],
+  ['festival-report','operation','quantity * (unit)',true],
+  ['festival-report','operation','(((unit)) * (quantity))',true],
+  ['archive-backup','inclusive','(7) >= (daysOld)',true],
  ] as const){
   const files=CAREER_JOBS.find(job=>job.id===id)!.files;
   const result=applyLearningStep(id,key,files,input);
@@ -71,7 +74,7 @@ test('equivalent boundary comparisons and commuted totals update the same client
   assert.equal(result.ok,true);
  }
  const files=CAREER_JOBS.find(job=>job.id==='festival-report')!.files;
- for(const expr of ['units*quantity','unit * unit','u nit * quantity','unit*quantity + 0']){
+ for(const expr of ['units*quantity','unit * unit','u nit * quantity','unit*quantity + 0','(unit*quantity','quantity(unit)','quanti(ty)*unit','unit * (quantity + unit)']){
   assert.deepEqual(applyLearningStep('festival-report','operation',files,expr),{ok:false,reason:'input'});
  }
 });

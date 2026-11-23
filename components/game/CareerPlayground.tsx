@@ -3,6 +3,7 @@ import {localizedCopy} from '@/lib/game/zh';
 import {useId,useRef,useState,type ReactNode} from 'react';
 import {Play,Check,RotateCcw,ReceiptText,DoorOpen,ListChecks,Clock,Monitor,Radio,Smartphone,Tablet,Sun,Moon,TriangleAlert} from 'lucide-react';
 import {useLanguage} from '@/lib/game/i18n';
+import {PhotoCounter,TransitDesk} from './CustomerEvidence';
 import {careerScenarios} from '@/lib/game/career-playground';
 import {careerDayLabel,careerDisplayValue} from '@/lib/game/career-display';
 import type {CareerJob} from '@/lib/game/career-content';
@@ -167,7 +168,10 @@ export function CareerPlayground({job,files,completed=false,compact=false}:{job:
  const Icon=({receipt:ReceiptText,access:DoorOpen,list:ListChecks,schedule:Clock,screen:Monitor,network:Radio})[scene.scene];
  const value=(raw:string)=>raw==='true'?tr('예','Yes','はい'):raw==='false'?tr('아니요','No','いいえ'):raw==='missing'?tr('목록에 없음','Not in list','一覧にありません'):raw==='unavailable'?tr('접수 불가','Unavailable','受付不可'):/^-?\d+$/.test(raw)?Number(raw).toLocaleString(lang):careerDisplayValue(raw,lang,check.expected);
  const stageProps:StageProps={cases:scene.cases,index,onSelect:setSelected,tr,lang,shell:{verdict:fresh?(run!.passed?'matched':'mismatched'):null,runs}};
- const stage=scene.unavailable?null:job.id==='museum-layout'?<MuseumStage {...stageProps} css={files['gallery.css']??''}/>:job.id==='clinic-form'?<ClinicStage key={runs} {...stageProps} html={files['booking.html']??''} play={fresh}/>:job.id==='workshop-slots'?<WorkshopStage {...stageProps} csv={files['schedule.csv']??''}/>:job.id==='tutor-timezone'?<ZoneStage {...stageProps} json={files['timezone.json']??''}/>:null;
+ const stage=scene.unavailable?null:
+  job.id==='photo-cache'?<PhotoCounter lioAlbum={scene.cases[2].actual} tr={tr}/>:
+  job.id==='transit-logs'?<TransitDesk key={files['service.log']} source={files['service.log']} tr={tr}/>:
+  job.id==='museum-layout'?<MuseumStage {...stageProps} css={files['gallery.css']??''}/>:job.id==='clinic-form'?<ClinicStage key={runs} {...stageProps} html={files['booking.html']??''} play={fresh}/>:job.id==='workshop-slots'?<WorkshopStage {...stageProps} csv={files['schedule.csv']??''}/>:job.id==='tutor-timezone'?<ZoneStage {...stageProps} json={files['timezone.json']??''}/>:null;
  return <section className={'career-playground scene-'+scene.scene} data-testid="career-playground" aria-label={scene.title[lang]}>
   <header><Icon size={22}/><div><small>{completed?tr('내가 전달한 버전','Your delivered version','提出した版'):tr('고객의 화면 · 현재 파일로 실행','Client screen · run current files','お客さんの画面 · 現在のファイルで実行')}</small><h3>{scene.title[lang]}</h3></div><button type="button" className="outline-button" data-testid="career-scenario-toggle" aria-expanded={expanded} aria-controls={'scene-content-'+job.id} onClick={()=>setExpanded(!expanded)}>{expanded?tr('접기','Collapse','閉じる'):tr('직접 시험하기','Try it','自分で試す')}</button></header>
   <div id={'scene-content-'+job.id} className="career-scenario-layout" hidden={!expanded}>{stage}<div className="career-scenario-controls"><label htmlFor={'scenario-'+job.id}>{tr('시험할 상황','Situation to try','試す場面')}</label><select id={'scenario-'+job.id} data-testid="career-scenario-select" value={index} onChange={event=>setSelected(Number(event.target.value))}>{scene.cases.map((item,i)=><option key={i} value={i}>{item.name[lang]}</option>)}</select><p>{tr('다른 상황도 골라 보세요. 파일은 그대로 두고 결과만 확인합니다.','Try another situation too. This checks the result without changing your files.','別の場面も試しましょう。ファイルを変えずに結果だけ確認します。')}</p><button type="button" className="primary-button" data-testid="career-scenario-run" disabled={scene.unavailable} onClick={()=>{setRun({source,selected:index,actual:check.actual,passed:check.passed});setRuns(n=>n+1);}}><Play size={15}/>{scene.action[lang]}</button></div>
