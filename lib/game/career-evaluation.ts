@@ -90,7 +90,8 @@ export function evaluateCareer(id:string,files:Record<string,string>):CareerEval
     const rows=csv(files,'inventory.csv',['name','stock','reserved']);
     for(const [name,want] of [['rose',7],['tulip',8],['lily',0]] as const){const r=row(rows,'name',name),stock=csvNumber(r.stock),reserved=csvNumber(r.reserved);if(reserved>stock)throw new Error('reservation exceeds stock');add(`${name} 판매 가능`,`${name} available`,`${name}販売可能`,want,stock-reserved);}
     add('꽃 종류와 총 재고 유지','Keep flower kinds and total stock','花の種類と総在庫を維持',true,unchanged('inventory.csv',['name','stock'],['stock']));
-    for(const [name,want] of [['rose',5],['tulip',0],['lily',3]] as const)add(`${name} 예약 수량`,`${name} reservations`,`${name}予約数`,want,csvNumber(row(rows,'name',name).reserved));break;
+    // Original stock and the three saleable quantities already determine every reservation.
+    break;
    }
    case 'bike-hours':{
     const c=json(files,'hours.json'),opens=integer(c.opens,0,23),closes=integer(c.closes,1,24),last=integer(c.lastEntry,0,23);
@@ -106,8 +107,16 @@ export function evaluateCareer(id:string,files:Record<string,string>):CareerEval
    }
    case 'contacts-clean':{
     const c=json(files,'clean.json'),trim=flag(c.trim),lower=flag(c.lowercase),dedupe=flag(c.deduplicate),skip=flag(c.skipBlank);
-    let emails=csv(files,'contacts.csv',['name','email']).map(r=>trim?r.email.trim():r.email).map(s=>lower?s.toLowerCase():s);
-    if(skip)emails=emails.filter(Boolean);if(dedupe)emails=[...new Set(emails)];
+    // Earlier files always matched recipients by their normalized email.
+    const key=Object.hasOwn(c,'dedupeBy')?text(c.dedupeBy,['email','name']):'email';
+    const seen=new Set<string>(),emails:string[]=[];
+    for(const row of csv(files,'contacts.csv',['name','email'])){
+     const address=trim?row.email.trim():row.email;
+     const email=lower?address.toLowerCase():address;
+     const identity=key==='email'?email:row.name;
+     if(skip&&!email||dedupe&&seen.has(identity))continue;
+     seen.add(identity);emails.push(email);
+    }
     add('Luna 정리한 주소','Luna normalized address','Lunaの整理したアドレス','luna@example.test',emails.find(email=>email==='luna@example.test')??'missing');
     add('Jun 정리한 주소','Jun normalized address','Junの整理したアドレス','jun@example.test',emails.find(email=>email==='jun@example.test')??'missing');
     add('발송 대상 수','Recipient count','宛先数',2,emails.length);
@@ -242,7 +251,7 @@ export function exampleSolution(id:string):Record<string,string> {
   case 'library-loans':set('policy.json',{limit:3,inclusive:true,allowOverdue:false});break;
   case 'florist-stock':files['inventory.csv']='name,stock,reserved\nrose,12,5\ntulip,8,0\nlily,3,3\n';break;
   case 'bike-hours':set('hours.json',{opens:9,closes:18,lastEntry:17,closedDays:['sun']});break;
-  case 'contacts-clean':set('clean.json',{trim:true,lowercase:true,deduplicate:true,skipBlank:true});break;
+  case 'contacts-clean':set('clean.json',{trim:true,lowercase:true,deduplicate:true,dedupeBy:'email',skipBlank:true});break;
   case 'clinic-form':files['booking.html']='<form>\n  <label for="name">Name</label>\n  <input id="name" name="name" type="text" required>\n  <button type="submit">Book</button>\n</form>\n';break;
   case 'market-filter':set('filter.json',{field:'stock',operator:'>',value:0,requireFresh:true});break;
   case 'school-sort':set('sort.json',{field:'score',direction:'desc',tie:'name'});break;

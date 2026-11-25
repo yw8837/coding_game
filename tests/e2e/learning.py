@@ -6,7 +6,7 @@ out=Path(os.environ.get('CODESHIFT_QA_DIR','output/0.12-qa'));out.mkdir(parents=
 # Authored test inputs, independent of the game's answer key.
 values={
  'bakery-price':['6','10000'],'library-loans':['true','false'],'florist-stock':['5','3'],
- 'bike-hours':['17','["sun"]'],'contacts-clean':['true']*4,'clinic-form':['name','true','submit'],
+ 'bike-hours':['17','["sun"]'],'contacts-clean':['email.trim()','email.toLowerCase()','true','email','true'],'clinic-form':['name','true','submit'],
  'market-filter':['>','true'],'school-sort':['desc'],'workshop-slots':['10:00'],
  'delivery-fees':['20000','10'],'museum-layout':['100%','border-box'],'bookstore-invoice':['15000','true'],
  'community-api':['"path": "/api/events"','"method": "GET"','"persist": true'],
@@ -31,6 +31,10 @@ with sync_playwright() as pw:
     assert state(p)==before,'Client simulation must not mutate saves or pay rewards'
     p.get_by_test_id('career-inspect').click();p.get_by_test_id('career-scenario-toggle').click();p.get_by_test_id('career-scenario-run').click()
     expect(p.locator('.career-learning-choices')).to_have_count(0)
+    p.get_by_test_id('career-test').click()
+    assert not p.get_by_test_id('career-deliver').is_visible()
+    assert state(p)['credits']==credits and state(p)['gameplay']['career']['completed']==before['gameplay']['career']['completed']
+    p.get_by_role('tab').nth(0).click()
     if index==0:
      assert p.get_by_test_id('career-learning-apply').is_disabled()
      p.get_by_test_id('career-learning-input').fill('bad input');p.get_by_test_id('career-learning-apply').click()

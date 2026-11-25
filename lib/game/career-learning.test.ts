@@ -25,6 +25,40 @@ for(const job of CAREER_JOBS)test(`${job.id}: incremental learning edits solve t
  assert.equal(evaluateCareer(job.id,files).passed,false);assert.equal(learningProgress(job.id,files).done,steps.length-1);
 });
 
+test('the club guide tests address expressions on other recipients before changing a rule',()=>{
+ const id='contacts-clean',files=CAREER_JOBS.find(job=>job.id===id)!.files;
+ for(const key of ['trim','lowercase']){
+  for(const guess of ['true','false','"luna@example.test"','email.includes("@")']){
+   assert.deepEqual(applyLearningStep(id,key,files,guess),{ok:false,reason:'input'});
+  }
+ }
+ const alternative=applyLearningStep(id,'trim',files,'(email).trim().trim()');
+ assert.ok(alternative.ok&&alternative.correct);
+ assert.deepEqual(applyLearningStep(id,'trim',files,'email.trim().toLowerCase()'),{ok:false,reason:'input'});
+});
+
+test('turning on every switch still sends a duplicate until the identifying column is repaired',()=>{
+ const job=CAREER_JOBS.find(job=>job.id==='contacts-clean')!;
+ const switches={...JSON.parse(job.files['clean.json']),trim:true,lowercase:true,deduplicate:true,skipBlank:true};
+ const files={...job.files,'clean.json':JSON.stringify(switches)};
+ const before=evaluateCareer(job.id,files);
+ assert.equal(before.passed,false);
+ assert.equal(before.checks.find(check=>check.name.en==='Recipient count')?.actual,'3');
+ const fix=applyLearningStep(job.id,'dedupeBy',files,'email');
+ assert.ok(fix.ok&&fix.correct);
+ assert.equal(evaluateCareer(job.id,{...files,'clean.json':fix.content}).passed,true);
+ delete switches.dedupeBy;
+ const legacy={...files,'clean.json':JSON.stringify(switches)};
+ assert.equal(evaluateCareer(job.id,legacy).passed,true);
+ assert.equal(learningProgress(job.id,legacy).done,5);
+});
+
+test('the florist checks the stall and stock ledger without revealing the reserved quantities',()=>{
+ const job=CAREER_JOBS.find(job=>job.id==='florist-stock')!;
+ const checks=evaluateCareer(job.id,job.files).checks;
+ assert.deepEqual(checks.map(check=>check.name.en),['rose available','tulip available','lily available','Keep flower kinds and total stock']);
+});
+
 test('edits change one JSON leaf and preserve custom unrelated fields',()=>{
  const files={'pricing.json':'{"custom":{"note":"keep"},"packPrice":10800,"unitPrice":1800,"packSize":5}'};
  const result=applyLearningStep('bakery-price','packSize',files,'6');assert.equal(result.ok,true);
