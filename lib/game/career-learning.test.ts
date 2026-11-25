@@ -53,6 +53,18 @@ test('turning on every switch still sends a duplicate until the identifying colu
  assert.equal(learningProgress(job.id,legacy).done,5);
 });
 
+test('the bakery gives receipt evidence before the repair and confirms its numeric result afterwards',()=>{
+ const job=CAREER_JOBS.find(job=>job.id==='bakery-price')!;
+ const before=evaluateCareer(job.id,job.files);
+ for(const name of ['6 rolls total','Price of one box']){
+  assert.equal(before.checks.find(c=>c.name.en===name)?.expected,'13,600 − 2 × 1,800');
+ }
+ const solved={...job.files,'pricing.json':JSON.stringify({packSize:6,unitPrice:1800,packPrice:10000})};
+ const receipt=evaluateCareer(job.id,solved);
+ assert.ok(receipt.passed);
+ assert.equal(receipt.checks.find(c=>c.name.en==='6 rolls total')?.expected,'10000');
+});
+
 test('the florist checks the stall and stock ledger without revealing the reserved quantities',()=>{
  const job=CAREER_JOBS.find(job=>job.id==='florist-stock')!;
  const checks=evaluateCareer(job.id,job.files).checks;

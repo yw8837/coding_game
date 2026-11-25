@@ -6,8 +6,12 @@ export type CareerCheck={name:Localized;passed:boolean;expected:string;actual:st
 export type CareerEvaluation={passed:boolean;checks:CareerCheck[];preview:{label:Localized;value:string}[]};
 type Row=Record<string,string>;
 function display(value:unknown):string{return typeof value==='string'?value:JSON.stringify(value)??'null';}
-function proof(cases:{name:Localized;expected:unknown;actual:unknown}[]):CareerEvaluation {
- const checks=cases.map(c=>({name:c.name,expected:display(c.expected),actual:display(c.actual),passed:display(c.expected)===display(c.actual)}));
+type CustomerCase={name:Localized;expected:unknown;actual:unknown;clue?:string};
+function proof(cases:CustomerCase[]):CareerEvaluation {
+ const checks=cases.map(c=>{
+  const expected=display(c.expected),actual=display(c.actual),passed=actual===expected;
+  return {name:c.name,expected:!passed&&c.clue?c.clue:expected,actual,passed};
+ });
  return {passed:checks.length>=3&&checks.every(c=>c.passed),checks,preview:checks.map(c=>({label:c.name,value:c.actual}))};
 }
 function bad(message:string):CareerEvaluation {
@@ -63,19 +67,20 @@ export function evaluateCareer(id:string,files:Record<string,string>):CareerEval
   if(!files||typeof files!=='object'||Array.isArray(files))throw new Error('file map required');
   for(const path of Object.keys(job.files))if(typeof files[path]!=='string'||files[path].length>20000)throw new Error('missing or oversized file');
   if(careerCodeSpec(id)&&careerCodeMode(files)==='javascript')return evaluateCareerCode(id,files);
-  const cases:{name:Localized;expected:unknown;actual:unknown}[]=[];
-  const add=(ko:string,en:string,ja:string,expected:unknown,actual:unknown)=>cases.push({name:careerCheckCopy(ko,en,ja),expected,actual});
+  const cases:CustomerCase[]=[];
+  const add=(ko:string,en:string,ja:string,expected:unknown,actual:unknown,clue?:string)=>cases.push({name:careerCheckCopy(ko,en,ja),expected,actual,clue});
   const unchanged=(path:string,columns:string[],numbers:string[]=[])=>sameRecords(csv(files,path,columns),csv(job.files,path,columns),columns,numbers);
   switch(id){
    case 'bakery-price':{
     const c=json(files,'pricing.json'),unit=numeric(c.unitPrice),size=integer(c.packSize,1,100),pack=numeric(c.packPrice);
     const total=(n:number)=>Math.floor(n/size)*pack+(n%size)*unit;
-    [0,6,8].forEach((n,i)=>add(`${n}개 합계`,`${n} rolls total`,`${n}個合計`,[0,10000,13600][i],total(n)));
+    const boxReceipt='13,600 − 2 × 1,800';
+    [0,6,8].forEach((n,i)=>add(`${n}개 합계`,`${n} rolls total`,`${n}個合計`,[0,10000,13600][i],total(n),n===6?boxReceipt:undefined));
     add('낱개 1개','One single','単品1個',1800,total(1));
     add('상자 미만 3개','Three singles below a full box','1箱未満の単品3個',5400,total(3));
     // Keep prior check indices stable for the playable customer scene.
     add('상자 하나의 빵 수','Rolls in one box','1箱のパンの個数',6,size);
-    add('상자 하나의 가격','Price of one box','1箱の価格',10000,pack);
+    add('상자 하나의 가격','Price of one box','1箱の価格',10000,pack,boxReceipt);
     add('상자 미만 5개','Five singles below a full box','1箱未満の単品5個',9000,total(5));
     add('10개 합계','Ten rolls total','10個合計',17200,total(10));break;
    }
